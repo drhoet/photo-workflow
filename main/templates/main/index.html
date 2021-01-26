@@ -1,0 +1,7 @@
+{% if roots %}
+  {% for root in roots %}
+    <a href="{% url 'main:browse' root.id %}">{{ root.path }}</a>
+  {% endfor %}
+{% else %}
+  <p>No roots are configured. Run the setup wizard.</p>
+{% endif %}

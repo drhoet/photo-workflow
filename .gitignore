@@ -1,0 +1,14 @@
+# Django #
+*.pyc
+__pycache__
+db.sqlite3
+
+# Python #
+*.py[cod]
+*$py.class
+
+# Environments
+.venv 
+
+# Visual Studio Code #
+.vscode/*

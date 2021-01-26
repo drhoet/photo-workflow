@@ -1,0 +1,32 @@
+{% load tz %}
+<h1>{{ directory.path }}</h1>
+
+<h2>Actions</h2>
+<form action="{% url 'main:browse' directory.id %}" method="post">
+
+  {% csrf_token %}
+  <button type="submit" name="action" value="scan">Scan directory</button>
+  <button type="submit" name="action" value="organize_into_directories">Organize into directories</button>
+  <button type="submit" name="action" value="geotag">Geotag</button>
+  <button type="submit" name="action" value="set_author">Set author</button>
+  <button type="submit" name="action" value="write_metadata">Write metadata</button>
+</form>
+
+<h2>Contents</h2>
+{% if directory.subdirs %}
+<ul>
+  {% for dir in directory.subdirs.all %}
+    <li><a href="{% url 'main:browse' dir.id %}">{{ dir.path }}</a></li>
+  {% endfor %}
+</ul>
+{% endif %}
+
+{% localtime off %}
+{% if directory.images %}
+<ul>
+  {% for image in directory.images.all %}
+    <li>{{ image.name }} [{{ image.author }}] [{{ image.date_time | date:"Y-m-d H:i:sO" }}]</li>
+  {% endfor %}
+</ul>
+{% endif %}
+{% endlocaltime %}
