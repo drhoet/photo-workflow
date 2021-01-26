@@ -2,6 +2,7 @@ from os.path import isdir
 
 from .utils.exiftool_ctxmngr import ExifTool
 from .utils.exifdata import format_exif_datetimeoriginal, format_exif_offsettime
+from main.model.metadata_parser import Metadata, FujiXT20ImageParser
 
 
 class ExifToolService(object):
@@ -40,3 +41,24 @@ class ExifToolService(object):
                     params.append(f"-OffsetTime={format_exif_offsettime(image.date_time)}")
                 if params:
                     et.execute("-overwrite_original", "-use", "MWG", "-preserve", *params, image.name)
+
+
+class MetadataParserService:
+    __instance = None
+
+    @classmethod
+    def instance(cls):
+        if cls.__instance is not None:
+            return cls.__instance
+        else:
+            cls.__instance = MetadataParserService()
+            return cls.__instance
+
+    def __init__(self):
+        self.parsers = [FujiXT20ImageParser()]
+
+    def parse_metadata(self, json: dict) -> Metadata:
+        for p in self.parsers:
+            if p.can_parse(json):
+                return p.parse(json)
+        return Metadata(None, None, None)

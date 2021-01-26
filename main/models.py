@@ -4,9 +4,8 @@ from os.path import isfile, isdir, join
 from datetime import datetime, timezone, timedelta
 import logging
 
-from .services import ExifToolService
-from .utils.datetime import has_timezone
-from .utils.exifdata import isFujiXT20, parse_exif_offsettime, parse_exif_datetimeoriginal, parse_file_filemodifytime
+from .services import ExifToolService, MetadataParserService
+from .model import metadata_parser
 
 
 class Author(models.Model):
@@ -96,42 +95,18 @@ class Image(models.Model):
     def load_metadata(self, json):
         if not json["SourceFile"] == self.name:
             raise ValueError("metadata does not match this image: %s <> %s" % (json["SourceFile"], self.name))
-        if "EXIF:Artist" in json:
-            artist = json["EXIF:Artist"]
-            if artist:  # check for empty string
-                new_auth = Author.objects.filter(name=artist).first()
-                if new_auth is None:
-                    new_auth = Author.objects.filter(name="Unknown").first()
-                self.author = new_auth
 
-        date_time_original = None
-        if "EXIF:DateTimeOriginal" in json:
-            dt_str = json["EXIF:DateTimeOriginal"]
-            date_time_original = parse_exif_datetimeoriginal(dt_str)
-        # if we could not find the date_time of the picture, it makes no sense to figure out the offset...
-        if date_time_original:
-            if "EXIF:OffsetTime" in json:
-                tz = parse_exif_offsettime(json["EXIF:OffsetTime"])
-                if tz and has_timezone(tz):
-                    self.tz_offset_seconds = tz.tzinfo.utcoffset(date_time_original).total_seconds()
-                    self.date_time_utc = date_time_original.replace(tzinfo=tz.tzinfo)
-            else:
-                # see if we can find the timezone as the difference between the fileModifyDate and the date_time
-                fmd_str = json["File:FileModifyDate"]
-                fmd = parse_file_filemodifytime(fmd_str).astimezone(timezone.utc).replace(tzinfo=None)
-                accepted_delta = 15.0  # diff should be whole half-hours, we accept 15s distance
-                if isFujiXT20(json) and "EXIF:ExposureTime" in json:
-                    # on FUJI, the DateTimeOriginal is the moment the shutter is pressed. With long exposure times, this means
-                    # the difference between DateTimeOriginal and FileModifyDate (i.e. the time the file was written), get bigger,
-                    # 2x the exposure time in fact (because it does the 'calculation' after the first exposure time)
-                    accepted_delta = accepted_delta + 2 * json["EXIF:ExposureTime"]
-                diff = abs((date_time_original - fmd).total_seconds())
-                if diff % 1800 < accepted_delta or diff % 1800 > 1800 - accepted_delta:
-                    timezone_half_hours = round((date_time_original - fmd).total_seconds() / 1800)
-                    self.tz_offset_seconds = timezone_half_hours * 1800
-                    self.date_time_utc = date_time_original.replace(
-                        tzinfo=timezone(timedelta(seconds=self.tz_offset_seconds))
-                    )
+        metadata = MetadataParserService.instance().parse_metadata(json)
+
+        if metadata.artist:  # check for empty string
+            new_auth = Author.objects.filter(name=metadata.artist).first()
+            if new_auth is None:
+                new_auth = Author.objects.filter(name="Unknown").first()
+            self.author = new_auth
+
+        if metadata.date_time_original:
+            self.date_time_utc = metadata.date_time_original.astimezone(timezone.utc)
+            self.tz_offset_seconds = metadata.date_time_original.tzinfo.utcoffset(metadata.date_time_original).total_seconds()
 
     @property
     def date_time(self):
