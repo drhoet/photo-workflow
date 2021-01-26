@@ -9,6 +9,16 @@ class BrowseView(DetailView):
     model = Directory
     template_name = "main/browse.html"
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        breadcrumbs = []
+        cursor = context["directory"].parent
+        while cursor:
+            breadcrumbs.insert(0, cursor)
+            cursor = cursor.parent
+        context["breadcrumbs"] = breadcrumbs
+        return context
+
     def post(self, request, pk):
         directory = self.get_object()
         action = request.POST["action"]

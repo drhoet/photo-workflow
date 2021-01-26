@@ -1,5 +1,9 @@
 {% load tz %}
-<h1>{{ directory.path }}</h1>
+<a href="{% url 'main:index' %}">Root</a>
+{% for c in breadcrumbs %}
+  <a href="{% url 'main:browse' c.id %}">{{c.path}}</a>
+{% endfor %}
+<span>{{directory.path}}</span>
 
 <h2>Actions</h2>
 <form action="{% url 'main:browse' directory.id %}" method="post">
