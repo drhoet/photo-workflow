@@ -1,0 +1,12 @@
+<!DOCTYPE html>
+<head lang="en">
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'main/css/materialdesignicons.min.css' %}">
+    <link rel="stylesheet" href="{% static 'main/css/main.css' %}">
+    <title>{% block title %}Workflow{% endblock %}</title>
+</head>
+<body>
+    <div id="content">
+        {% block content %}{% endblock %}
+    </div>
+</body>
