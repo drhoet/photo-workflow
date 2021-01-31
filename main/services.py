@@ -23,14 +23,18 @@ class ExifToolService(object):
         with ExifTool(path) as et:
             et.execute("-Directory<DateTimeOriginal", "-dateFormat", "%Y-%m-%d", ".")
 
-    def read_metadata(self, path, *files):
+    def read_metadata(self, path, *images):
         if not isdir(path):
-            raise ValueError("path is not a file: %s" % path)
+            raise ValueError("path is not a directory: %s" % path)
 
+        files = [img.name for img in images]
         with ExifTool(path) as et:
             return et.get_metadata(*files)
 
     def write_metadata(self, path, *images):
+        if not isdir(path):
+            raise ValueError("path is not a directory: %s" % path)
+
         with ExifTool(path) as et:
             for image in images:
                 params = []
@@ -39,6 +43,7 @@ class ExifToolService(object):
                 if image.date_time:
                     params.append(f"-DateTimeOriginal={format_exif_datetimeoriginal(image.date_time)}")
                     params.append(f"-OffsetTime={format_exif_offsettime(image.date_time)}")
+                    params.append("-DateTimeOriginal>FileModifyDate")  # set file modify date to picture taken date
                 if params:
                     et.execute("-overwrite_original", "-use", "MWG", "-preserve", *params, image.name)
 

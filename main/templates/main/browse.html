@@ -38,10 +38,18 @@
     </div>
     {% endif %}
 
-    {% if directory.images %}
+    {% if directory.images.all %}
     <ul id="images">
       {% for image in directory.images.all %}
-        <li class="item">{{ image.name }} [{{ image.author }}] [{{ image.date_time | date:"Y-m-d H:i:sO" }}]</li>
+        <li class="item">{{ image.name }} [{{ image.author }}] [{{ image.date_time | date:"Y-m-d H:i:sO" }}]
+          {% if image.attachments.all %}
+            <ul>
+              {% for att in image.attachments.all %}
+                <li>{{ att.name }}</li>
+              {% endfor %}
+            </ul>
+          {% endif %}
+        </li>
       {% endfor %}
     </ul>
     {% endif %}

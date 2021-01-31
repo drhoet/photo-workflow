@@ -1,11 +1,10 @@
 from django.db import models
-from os import listdir
-from os.path import isfile, isdir, join
 from datetime import datetime, timezone, timedelta
-import logging
+import logging, time, os
 
 from .services import ExifToolService, MetadataParserService
 from .model import metadata_parser
+from .model.file_types import FileType
 
 
 class Author(models.Model):
@@ -30,28 +29,38 @@ class Directory(models.Model):
 
         # then scan for all contents and add them to the DB
         abs_path = self.get_absolute_path()
-        contents = listdir(abs_path)
+        contents = os.listdir(abs_path)
         new_images = []
         new_dirs = []
+        new_attachments = []
 
         # create sub-items (both images and subdirs)
         for item_name in contents:
-            item_path = join(abs_path, item_name)
-            if isfile(item_path):
+            item_path = os.path.join(abs_path, item_name)
+            if self._is_image(item_path):
                 img = Image(parent=self, name=item_name)
                 new_images.append(img)
-            elif isdir(item_path):
+            elif os.path.isdir(item_path):
                 new_dirs.append(Directory(parent=self, path=item_name))
 
         # if we have images, scan their metadata
-        files = [img.name for img in new_images]
-        if files:
-            json = ExifToolService.instance().read_metadata(self.get_absolute_path(), *files)
+        if new_images:
+            json = ExifToolService.instance().read_metadata(self.get_absolute_path(), *new_images)
             for i, j in zip(new_images, json):
                 i.load_metadata(j)
 
         Image.objects.bulk_create(new_images, batch_size=100)
         Directory.objects.bulk_create(new_dirs, batch_size=100)
+
+        # create attachments
+        for item_name in contents:
+            item_path = os.path.join(abs_path, item_name)
+            if self._is_attachment(item_path):
+                related_image = self._find_related_image(self.images.all(), item_name)
+                if related_image is not None:
+                    att = Attachment(parent=related_image, name=item_name, attachment_type=FileType.from_path(item_path).name)
+                    new_attachments.append(att)
+        Attachment.objects.bulk_create(new_attachments, batch_size=100)
 
         for d in self.subdirs.all():
             d.scan()
@@ -60,7 +69,7 @@ class Directory(models.Model):
         if self.parent is None:
             return self.path
         else:
-            return join(self.parent.get_absolute_path(), self.path)
+            return os.path.join(self.parent.get_absolute_path(), self.path)
 
     def organize_into_directories(self):
         ExifToolService.instance().organize_into_directories(self.get_absolute_path())
@@ -73,6 +82,18 @@ class Directory(models.Model):
 
     def write_images_metadata(self):
         ExifToolService.instance().write_metadata(self.get_absolute_path(), *self.images.all())
+    
+    def _is_image(self, path):
+        return os.path.isfile(path) and FileType.from_path(path) == FileType.MAIN_MEDIA
+
+    def _is_attachment(self, path):
+        return os.path.isfile(path) and FileType.from_path(path) != FileType.MAIN_MEDIA
+
+    def _find_related_image(self, images, path):
+        for i in images:
+            if os.path.splitext(path)[0] == os.path.splitext(i.name)[0]:
+                return i
+        return None
 
     def __str__(self):
         return self.get_absolute_path()
@@ -83,9 +104,8 @@ class Image(models.Model):
     name = models.CharField(max_length=255)
     author = models.ForeignKey(Author, on_delete=models.SET_NULL, null=True)
     date_time_utc = models.DateTimeField(null=True)
-    tz_offset_seconds = models.IntegerField(
-        default=0
-    )  # store the time offset, since DateTimeFields are stored in UTC...
+    # store the time offset, since DateTimeFields are stored in UTC...
+    tz_offset_seconds = models.IntegerField(default=0)
 
     def read_metadata(self):
         # read metadata from EXIF here. No need to save(), the caller can do that
@@ -106,7 +126,9 @@ class Image(models.Model):
 
         if metadata.date_time_original:
             self.date_time_utc = metadata.date_time_original.astimezone(timezone.utc)
-            self.tz_offset_seconds = metadata.date_time_original.tzinfo.utcoffset(metadata.date_time_original).total_seconds()
+            self.tz_offset_seconds = metadata.date_time_original.tzinfo.utcoffset(
+                metadata.date_time_original
+            ).total_seconds()
 
     @property
     def date_time(self):
@@ -120,3 +142,9 @@ class Image(models.Model):
 
     def __str__(self):
         return join(self.parent.get_absolute_path(), self.name)
+
+
+class Attachment(models.Model):
+    parent = models.ForeignKey(Image, on_delete=models.CASCADE, related_name="attachments")
+    name = models.CharField(max_length=255)
+    attachment_type = models.CharField(max_length=50)
