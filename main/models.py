@@ -22,10 +22,7 @@ class Directory(models.Model):
     path = models.CharField(max_length=255)
 
     def scan(self):
-        # first delete the old contents. TODO: This is probably not a very nice solution ;-)
-        print("Scanning %s [%d]" % (self.get_absolute_path(), self.id))
-        self.subdirs.all().delete()
-        self.images.all().delete()
+        start = time.time()
 
         # then scan for all contents and add them to the DB
         abs_path = self.get_absolute_path()
@@ -35,12 +32,14 @@ class Directory(models.Model):
         new_attachments = []
 
         # create sub-items (both images and subdirs)
+        existing_images = self.images.values_list('name', flat=True)
+        existing_dirs = self.subdirs.values_list('path', flat=True)
         for item_name in contents:
             item_path = os.path.join(abs_path, item_name)
-            if self._is_image(item_path):
+            if self._is_image(item_path) and not item_name in existing_images:
                 img = Image(parent=self, name=item_name)
                 new_images.append(img)
-            elif os.path.isdir(item_path):
+            elif os.path.isdir(item_path) and not item_name in existing_dirs:
                 new_dirs.append(Directory(parent=self, path=item_name))
 
         # if we have images, scan their metadata
@@ -53,17 +52,20 @@ class Directory(models.Model):
         Directory.objects.bulk_create(new_dirs, batch_size=100)
 
         # create attachments
+        existing_images = self.images.all()
         for item_name in contents:
             item_path = os.path.join(abs_path, item_name)
             if self._is_attachment(item_path):
-                related_image = self._find_related_image(self.images.all(), item_name)
-                if related_image is not None:
+                related_image = self._find_related_image(existing_images, item_name)
+                if related_image is not None and not related_image.attachments.filter(name=item_name).exists():
                     att = Attachment(parent=related_image, name=item_name, attachment_type=FileType.from_path(item_path).name)
                     new_attachments.append(att)
         Attachment.objects.bulk_create(new_attachments, batch_size=100)
 
         for d in self.subdirs.all():
             d.scan()
+
+        print("Scanned %s [%d], %ss" % (self.get_absolute_path(), self.id, time.time()-start))
 
     def get_absolute_path(self):
         if self.parent is None:
