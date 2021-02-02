@@ -21,6 +21,7 @@
     <form action="{% url 'main:browse' directory.id %}" method="post">
 
       {% csrf_token %}
+      <button type="submit" name="action" value="remove_dir_from_db">Remove current directory from database</button>
       <button type="submit" name="action" value="scan">Scan directory</button>
       <button type="submit" name="action" value="organize_into_directories">Organize into directories</button>
       <button type="submit" name="action" value="geotag">Geotag</button>

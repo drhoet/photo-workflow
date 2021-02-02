@@ -67,6 +67,9 @@ class Directory(models.Model):
 
         print("Scanned %s [%d], %ss" % (self.get_absolute_path(), self.id, time.time()-start))
 
+    def remove_from_db(self):
+        Directory.objects.filter(id=self.id).delete()
+
     def get_absolute_path(self):
         if self.parent is None:
             return self.path

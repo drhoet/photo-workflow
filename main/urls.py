@@ -1,5 +1,4 @@
 from django.urls import path
-
 from .views import index, browse, complete_timestamps, author
 
 app_name = "main"

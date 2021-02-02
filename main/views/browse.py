@@ -35,4 +35,8 @@ class BrowseView(DetailView):
             return HttpResponseRedirect(reverse("main:dir_set_author", args=(pk,)))
         elif action == "write_metadata":
             directory.write_images_metadata()
+        elif action == "remove_dir_from_db":
+            parent_id = directory.parent.id
+            directory.remove_from_db()
+            return HttpResponseRedirect(reverse("main:browse", args=(parent_id,)))
         return HttpResponseRedirect(reverse("main:browse", args=(pk,)))
