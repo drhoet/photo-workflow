@@ -114,7 +114,7 @@ class Image(models.Model):
 
     def read_metadata(self):
         # read metadata from EXIF here. No need to save(), the caller can do that
-        json = ExifToolService.instance().read_metadata(self.parent.get_absolute_path(), self.name)
+        json = ExifToolService.instance().read_metadata(self.parent.get_absolute_path(), self)
         self.load_metadata(json[0])
 
     def load_metadata(self, json):

@@ -23,6 +23,10 @@ def format_exif_datetimeoriginal(dt: datetime) -> str:
     return dt.strftime("%Y:%m:%d %H:%M:%S")
 
 
-def format_exif_offsettime(dt) -> str:
+def format_exif_offsettime(dt: datetime) -> str:
     tz_str = dt.strftime("%z")  # this is in the format +0400
     return tz_str[0:3] + ":" + tz_str[3:]
+
+
+def format_file_modify_date(dt: datetime) -> str:
+    return format_exif_datetimeoriginal(dt) + format_exif_offsettime(dt)
