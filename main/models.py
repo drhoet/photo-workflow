@@ -146,7 +146,7 @@ class Image(models.Model):
         ExifToolService.instance().write_metadata(self.parent.get_absolute_path(), self)
 
     def __str__(self):
-        return join(self.parent.get_absolute_path(), self.name)
+        return os.path.join(self.parent.get_absolute_path(), self.name)
 
 
 class Attachment(models.Model):

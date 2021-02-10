@@ -42,7 +42,7 @@
     {% if directory.images.all %}
     <ul id="images">
       {% for image in directory.images.all %}
-        <li class="item">{{ image.name }} [{{ image.author }}] [{{ image.date_time | date:"Y-m-d H:i:sO" }}]
+        <li class="item"><a href="{% url 'main:img_detail' image.id %}">{{ image.name }}</a> [{{ image.author }}] [{{ image.date_time | date:"Y-m-d H:i:sO" }}]
           {% if image.attachments.all %}
             <ul>
               {% for att in image.attachments.all %}
