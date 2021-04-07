@@ -66,3 +66,17 @@ a, a:visited {
     font-size: 1.5rem;
     vertical-align: middle;
 }
+
+#items #images .item ul.errors {
+    color: red;
+    list-style: none;
+}
+
+#items #images .item ul.errors li::marker {
+    font-family:"Material Design Icons";
+    content: "\F0026";
+}
+
+#items #images .item ul.errors li {
+    padding-left: 0.5rem;
+}

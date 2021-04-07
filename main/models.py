@@ -6,6 +6,11 @@ from .services import ExifToolService, MetadataParserService
 from .model import metadata_parser
 from .model.file_types import FileType
 
+class UiException(Exception):
+    pass
+
+class MetadataIncompleteError(UiException):
+    pass
 
 class Author(models.Model):
     name = models.CharField(max_length=255)
@@ -91,6 +96,9 @@ class Directory(models.Model):
         self.images.update(author=author)
 
     def write_images_metadata(self):
+        for img in self.images.all():
+            if img.errors:
+                raise MetadataIncompleteError(img.name, img.errors)
         ExifToolService.instance().write_metadata(self.get_absolute_path(), *self.images.all())
     
     def _is_image(self, path):
@@ -117,7 +125,7 @@ class Image(models.Model):
     author = models.ForeignKey(Author, on_delete=models.SET_NULL, null=True)
     date_time_utc = models.DateTimeField(null=True)
     # store the time offset, since DateTimeFields are stored in UTC...
-    tz_offset_seconds = models.IntegerField(default=0)
+    tz_offset_seconds = models.IntegerField(null=True)
 
     def read_metadata(self):
         # read metadata from EXIF here. No need to save(), the caller can do that
@@ -138,19 +146,35 @@ class Image(models.Model):
 
         if metadata.date_time_original:
             self.date_time_utc = metadata.date_time_original.astimezone(timezone.utc)
-            self.tz_offset_seconds = metadata.date_time_original.tzinfo.utcoffset(
-                metadata.date_time_original
-            ).total_seconds()
+            if metadata.date_time_original.tzinfo:
+                self.tz_offset_seconds = metadata.date_time_original.tzinfo.utcoffset(
+                    metadata.date_time_original
+                ).total_seconds()
 
     @property
     def date_time(self):
         if self.date_time_utc:
-            return self.date_time_utc.astimezone(timezone(timedelta(seconds=self.tz_offset_seconds)))
+            if self.tz_offset_seconds:
+                return self.date_time_utc.astimezone(timezone(timedelta(seconds=self.tz_offset_seconds)))
+            else:
+                return self.date_time_utc.replace(tzinfo=None)
         else:
             return None
 
+    @property
+    def errors(self):
+        res = []
+        if not self.date_time_utc:
+            res.append('Missing DateTimeOriginal')
+        elif not self.tz_offset_seconds:
+            res.append('Missing time zone information')
+        return res
+
     def write_metadata(self):
-        ExifToolService.instance().write_metadata(self.parent.get_absolute_path(), self)
+        if self.errors:
+            raise MetadataIncompleteError(self.name, self.errors)
+        else:
+            ExifToolService.instance().write_metadata(self.parent.get_absolute_path(), self)
 
     def __str__(self):
         return os.path.join(self.parent.get_absolute_path(), self.name)

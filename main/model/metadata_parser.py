@@ -77,4 +77,7 @@ class FujiXT20ImageParser(AuthorMixin, RatingMixin, MetadataParser):
                     timezone_half_hours = round((date_time_original_naive - fmd).total_seconds() / 1800)
                     tz = timezone(timedelta(seconds=timezone_half_hours * 1800))
                     date_time_original = date_time_original_naive.replace(tzinfo=tz)
+                else:
+                    self.logger.warn('The difference is too big: %s. Not setting a timezone.' % diff)
+                    date_time_original = date_time_original_naive
         return Metadata(date_time_original, self.parse_rating(json), self.parse_author(json))
