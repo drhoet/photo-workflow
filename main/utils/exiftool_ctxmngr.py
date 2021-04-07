@@ -3,6 +3,7 @@
 import subprocess
 import os
 import json
+import logging
 
 
 class ExifTool(object):
@@ -10,6 +11,7 @@ class ExifTool(object):
     sentinel = "{ready}\n"
 
     def __init__(self, working_dir, executable="/usr/local/bin/exiftool"):
+        self.logger = logging.getLogger(__name__)
         self.executable = executable
         self.working_dir = working_dir
 
@@ -29,14 +31,14 @@ class ExifTool(object):
 
     def execute(self, *args):
         args = args + ("-execute\n",)
-        print(args)
+        self.logger.debug(args)
         self.process.stdin.write(str.join("\n", args))
         self.process.stdin.flush()
         output = ""
         fd = self.process.stdout.fileno()
         while not output.endswith(self.sentinel):
             blk = os.read(fd, 4096).decode("utf-8")
-            print(blk)
+            self.logger.debug(blk)
             output += blk
         return output[: -len(self.sentinel)]
 

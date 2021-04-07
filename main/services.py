@@ -1,4 +1,4 @@
-import os
+import os, logging
 
 from .utils.exiftool_ctxmngr import ExifTool
 from main.model.metadata_parser import Metadata, FujiXT20ImageParser
@@ -59,6 +59,7 @@ class MetadataParserService:
             return cls.__instance
         else:
             cls.__instance = MetadataParserService()
+            cls.__instance.logger = logging.getLogger(__name__)
             return cls.__instance
 
     def __init__(self):
@@ -68,6 +69,7 @@ class MetadataParserService:
         for p in self.parsers:
             if p.can_parse(json):
                 return p.parse(json)
+        self.logger.warn('No parser found for %s' % json);
         return Metadata(None, None, None)
 
 

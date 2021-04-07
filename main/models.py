@@ -105,6 +105,8 @@ class Directory(models.Model):
 
 
 class Image(models.Model):
+    logger = logging.getLogger(__name__)
+
     parent = models.ForeignKey(Directory, on_delete=models.CASCADE, related_name="images")
     name = models.CharField(max_length=255)
     author = models.ForeignKey(Author, on_delete=models.SET_NULL, null=True)
