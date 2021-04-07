@@ -23,10 +23,12 @@ class BrowseView(DetailView):
         directory = self.get_object()
         action = request.POST["action"]
         if action == "scan":
-            directory.scan()
+            directory.scan(False)
         elif action == "organize_into_directories":
             directory.organize_into_directories()
-            directory.scan()
+            directory.scan(False)
+        elif action == "reload_metadata":
+            directory.scan(True)
         elif action == "complete_timestamps":
             return HttpResponseRedirect(reverse("main:complete_timestamps", args=(pk,)))
         elif action == "geotag":

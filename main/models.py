@@ -21,8 +21,13 @@ class Directory(models.Model):
     parent = models.ForeignKey("self", null=True, on_delete=models.CASCADE, related_name="subdirs")
     path = models.CharField(max_length=255)
 
-    def scan(self):
+    def scan(self, reload_metadata=False):
         start = time.time()
+
+        # if reload: remove all old information
+        if reload_metadata:
+            self.images.all().delete()
+            self.subdirs.all().delete()
 
         # then scan for all contents and add them to the DB
         abs_path = self.get_absolute_path()
@@ -42,7 +47,7 @@ class Directory(models.Model):
             elif os.path.isdir(item_path) and not item_name in existing_dirs:
                 new_dirs.append(Directory(parent=self, path=item_name))
 
-        # if we have images, scan their metadata
+        # if we have new images, scan their metadata
         if new_images:
             json = ExifToolService.instance().read_metadata(self.get_absolute_path(), *new_images)
             for i, j in zip(new_images, json):
