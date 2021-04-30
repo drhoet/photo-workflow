@@ -1,16 +1,23 @@
-from django.urls import path
-from .views import index, browse, complete_timestamps, author, image
+from django.urls import include, path
+from rest_framework import routers
+from .views import index, image
+from .rest import views
+
 
 app_name = "main"
 urlpatterns = [
     path("", index.IndexView.as_view(), name="index"),
-    path("dir/<int:pk>/browse", browse.BrowseView.as_view(), name="browse"),
-    path(
-        "dir/<int:pk>/complete_timestamps",
-        complete_timestamps.CompleteTimestampsView.as_view(),
-        name="complete_timestamps",
-    ),
-    path("dir/<int:dir_id>/set_author", author.SelectAuthorView.as_view(), name="dir_set_author"),
-    path("img/<int:pk>/detail", image.ImageDetailView.as_view(), name="img_detail"),
     path("img/<int:pk>/download", image.ImageDownloadView.as_view(), name="img_download"),
+
+    path("api/dir/<int:pk>/detail", views.DirectoryDetailView.as_view(), name="directory-detail"),
+    path("api/dir/<int:pk>/crumbs", views.DirectoryCrumbsView.as_view(), name="directory-crumbs"),
+    path("api/dir/<int:pk>/actions", views.DirectoryActionsView.as_view(), name="directory-actions"),
+
+    path("api/img/<int:pk>/detail", views.ImageDetailView.as_view(), name="image-detail"),
+    path("api/img/<int:pk>/metadata", views.ImageMetadataView.as_view(), name="image-metadata"),
+
+    path("api/author", views.AuthorListView.as_view(), name="author-list"),
+    path("api/author/<int:pk>/detail", views.AuthorDetailView.as_view(), name="author-detail"),
+    
+    path("api/attachment/<int:pk>/detail", views.AttachmentDetailView.as_view(), name="attachment-detail"),
 ]

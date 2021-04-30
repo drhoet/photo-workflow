@@ -12,3 +12,5 @@ db.sqlite3
 
 # Visual Studio Code #
 .vscode/*
+
+node_modules/*

@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <title>Workflow</title>
+        <link rel="stylesheet" href="css/materialdesignicons.min.css">
+        <link rel="stylesheet" href="css/main.css">
+    </head>
+    <body>
+        <div id="app">
+            <error-handler>
+                <router-view></router-view>
+            </error-handler>
+        </div>
+
+        <script src="https://unpkg.com/vue@3"></script>
+        <script src="https://unpkg.com/vue-router@4"></script>
+        
+        <script type="text/x-template" id="image-overview-template">
+            <router-link :to="{ name: 'image-detail-view', params: { id: item.id }}">{{item.name}}</router-link>
+            <ul v-if="item.attachments" class="attachments">
+                <li v-for="att in item.attachments">{{att.name}}</li>
+            </ul>
+            <ul v-if="item.errors" class="errors">
+                <li v-for="err in item.errors" class="mdi mdi-alert">{{err}}</li>
+            </ul>
+            <ul class="properties">
+                <li v-if="item.author" class="mdi mdi-account">{{item.author.name}}</li>
+                <li class="mdi mdi-clock-outline">{{formattedDate}}</li>
+                <li class="mdi mdi-clock-outline">{{item.date_time}}</li>
+            </ul>
+        </script>
+
+        <script type="text/x-template" id="breadcrumbs-template">
+            <section id="breadcrumbs">
+                <router-link :to="{ name: 'home' }" class="root"><i class="mdi mdi-harddisk"></i></router-link>
+                <i class="mdi mdi-chevron-right"></i>
+                <template v-for="c in items">
+                    <template v-if="c.showLink">
+                        <router-link :to="{ name: 'directory-detail-view', params: { id: c.id }}">{{c.name}}</router-link>
+                    </template>
+                    <template v-else>
+                        <span>{{c.name}}</span>
+                    </template>
+                    <i v-if="!c.last" class="mdi mdi-chevron-right"></i>
+                </template>
+            </section>
+        </script>
+
+        <script type="module" src="app.js"></script>
+    </body>
+</html>

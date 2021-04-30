@@ -129,8 +129,8 @@ class Image(models.Model):
 
     def read_metadata(self):
         # read metadata from EXIF here. No need to save(), the caller can do that
-        json = ExifToolService.instance().read_metadata(self.parent.get_absolute_path(), self)
-        self.load_metadata(json[0])
+        json = self.read_exif_json_from_file()
+        self.load_metadata(json)
 
     def load_metadata(self, json):
         if not json["SourceFile"] == self.name:
@@ -168,7 +168,12 @@ class Image(models.Model):
             res.append('Missing DateTimeOriginal')
         elif not self.tz_offset_seconds:
             res.append('Missing time zone information')
+        if not self.author:
+            res.append('Missing author')
         return res
+
+    def read_exif_json_from_file(self):
+        return ExifToolService.instance().read_metadata(self.parent.get_absolute_path(), self)[0]
 
     def write_metadata(self):
         if self.errors:
