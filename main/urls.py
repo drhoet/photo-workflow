@@ -9,6 +9,7 @@ urlpatterns = [
     path("", index.IndexView.as_view(), name="index"),
     path("img/<int:pk>/download", image.ImageDownloadView.as_view(), name="img_download"),
 
+    path("api/roots", views.RootListView.as_view(), name="root-list"),
     path("api/dir/<int:pk>/detail", views.DirectoryDetailView.as_view(), name="directory-detail"),
     path("api/dir/<int:pk>/crumbs", views.DirectoryCrumbsView.as_view(), name="directory-crumbs"),
     path("api/dir/<int:pk>/actions", views.DirectoryActionsView.as_view(), name="directory-actions"),

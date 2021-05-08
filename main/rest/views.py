@@ -27,6 +27,12 @@ class AttachmentDetailView(generics.RetrieveAPIView):
     permission_classes = [permissions.AllowAny]
 
 
+class RootListView(generics.ListAPIView):
+    queryset = Directory.objects.filter(parent = None)
+    serializer_class = DirectoryNestedSerializer
+    permission_classes = [permissions.AllowAny]
+
+
 class DirectoryDetailView(generics.RetrieveAPIView):
     queryset = Directory.objects.all()
     serializer_class = DirectorySerializer
