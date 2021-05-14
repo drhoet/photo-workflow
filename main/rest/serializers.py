@@ -55,10 +55,14 @@ class ImageSerializer(serializers.HyperlinkedModelSerializer):
     parent = DirectoryNestedSerializer(read_only=True)
     author = AuthorNestedSerializer(read_only=True)
     attachments = AttachmentNestedSerializer(many=True)
+    date_time = serializers.SerializerMethodField()
 
     class Meta:
         model = Image
-        fields = ['id', 'name', 'parent', 'author', 'attachments', 'date_time_utc', 'tz_offset', 'errors']
+        fields = ['id', 'name', 'parent', 'author', 'attachments', 'date_time', 'errors']
+    
+    def get_date_time(self, obj):
+        return obj.date_time.isoformat()
 
 
 class DirectorySerializer(serializers.HyperlinkedModelSerializer):

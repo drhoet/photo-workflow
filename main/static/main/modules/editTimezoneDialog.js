@@ -11,11 +11,11 @@ export default {
             <template v-slot:body>
                 <label>
                     <input type="radio" value="overwrite" v-model="mode"/>
-                    Overwrite timezone in all images.
+                    Overwrite timezone<template v-if="multipleItems"> in all images</template>
                 </label>
                 <label>
                     <input type="radio" value="translate" v-model="mode" />
-                    Translate all timezones with a fixed amount.
+                    Translate <template v-if="multipleItems">all timezones</template><template v-else>timezone</template> with a fixed amount
                 </label>
 
                 <span v-if="multipleActualTimezones" id="multipleValuesWarning">
@@ -62,6 +62,9 @@ export default {
         multipleActualTimezones() {
             return Object.entries(this.actualTimezones).length > 1;
         },
+        multipleItems() {
+            return this.items.length > 1;
+        }
     },
     methods: {
         closeModal() {

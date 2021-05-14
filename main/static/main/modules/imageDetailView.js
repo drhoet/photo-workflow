@@ -6,6 +6,7 @@ export default {
         <div id="contents">
             <section id="actions">
                 <button @click="removeFromDb()"><i class="mdi mdi-lock-question"></i><span>Placeholder</span></button>
+                <button @click="showEditTimezoneDialog=true"><i class="mdi mdi-clock"></i><span>Edit timezone</span></button>
             </section>
             <div v-if="loading" class="spinner">Loading...</div>
             <section v-else id="items">
@@ -18,13 +19,14 @@ export default {
                         <td>{{item}}</td>
                     </tr>
                 </table>
+
+                <edit-timezone-dialog v-model:showModal="showEditTimezoneDialog" :items="[image]" @update:timezone="editTimezone($event)"/>
             </section>
         </div>
     `,
     methods: {
         loadData(id) {
             this.loading = true;
-            this.responseHandler.errorState.clear();
             return Promise.all([
                 fetch(`/main/api/img/${id}/metadata`, { method: 'get', headers: { 'content-type': 'application/json' } })
                     .then(res => parseResponse(res, `Could not load metadata for file with id ${id}`, true))
@@ -59,6 +61,31 @@ export default {
                 this.loading = false;
                 document.title = `Workflow - ${this.image.name}`;
             });
+        },
+        setAuthor(authorId) {
+            return this.postImageSetAction('set_author', { 'author': authorId })
+                .then(() => this.loadData(this.$route.params.id));
+        },
+        editTimezone(params) {
+            return this.postImageSetAction('edit_timezone', params)
+                .then(() => this.loadData(this.$route.params.id));
+        },
+        postImageSetAction(action, params) {
+            return this.postAction('/main/api/imgset/actions', action, params);
+        },
+        postAction(url, action, params) {
+            this.loading = true;
+
+            let formData = new FormData();
+            formData.append('action', action);
+            if (params) {
+                for (const [key, val] of Object.entries(params)) {
+                    formData.append(key, val);
+                }
+            }
+            return fetch(url, { method: 'POST', body: formData })
+                .then(res => parseResponse(res, `Could not execute action "${action}"`, false))
+                .finally(() => this.loading = false);
         }
     },
     data() {
@@ -67,6 +94,8 @@ export default {
             image: null,
             metadata: null,
             crumbs: null,
+            showSelectAuthorDialog: false,
+            showEditTimezoneDialog: false,
         }
     },
     mounted() {
