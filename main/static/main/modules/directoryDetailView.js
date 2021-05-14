@@ -11,6 +11,7 @@ export default {
                 <button @click="organize()"><i class="mdi mdi-file-tree"></i><span>Organize into directories</span></button>
                 <button @click="geotag()"><i class="mdi mdi-earth"></i><span>Geotag</span></button>
                 <button @click="showSelectAuthorDialog=true"><i class="mdi mdi-account"></i><span>Set author</span></button>
+                <button @click="showEditTimezoneDialog=true"><i class="mdi mdi-clock"></i><span>Edit timezone</span></button>
                 <button @click="writeMetadata()"><i class="mdi mdi-content-save"></i><span>Write metadata</span></button>
             </section>
             <div v-if="loading" class="spinner">Loading...</div>
@@ -26,6 +27,7 @@ export default {
                     </ul>
                 </section>
                 <select-author-dialog v-model:showModal="showSelectAuthorDialog" :modelValue="0" @update:modelValue="setAuthor($event)"/>
+                <edit-timezone-dialog v-model:showModal="showEditTimezoneDialog" :items="directory.images" @update:timezone="editTimezone($event)"/>
             </template>
         </div>
     `,
@@ -72,14 +74,23 @@ export default {
             return this.postDirectoryAction('set_author', { 'author': authorId })
                 .then(() => this.loadData(this.$route.params.id));
         },
+        editTimezone(params) {
+            return this.postImageSetAction('edit_timezone', params)
+                .then(() => this.loadData(this.$route.params.id));
+        },
         writeMetadata() {
             return this.postDirectoryAction('write_metadata')
                 .then(() => this.loadData(this.$route.params.id));
         },
         postDirectoryAction(action, params) {
+            return this.postAction(`/main/api/dir/${this.directory.id}/actions`, action, params);
+        },
+        postImageSetAction(action, params) {
+            return this.postAction('/main/api/imgset/actions', action, params);
+        },
+        postAction(url, action, params) {
             this.loading = true;
 
-            let url = `/main/api/dir/${this.directory.id}/actions`;
             let formData = new FormData();
             formData.append('action', action);
             if (params) {
@@ -90,7 +101,7 @@ export default {
             return fetch(url, { method: 'POST', body: formData })
                 .then(res => parseResponse(res, `Could not execute action "${action}"`, false))
                 .finally(() => this.loading = false);
-        },
+        }
     },
     data() {
         return {
@@ -98,6 +109,7 @@ export default {
             directory: null,
             crumbs: null,
             showSelectAuthorDialog: false,
+            showEditTimezoneDialog: false,
         }
     },
     mounted() {

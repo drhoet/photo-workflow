@@ -1,4 +1,6 @@
 from django.db import models
+from django.db.models import F, ExpressionWrapper
+from django.db.models.functions import Coalesce
 from datetime import datetime, timezone, timedelta
 import logging, time, os
 
@@ -125,7 +127,7 @@ class Image(models.Model):
     author = models.ForeignKey(Author, on_delete=models.SET_NULL, null=True)
     date_time_utc = models.DateTimeField(null=True)
     # store the time offset, since DateTimeFields are stored in UTC...
-    tz_offset_seconds = models.IntegerField(null=True)
+    tz_offset = models.DurationField(null=True)
 
     def read_metadata(self):
         # read metadata from EXIF here. No need to save(), the caller can do that
@@ -147,17 +149,15 @@ class Image(models.Model):
         if metadata.date_time_original:
             self.date_time_utc = metadata.date_time_original.astimezone(timezone.utc)
             if metadata.date_time_original.tzinfo:
-                self.tz_offset_seconds = metadata.date_time_original.tzinfo.utcoffset(
-                    metadata.date_time_original
-                ).total_seconds()
+                self.tz_offset = metadata.date_time_original.tzinfo.utcoffset(metadata.date_time_original)
 
     @property
     def date_time(self):
         if self.date_time_utc:
-            if self.tz_offset_seconds:
-                return self.date_time_utc.astimezone(timezone(timedelta(seconds=self.tz_offset_seconds)))
-            else:
+            if self.tz_offset is None:
                 return self.date_time_utc.replace(tzinfo=None)
+            else:
+                return self.date_time_utc.astimezone(timezone(self.tz_offset))
         else:
             return None
 
@@ -166,7 +166,7 @@ class Image(models.Model):
         res = []
         if not self.date_time_utc:
             res.append('Missing DateTimeOriginal')
-        elif not self.tz_offset_seconds:
+        elif self.tz_offset is None:
             res.append('Missing time zone information')
         if not self.author:
             res.append('Missing author')
@@ -189,3 +189,25 @@ class Attachment(models.Model):
     parent = models.ForeignKey(Image, on_delete=models.CASCADE, related_name="attachments")
     name = models.CharField(max_length=255)
     attachment_type = models.CharField(max_length=50)
+
+
+class ImageSetService:
+    __instance = None
+
+    @classmethod
+    def instance(cls):
+        if cls.__instance is not None:
+            return cls.__instance
+        else:
+            cls.__instance = ImageSetService()
+            return cls.__instance
+
+    def overwrite_timezone(self, image_ids, tz_minutes):
+        images = Image.objects.filter(pk__in = image_ids, date_time_utc__isnull=False)
+        images.update(tz_offset = timedelta(minutes=tz_minutes), date_time_utc = F('date_time_utc') + Coalesce('tz_offset', 0) - timedelta(minutes=tz_minutes))
+    
+    def translate_timezone(self, image_ids, tz_minutes):
+        images = Image.objects.filter(pk__in = image_ids, date_time_utc__isnull=False, tz_offset__isnull=False)
+        # below should really just be F('tz_offset') + timedelta(minutes=tz_minutes) but then django seems to think the output needs to be a
+        # DateTimeField and things get messed up.
+        images.update(tz_offset = ExpressionWrapper(F('tz_offset'), output_field=models.IntegerField()) + (60_000_000 * tz_minutes), date_time_utc = F('date_time_utc') - timedelta(minutes=tz_minutes))

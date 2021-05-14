@@ -75,7 +75,15 @@ export default {
     },
     errorCaptured(error) {
         console.log('got an error here!', error);
-        this.errorState.addError(error.msg, error.fatal);
+        let msg;
+        if('msg' in error) {
+            msg = error.msg;
+        } else if('message' in error) {
+            msg = error.message;
+        } else {
+            msg = error.toString();
+        }
+        this.errorState.addError(msg, error.fatal);
         return false;
     }
 }

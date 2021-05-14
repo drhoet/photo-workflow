@@ -33,10 +33,14 @@ class ImageNestedSerializer(serializers.HyperlinkedModelSerializer):
     url = serializers.HyperlinkedIdentityField(view_name='main:image-detail')
     author = AuthorNestedSerializer(read_only=True)
     attachments = AttachmentNestedSerializer(many=True)
+    date_time = serializers.SerializerMethodField()
 
     class Meta:
         model = Image
         fields = ['id', 'url', 'name', 'author', 'date_time', 'errors', 'attachments']
+    
+    def get_date_time(self, obj):
+        return obj.date_time.isoformat()
 
 
 class DirectoryNestedSerializer(serializers.HyperlinkedModelSerializer):
@@ -54,7 +58,7 @@ class ImageSerializer(serializers.HyperlinkedModelSerializer):
 
     class Meta:
         model = Image
-        fields = ['id', 'name', 'parent', 'author', 'attachments', 'date_time_utc', 'tz_offset_seconds', 'errors']
+        fields = ['id', 'name', 'parent', 'author', 'attachments', 'date_time_utc', 'tz_offset', 'errors']
 
 
 class DirectorySerializer(serializers.HyperlinkedModelSerializer):

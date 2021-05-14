@@ -6,7 +6,7 @@ from rest_framework.response import Response
 from django.http import Http404
 from django.shortcuts import get_object_or_404
 
-from main.models import Directory, Image, Attachment, Author
+from main.models import Directory, Image, Attachment, Author, ImageSetService
 from main.rest.serializers import DirectorySerializer, ImageSerializer, AuthorSerializer, AttachmentSerializer, DirectoryNestedSerializer
 
 class AuthorListView(generics.ListAPIView):
@@ -99,6 +99,38 @@ class DirectoryActionsView(APIView):
             return Response({'result': 'OK'}, 200)
         except Http404:
             return Response({'message': "Not found"}, 404)
+        except Exception as exc:
+            self.logger.error(exc, exc_info=True)
+            return Response({'message': "Unknown exception: " + getattr(exc, 'message', repr(exc))}, 500)
+
+
+class ImageSetActionsView(APIView):
+    permission_classes = [permissions.AllowAny]
+    logger = logging.getLogger(__name__)
+
+    def post(self, request, *args, **kwargs):
+        try:
+            action = request.POST["action"]
+            if not request.POST["ids"]:
+                self.logger.info('No ids specified to do the action on. Just skipping...')
+                return Response({'result': 'OK'}, 200)
+            ids = request.POST["ids"].split(",")
+
+            images = Image.objects.filter(pk__in = ids)
+
+            if action == "edit_timezone":
+                mode = request.POST["mode"]
+                value = int(request.POST["value"])
+                if mode == "overwrite":
+                    ImageSetService.instance().overwrite_timezone(ids, value)
+                elif mode == "translate":
+                    ImageSetService.instance().translate_timezone(ids, value)
+                else:
+                    raise ValueError(f'Invalid mode: {mode}')
+            else:
+                return Response({'message': "Unsupported action"}, 400)
+
+            return Response({'result': 'OK'}, 200)
         except Exception as exc:
             self.logger.error(exc, exc_info=True)
             return Response({'message': "Unknown exception: " + getattr(exc, 'message', repr(exc))}, 500)

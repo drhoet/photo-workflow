@@ -144,6 +144,12 @@ LOGGING = {
         'handlers': ['console'],
         'level': 'INFO',
     },
+    'loggers': {
+        'django.db.backends': {
+            'level': 'INFO',
+            'handlers': ['console'],
+        }
+    },
 }
 
 REST_FRAMEWORK = {

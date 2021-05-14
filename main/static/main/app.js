@@ -5,6 +5,7 @@ import ImageDetailView from './modules/imageDetailView.js'
 import ModalDialog from './modules/modalDialog.js'
 import SelectAuthorDialog from './modules/selectAuthorDialog.js'
 import ErrorHandler from './modules/errorHandler.js'
+import EditTimezoneDialog from './modules/editTimezoneDialog.js'
 
 const About = { template: '<div>About</div>' }
 
@@ -14,11 +15,16 @@ const ImageOverview = {
     computed: {
         formattedDate() {
             if(this.item.date_time) {
-                return new Date(this.item.date_time).toLocaleString('en-GB', { timeZoneName: 'short' });
+                const parsed = luxon.DateTime.fromISO(this.item.date_time, {setZone: true});
+                if(this.item.date_time.length > 19) {
+                    return parsed.toLocaleString({ dateStyle: 'medium', timeStyle: 'long'});
+                } else {
+                    return parsed.toLocaleString({ dateStyle: 'medium', timeStyle: 'medium'}) + " (no offset information)";
+                }
             } else {
                 return "#no_value";
             }
-            }
+        }
     }
 }
 
@@ -27,16 +33,14 @@ const Breadcrumbs = {
     props: ['items']
 }
 
-const routes = [
-    { name: 'home', path: '/', component: IndexView },
-    { path: '/about', component: About },
-    { name: 'directory-detail-view', path: '/dir/:id/detail', component: DirectoryDetailView },
-    { name: 'image-detail-view', path: '/img/:id/detail', component: ImageDetailView }
-];
-
 const router = VueRouter.createRouter({
     history: VueRouter.createWebHashHistory(),
-    routes: routes,
+    routes: [
+        { name: 'home', path: '/', component: IndexView },
+        { path: '/about', component: About },
+        { name: 'directory-detail-view', path: '/dir/:id/detail', component: DirectoryDetailView },
+        { name: 'image-detail-view', path: '/img/:id/detail', component: ImageDetailView }
+    ],
 });
 
 const app = Vue.createApp({});
@@ -47,6 +51,7 @@ app.component('modal', ModalDialog);
 app.component('breadcrumbs', Breadcrumbs);
 app.component('select-author-dialog', SelectAuthorDialog);
 app.component('error-handler', ErrorHandler);
+app.component('edit-timezone-dialog', EditTimezoneDialog);
 
 app.use(router);
 app.mount('#app');

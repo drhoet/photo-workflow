@@ -18,6 +18,31 @@ a, a:visited {
     color: #4B88A2;
 }
 
+label.disabled {
+    color: grey;
+}
+
+table {
+    border-collapse: collapse;
+    border-spacing: 0;
+}
+
+th {
+    border: 1px solid #cecdcd;
+    background-color: #9FD356;
+    color: #3d3a3a;
+    padding: 0.5rem;
+}
+
+td {
+    border: 1px solid #cecdcd;
+    padding: 0.5rem;
+}
+
+tr:nth-child(2n + 1) {
+    background-color: #E5E4E4;
+}
+
 #breadcrumbs {
     font-size: 1.3rem;
     margin-bottom: 1rem;
@@ -143,6 +168,55 @@ a, a:visited {
 
 #select-author-modal label {
     margin: 0.25rem 0;
+}
+
+/*
+ * Edit timezone dialog
+ */
+#edit-timezone-modal .modal-body {
+    display: flex;
+    flex-direction: column;
+}
+
+#edit-timezone-modal label {
+    margin: 0.25rem 0;
+}
+
+#edit-timezone-modal #multipleValuesWarning {
+    margin: 0.25rem 0;
+}
+
+#edit-timezone-modal #multipleValuesWarning table {
+    margin-top: 0.5rem;
+}
+
+/*
+ * Selector
+ */
+span.selector {
+    display: inline-block;
+    border: 1px solid #4B88A2;
+    border-radius: 0.3rem;
+    margin-left: 0.5rem;
+}
+
+span.selector span {
+    padding: 0 0.5rem;
+}
+
+span.selector button {
+    margin: 0;
+    border-radius: 0;
+}
+
+span.selector button:first-child {
+    border-top-left-radius: 0.3rem;
+    border-bottom-left-radius: 0.3rem;
+}
+
+span.selector button:last-child {
+    border-top-right-radius: 0.3rem;
+    border-bottom-right-radius: 0.3rem;
 }
 
 /*

@@ -14,6 +14,8 @@ urlpatterns = [
     path("api/dir/<int:pk>/crumbs", views.DirectoryCrumbsView.as_view(), name="directory-crumbs"),
     path("api/dir/<int:pk>/actions", views.DirectoryActionsView.as_view(), name="directory-actions"),
 
+    path("api/imgset/actions", views.ImageSetActionsView.as_view(), name="image-set-actions"),
+
     path("api/img/<int:pk>/detail", views.ImageDetailView.as_view(), name="image-detail"),
     path("api/img/<int:pk>/metadata", views.ImageMetadataView.as_view(), name="image-metadata"),
 
