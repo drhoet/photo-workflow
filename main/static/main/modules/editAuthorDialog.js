@@ -1,12 +1,12 @@
-import { parseResponse, UiError } from "./errorHandler.js";
+import { parseResponse } from "./errorHandler.js";
 
 export default {
     // remark: we cannot use v-model:showModal below, because that will expand to something like @update:showModal="showModal = false",
     // attempting to update the prop showModal.
     template: `
-        <modal :showModal="showModal" @update:showModal="closeModal" @ok="updateAuthor" :okButtonDisabled="authorChosen" id="select-author-modal">
+        <modal :showModal="showModal" @update:showModal="closeModal" @ok="updateAuthor" :okButtonDisabled="!authorChosen" id="edit-author-modal">
             <template v-slot:header>
-                <h3>Select author</h3>
+                <h3>Edit author</h3>
             </template>
             <template v-slot:body>
                 <label v-for="author in authors">
@@ -27,7 +27,7 @@ export default {
     },
     computed: {
         authorChosen() {
-            return this.selectedAuthorId <= 0;
+            return this.selectedAuthorId > 0;
         },
     },
     methods: {
@@ -52,6 +52,7 @@ export default {
     watch: {
         showModal: function(newVal, oldVal) {
             if(newVal) {
+                this.selectedAuthorId = this.modelValue;
                 return this.fetchAuthors();
             }
         }

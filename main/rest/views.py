@@ -85,9 +85,6 @@ class DirectoryActionsView(APIView):
             #     return HttpResponseRedirect(reverse("main:complete_timestamps", args=(pk,)))
             # elif action == "geotag":
             #     pass
-            elif action == "set_author":
-                author = get_object_or_404(Author, pk=request.POST["author"])
-                directory.set_author(author)
             elif action == "write_metadata":
                  directory.write_images_metadata()
             elif action == "remove_dir_from_db":
@@ -127,6 +124,9 @@ class ImageSetActionsView(APIView):
                     ImageSetService.instance().translate_timezone(ids, value)
                 else:
                     raise ValueError(f'Invalid mode: {mode}')
+            elif action == "set_author":
+                author = get_object_or_404(Author, pk=request.POST["author"])
+                ImageSetService.instance().set_author(ids, author)
             else:
                 return Response({'message': "Unsupported action"}, 400)
 

@@ -161,12 +161,12 @@ tr:nth-child(2n + 1) {
 /*
  * Select author dialog
  */
-#select-author-modal .modal-body {
+#edit-author-modal .modal-body {
     display: flex;
     flex-direction: column;
 }
 
-#select-author-modal label {
+#edit-author-modal label {
     margin: 0.25rem 0;
 }
 

@@ -94,9 +94,6 @@ class Directory(models.Model):
     def geotag(self):
         ExifToolService.instance().geotag(self.get_absolute_path())
 
-    def set_author(self, author):
-        self.images.update(author=author)
-
     def write_images_metadata(self):
         for img in self.images.all():
             if img.errors:
@@ -211,3 +208,7 @@ class ImageSetService:
         # below should really just be F('tz_offset') + timedelta(minutes=tz_minutes) but then django seems to think the output needs to be a
         # DateTimeField and things get messed up.
         images.update(tz_offset = ExpressionWrapper(F('tz_offset'), output_field=models.IntegerField()) + (60_000_000 * tz_minutes), date_time_utc = F('date_time_utc') - timedelta(minutes=tz_minutes))
+    
+    def set_author(self, image_ids, author):
+        images = Image.objects.filter(pk__in = image_ids)
+        images.update(author=author)

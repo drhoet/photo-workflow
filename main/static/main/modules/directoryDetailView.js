@@ -10,7 +10,7 @@ export default {
                 <button @click="scan(true)"><i class="mdi mdi-refresh"></i><span>Scan directory (reload)</span></button>
                 <button @click="organize()"><i class="mdi mdi-file-tree"></i><span>Organize into directories</span></button>
                 <button @click="geotag()"><i class="mdi mdi-earth"></i><span>Geotag</span></button>
-                <button @click="showSelectAuthorDialog=true"><i class="mdi mdi-account"></i><span>Set author</span></button>
+                <button @click="showEditAuthorDialog=true"><i class="mdi mdi-account"></i><span>Edit author</span></button>
                 <button @click="showEditTimezoneDialog=true"><i class="mdi mdi-clock"></i><span>Edit timezone</span></button>
                 <button @click="writeMetadata()"><i class="mdi mdi-content-save"></i><span>Write metadata</span></button>
             </section>
@@ -26,7 +26,7 @@ export default {
                         </li>
                     </ul>
                 </section>
-                <select-author-dialog v-model:showModal="showSelectAuthorDialog" :modelValue="0" @update:modelValue="setAuthor($event)"/>
+                <edit-author-dialog v-model:showModal="showEditAuthorDialog" :modelValue="0" @update:modelValue="editAuthor($event)"/>
                 <edit-timezone-dialog v-model:showModal="showEditTimezoneDialog" :items="directory.images" @update:timezone="editTimezone($event)"/>
             </template>
         </div>
@@ -70,8 +70,9 @@ export default {
             return this.postDirectoryAction('geotag')
                 .then(() => this.loadData(this.$route.params.id));
         },
-        setAuthor(authorId) {
-            return this.postDirectoryAction('set_author', { 'author': authorId })
+        editAuthor(authorId) {
+            let ids = this.directory.images.map(img => img.id);
+            return this.postImageSetAction('set_author', { ids: ids, author: authorId })
                 .then(() => this.loadData(this.$route.params.id));
         },
         editTimezone(params) {
@@ -108,7 +109,7 @@ export default {
             loading: true,
             directory: null,
             crumbs: null,
-            showSelectAuthorDialog: false,
+            showEditAuthorDialog: false,
             showEditTimezoneDialog: false,
         }
     },

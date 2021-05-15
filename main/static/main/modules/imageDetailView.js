@@ -6,6 +6,7 @@ export default {
         <div id="contents">
             <section id="actions">
                 <button @click="removeFromDb()"><i class="mdi mdi-lock-question"></i><span>Placeholder</span></button>
+                <button @click="showEditAuthorDialog=true"><i class="mdi mdi-account"></i><span>Edit author</span></button>
                 <button @click="showEditTimezoneDialog=true"><i class="mdi mdi-clock"></i><span>Edit timezone</span></button>
             </section>
             <div v-if="loading" class="spinner">Loading...</div>
@@ -20,6 +21,7 @@ export default {
                     </tr>
                 </table>
 
+                <edit-author-dialog v-model:showModal="showEditAuthorDialog" :modelValue="image.author.id" @update:modelValue="editAuthor($event)"/>
                 <edit-timezone-dialog v-model:showModal="showEditTimezoneDialog" :items="[image]" @update:timezone="editTimezone($event)"/>
             </section>
         </div>
@@ -62,8 +64,8 @@ export default {
                 document.title = `Workflow - ${this.image.name}`;
             });
         },
-        setAuthor(authorId) {
-            return this.postImageSetAction('set_author', { 'author': authorId })
+        editAuthor(authorId) {
+            return this.postImageSetAction('set_author', { ids: [this.image.id], author: authorId })
                 .then(() => this.loadData(this.$route.params.id));
         },
         editTimezone(params) {
@@ -94,7 +96,7 @@ export default {
             image: null,
             metadata: null,
             crumbs: null,
-            showSelectAuthorDialog: false,
+            showEditAuthorDialog: false,
             showEditTimezoneDialog: false,
         }
     },

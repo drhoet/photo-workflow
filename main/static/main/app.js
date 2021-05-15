@@ -3,7 +3,7 @@ import DirectoryLink from './modules/directoryLink.js'
 import DirectoryDetailView from './modules/directoryDetailView.js'
 import ImageDetailView from './modules/imageDetailView.js'
 import ModalDialog from './modules/modalDialog.js'
-import SelectAuthorDialog from './modules/selectAuthorDialog.js'
+import EditAuthorDialog from './modules/editAuthorDialog.js'
 import ErrorHandler from './modules/errorHandler.js'
 import EditTimezoneDialog from './modules/editTimezoneDialog.js'
 
@@ -49,7 +49,7 @@ app.component('directory-link', DirectoryLink);
 app.component('image-overview', ImageOverview);
 app.component('modal', ModalDialog);
 app.component('breadcrumbs', Breadcrumbs);
-app.component('select-author-dialog', SelectAuthorDialog);
+app.component('edit-author-dialog', EditAuthorDialog);
 app.component('error-handler', ErrorHandler);
 app.component('edit-timezone-dialog', EditTimezoneDialog);
 
