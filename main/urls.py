@@ -1,12 +1,11 @@
 from django.urls import include, path
 from rest_framework import routers
-from .views import index, image
+from .views import image
 from .rest import views
 
 
 app_name = "main"
 urlpatterns = [
-    path("", index.IndexView.as_view(), name="index"),
     path("img/<int:pk>/download", image.ImageDownloadView.as_view(), name="img_download"),
 
     path("api/roots", views.RootListView.as_view(), name="root-list"),
