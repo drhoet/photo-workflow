@@ -61,7 +61,6 @@ class DirectoryActionsView(APIView):
     logger = logging.getLogger(__name__)
 
     def post(self, request, *args, **kwargs):
-        print(request.user.get_all_permissions())
         try:
             directory = get_object_or_404(Directory, pk=kwargs.get("pk"))
             action = request.POST["action"]

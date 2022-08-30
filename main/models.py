@@ -38,7 +38,6 @@ class Directory(models.Model):
 
         # then scan for all contents and add them to the DB
         abs_path = self.get_absolute_path()
-        print(abs_path)
         contents = os.listdir(abs_path)
         new_images = []
         new_dirs = []

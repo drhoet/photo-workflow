@@ -40,7 +40,7 @@ class ImageNestedSerializer(serializers.HyperlinkedModelSerializer):
         fields = ['id', 'url', 'name', 'author', 'date_time', 'errors', 'attachments']
     
     def get_date_time(self, obj):
-        return obj.date_time.isoformat()
+        return obj.date_time.isoformat() if obj.date_time else None
 
 
 class DirectoryNestedSerializer(serializers.HyperlinkedModelSerializer):
@@ -62,7 +62,7 @@ class ImageSerializer(serializers.HyperlinkedModelSerializer):
         fields = ['id', 'name', 'parent', 'author', 'attachments', 'date_time', 'errors']
     
     def get_date_time(self, obj):
-        return obj.date_time.isoformat()
+        return obj.date_time.isoformat() if obj.date_time else None
 
 
 class DirectorySerializer(serializers.HyperlinkedModelSerializer):
