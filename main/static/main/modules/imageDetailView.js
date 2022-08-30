@@ -79,6 +79,7 @@ export default {
             this.loading = true;
 
             let formData = new FormData();
+            formData.append('csrfmiddlewaretoken', Cookies.get('csrftoken'));
             formData.append('action', action);
             if (params) {
                 for (const [key, val] of Object.entries(params)) {

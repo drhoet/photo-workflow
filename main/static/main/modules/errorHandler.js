@@ -43,6 +43,8 @@ export function parseResponse(res, errorMessageTemplate, fatal) {
                 .then(json => {
                     if ('message' in json) {
                         throw new UiError(`${errorMessageTemplate}: ${json.message}`, fatal);
+                    } else if('detail' in json) {
+                        throw new UiError(`${errorMessageTemplate}: ${json.detail}`, fatal);
                     } else {
                         throw new UiError(`${errorMessageTemplate}: ${json}`, fatal)
                     }

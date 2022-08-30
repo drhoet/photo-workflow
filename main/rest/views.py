@@ -12,50 +12,40 @@ from main.rest.serializers import DirectorySerializer, ImageSerializer, AuthorSe
 class AuthorListView(generics.ListAPIView):
     queryset = Author.objects.all()
     serializer_class = AuthorSerializer
-    permission_classes = [permissions.AllowAny]
 
 
 class AuthorDetailView(generics.RetrieveAPIView):
     queryset = Author.objects.all()
     serializer_class = AuthorSerializer
-    permission_classes = [permissions.AllowAny]
 
 
 class AttachmentDetailView(generics.RetrieveAPIView): 
     queryset = Attachment.objects.all()
     serializer_class = AttachmentSerializer
-    permission_classes = [permissions.AllowAny]
 
 
 class RootListView(generics.ListAPIView):
     queryset = Directory.objects.filter(parent = None)
     serializer_class = DirectoryNestedSerializer
-    permission_classes = [permissions.AllowAny]
 
 
 class DirectoryDetailView(generics.RetrieveAPIView):
     queryset = Directory.objects.all()
     serializer_class = DirectorySerializer
-    permission_classes = [permissions.AllowAny]
 
 
 class ImageDetailView(generics.RetrieveAPIView):
     queryset = Image.objects.all()
     serializer_class = ImageSerializer
-    permission_classes = [permissions.AllowAny]
 
 
 class ImageMetadataView(APIView):
-    permission_classes = [permissions.AllowAny]
-
     def get(self, request, *args, **kwargs):
         image = get_object_or_404(Image, pk=kwargs.get("pk"))
         return Response(image.read_exif_json_from_file())
 
 
 class DirectoryCrumbsView(APIView):
-    permission_classes = [permissions.AllowAny]
-
     def get(self, request, *args, **kwargs):
         directory = get_object_or_404(Directory, pk=kwargs.get("pk"))
         breadcrumbs = [directory]
@@ -68,10 +58,10 @@ class DirectoryCrumbsView(APIView):
 
 
 class DirectoryActionsView(APIView):
-    permission_classes = [permissions.AllowAny]
     logger = logging.getLogger(__name__)
 
     def post(self, request, *args, **kwargs):
+        print(request.user.get_all_permissions())
         try:
             directory = get_object_or_404(Directory, pk=kwargs.get("pk"))
             action = request.POST["action"]
@@ -102,7 +92,6 @@ class DirectoryActionsView(APIView):
 
 
 class ImageSetActionsView(APIView):
-    permission_classes = [permissions.AllowAny]
     logger = logging.getLogger(__name__)
 
     def post(self, request, *args, **kwargs):

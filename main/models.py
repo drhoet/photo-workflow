@@ -25,7 +25,7 @@ class Author(models.Model):
 
 
 class Directory(models.Model):
-    parent = models.ForeignKey("self", null=True, on_delete=models.CASCADE, related_name="subdirs")
+    parent = models.ForeignKey("self", null=True, blank=True, on_delete=models.CASCADE, related_name="subdirs")
     path = models.CharField(max_length=255)
 
     def scan(self, reload_metadata=False):
@@ -38,6 +38,7 @@ class Directory(models.Model):
 
         # then scan for all contents and add them to the DB
         abs_path = self.get_absolute_path()
+        print(abs_path)
         contents = os.listdir(abs_path)
         new_images = []
         new_dirs = []
