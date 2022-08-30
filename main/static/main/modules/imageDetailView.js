@@ -9,20 +9,30 @@ export default {
                 <button @click="showEditAuthorDialog=true"><i class="mdi mdi-account"></i><span>Edit author</span></button>
                 <button @click="showEditTimezoneDialog=true"><i class="mdi mdi-clock"></i><span>Edit timezone</span></button>
             </section>
-            <div v-if="loading" class="spinner">Loading...</div>
-            <section v-else id="items">
-                <table>
-                    <tr>
-                        <td colspan="2"><img :src="'/main/img/' + image.id + '/download?w=500'" width="500" /></td>
-                    </tr>
-                    <tr v-for="(item, key) in metadata">
-                        <th>{{key}}</th>
-                        <td>{{item}}</td>
-                    </tr>
-                </table>
+            <section id="items" ref="items">
+                <div v-if="loading" class="spinner">Loading...</div>
+                <template v-else>
+                    <section id="image">
+                        <img :src="'/main/img/' + image.id + '/download?maxw=' + contentMaxWidth + '&maxh=' + contentMaxHeight" />
+                    </section>
+                    <section v-if="showMetadata" id="metadata">
+                        <table v-for="(metadataBlock, header) in metadata">
+                            <tr>
+                                <th colspan=2>{{header}}</th>
+                            </tr>
+                            <tr v-for="(item, key) in metadataBlock">
+                                <td>{{key}}</td>
+                                <td>{{item}}</td>
+                            </tr>
+                        </table>
+                    </section>
 
-                <edit-author-dialog v-model:showModal="showEditAuthorDialog" :modelValue="image.author.id" @update:modelValue="editAuthor($event)"/>
-                <edit-timezone-dialog v-model:showModal="showEditTimezoneDialog" :items="[image]" @update:timezone="editTimezone($event)"/>
+                    <edit-author-dialog v-model:showModal="showEditAuthorDialog" :modelValue="imageAuthor" @update:modelValue="editAuthor($event)"/>
+                    <edit-timezone-dialog v-model:showModal="showEditTimezoneDialog" :items="[image]" @update:timezone="editTimezone($event)"/>
+                </template>
+            </section>
+            <section id="secondary-actions">
+                <button @click="showMetadata=!showMetadata" :class="{active: showMetadata}"><i class="mdi mdi-information-outline"></i></button>
             </section>
         </div>
     `,
@@ -33,7 +43,23 @@ export default {
                 fetch(`/main/api/img/${id}/metadata`, { method: 'get', headers: { 'content-type': 'application/json' } })
                     .then(res => parseResponse(res, `Could not load metadata for file with id ${id}`, true))
                     .then(json => {
-                        this.metadata = json;
+                        this.metadata = {};
+                        for(const [key, value] of Object.entries(json)) {
+                            const groupSplitIdx = key.indexOf(':');
+                            if (groupSplitIdx < 0) {
+                                if(!('General' in this.metadata)) {
+                                    this.metadata['General'] = {};
+                                }
+                                this.metadata['General'][key] = value;
+                            } else {
+                                const group = key.slice(0, groupSplitIdx);
+                                const groupKey = key.slice(groupSplitIdx + 1);
+                                if (!(group in this.metadata)) {
+                                    this.metadata[group] = {};
+                                }
+                                this.metadata[group][groupKey] = value;
+                            }
+                        }
                     }),
                 fetch(`/main/api/img/${id}/detail`, { method: 'get', headers: { 'content-type': 'application/json' } })
                     .then(res => parseResponse(res, `Could not load image with id ${id}`, true))
@@ -91,6 +117,15 @@ export default {
                 .finally(() => this.loading = false);
         }
     },
+    computed: {
+        imageAuthor() {
+            if(this.image.author) {
+                return this.image.author.id;
+            } else {
+                return 0;
+            }
+        },
+    },
     data() {
         return {
             loading: true,
@@ -99,9 +134,14 @@ export default {
             crumbs: null,
             showEditAuthorDialog: false,
             showEditTimezoneDialog: false,
+            showMetadata: false,
+            contentMaxWidth: window.innerHeight,
+            contentMaxHeight: window.innerHeight,
         }
     },
     mounted() {
+        this.contentMaxWidth = this.$refs.items.clientWidth;
+        this.contentMaxHeight = window.innerHeight - 2 * this.$refs.items.offsetTop;
         return this.loadData(this.$route.params.id);
     },
     async beforeRouteUpdate(to, from) {

@@ -53,18 +53,17 @@ tr:nth-child(2n + 1) {
     flex-flow: row nowrap;
 }
 
-#actions {
+#actions, #secondary-actions {
     display: flex;
     flex-flow: column nowrap;
 }
 
-#actions button {
+#actions button, #secondary-actions button {
     display: flex;
     flex-flow: column;
     justify-content: center;
     width: 4rem;
     height: 4rem;
-    padding: 0;
     margin: 0;
     background-color: #3d3a3a;
     border: none;
@@ -85,7 +84,7 @@ tr:nth-child(2n + 1) {
     justify-content: center;
     background-color: #FAFFFD;
     color: #3d3a3a;
-    margin-left: 4rem;
+    margin-left: 3rem; /* 4rem - the padding of the button, which is 1rem*/
     font-size: 1rem;
     white-space: nowrap;
     opacity: 0;
@@ -106,6 +105,7 @@ tr:nth-child(2n + 1) {
     display: flex;
     flex-flow: row wrap;
     align-items: flex-start;
+    flex-grow: 2;
 }
 
 #items #subdirs {
@@ -157,6 +157,22 @@ tr:nth-child(2n + 1) {
     padding-right: 0.5rem;
 }
 
+/*
+ * Image detail view
+ */
+#metadata {
+    color: #282424;
+    background-color: #FAFFFD;
+    overflow: scroll;
+    position: absolute;
+    right: 0;
+    margin-right: calc(4rem + 8px);
+    height: calc(100vh - 2 * 48px);
+}
+
+#metadata table {
+    width: 100%;
+}
 
 /*
  * Select author dialog
