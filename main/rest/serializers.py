@@ -37,7 +37,7 @@ class ImageNestedSerializer(serializers.HyperlinkedModelSerializer):
 
     class Meta:
         model = Image
-        fields = ['id', 'url', 'name', 'author', 'date_time', 'errors', 'attachments']
+        fields = ['id', 'url', 'name', 'author', 'date_time', 'errors', 'attachments', 'thumbnail']
     
     def get_date_time(self, obj):
         return obj.date_time.isoformat() if obj.date_time else None

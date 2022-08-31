@@ -1,7 +1,11 @@
 from django.db import models
 from django.db.models import F, ExpressionWrapper
 from django.db.models.functions import Coalesce
+from django.dispatch import receiver
 from datetime import datetime, timezone, timedelta
+from PIL import Image as PIL_Image, ImageOps as PIL_ImageOps
+from io import BytesIO
+from django.core.files import File
 import logging, time, os
 
 from .services import ExifToolService, MetadataParserService
@@ -54,11 +58,12 @@ class Directory(models.Model):
             elif os.path.isdir(item_path) and not item_name in existing_dirs:
                 new_dirs.append(Directory(parent=self, path=item_name))
 
-        # if we have new images, scan their metadata
+        # if we have new images, scan their metadata and create a thumbnail
         if new_images:
             json = ExifToolService.instance().read_metadata(self.get_absolute_path(), *new_images)
             for i, j in zip(new_images, json):
                 i.load_metadata(j)
+                i.create_thumbnail()
 
         Image.objects.bulk_create(new_images, batch_size=100)
         Directory.objects.bulk_create(new_dirs, batch_size=100)
@@ -125,6 +130,7 @@ class Image(models.Model):
     date_time_utc = models.DateTimeField(null=True)
     # store the time offset, since DateTimeFields are stored in UTC...
     tz_offset = models.DurationField(null=True)
+    thumbnail = models.FileField(upload_to=f"thumbnails", null=True)
 
     def read_metadata(self):
         # read metadata from EXIF here. No need to save(), the caller can do that
@@ -147,6 +153,27 @@ class Image(models.Model):
             self.date_time_utc = metadata.date_time_original.astimezone(timezone.utc)
             if metadata.date_time_original.tzinfo:
                 self.tz_offset = metadata.date_time_original.tzinfo.utcoffset(metadata.date_time_original)
+
+    def create_thumbnail(self):
+        try:
+            pil_image = PIL_Image.open(os.path.join(self.parent.get_absolute_path(), self.name))
+            pil_image = PIL_ImageOps.exif_transpose(pil_image)
+            
+            width_percent = (300 / float(pil_image.size[0]))
+            height_percent = (200 / float(pil_image.size[1]))
+
+            percent = min(width_percent, height_percent)
+
+            target_width = int((float(pil_image.size[0]) * float(percent)))
+            target_height = int((float(pil_image.size[1]) * float(percent)))
+            self.logger.info(f"Resizing image {self.name} to ({target_width}, {target_height})")
+            pil_image = pil_image.resize((target_width, target_height), PIL_Image.ANTIALIAS)
+
+            img_raw = BytesIO()
+            pil_image.save(img_raw, "JPEG")
+            self.thumbnail = File(img_raw, name=f"{self.parent.id}/{self.name}")
+        except Exception as err:
+            self.logger.warn(f"Could not create thumbnail for {self.name}: {err}")
 
     @property
     def date_time(self):
@@ -180,6 +207,15 @@ class Image(models.Model):
 
     def __str__(self):
         return os.path.join(self.parent.get_absolute_path(), self.name)
+
+@receiver(models.signals.post_delete, sender=Image)
+def auto_delete_file_on_delete(sender, instance, **kwargs):
+    """
+    Deletes file from filesystem when corresponding Image object is deleted.
+    """
+    if instance.thumbnail:
+        if os.path.isfile(instance.thumbnail.path):
+            os.remove(instance.thumbnail.path)
 
 
 class Attachment(models.Model):

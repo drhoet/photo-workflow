@@ -108,7 +108,7 @@ tr:nth-child(2n + 1) {
     flex-grow: 2;
 }
 
-#items #subdirs {
+#items #subdirs, #items #images {
     display: flex;
     flex-flow: row wrap;
     list-style-type: none;
@@ -136,6 +136,29 @@ tr:nth-child(2n + 1) {
     padding-right: 0.5rem;
     font-size: 1.5rem;
     vertical-align: middle;
+}
+
+#items #images .item {
+    display: flex;
+    flex-flow: column;
+    width: 300px;
+    margin: 0.25rem;
+}
+
+#items #images .item a {
+    background-color: #3d3a3a;
+}
+
+#items #images .item .thumbnail {
+    display: block;
+    margin: auto;
+}
+
+#items #images .item .item-id {
+    background-color: #FAFFFD;
+    border-radius: 0 0 0.1rem 0.1rem;
+    padding: 0.1rem;
+    text-align: center;
 }
 
 #items #images .item ul.errors {

@@ -18,21 +18,6 @@
         <script src="https://unpkg.com/luxon@1.26.0"></script>
         <script src="https://unpkg.com/js-cookie@3.0.1"></script>
         
-        <script type="text/x-template" id="image-overview-template">
-            <router-link :to="{ name: 'image-detail-view', params: { id: item.id }}">{{item.name}}</router-link>
-            <ul v-if="item.attachments" class="attachments">
-                <li v-for="att in item.attachments">{{att.name}}</li>
-            </ul>
-            <ul v-if="item.errors" class="errors">
-                <li v-for="err in item.errors" class="mdi mdi-alert">{{err}}</li>
-            </ul>
-            <ul class="properties">
-                <li v-if="item.author" class="mdi mdi-account">{{item.author.name}}</li>
-                <li class="mdi mdi-clock-outline">{{formattedDate}}</li>
-                <li class="mdi mdi-clock-outline">{{item.date_time}}</li>
-            </ul>
-        </script>
-
         <script type="text/x-template" id="breadcrumbs-template">
             <section id="breadcrumbs">
                 <router-link :to="{ name: 'home' }" class="root"><i class="mdi mdi-harddisk"></i></router-link>

@@ -1,7 +1,7 @@
 from django.http import HttpResponseRedirect, HttpResponse
 from django.urls import reverse
 from django.views.generic import DetailView
-from PIL import Image as PIL_Image
+from PIL import Image as PIL_Image, ImageOps as PIL_ImageOps
 import os
 
 from main.models import Image
@@ -15,6 +15,8 @@ class ImageDownloadView(DetailView):
         image = self.get_object()
         
         pil_image = PIL_Image.open(os.path.join(image.parent.get_absolute_path(), image.name))
+        pil_image = PIL_ImageOps.exif_transpose(pil_image)
+
         max_width = int(request.GET.get("maxw", "250"))
         max_height = int(request.GET.get("maxh", "250"))
         

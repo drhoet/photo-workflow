@@ -6,27 +6,9 @@ import ModalDialog from './modules/modalDialog.js'
 import EditAuthorDialog from './modules/editAuthorDialog.js'
 import ErrorHandler from './modules/errorHandler.js'
 import EditTimezoneDialog from './modules/editTimezoneDialog.js'
+import ImageOverview from './modules/imageOverview.js'
 
 const About = { template: '<div>About</div>' }
-
-const ImageOverview = {
-    template: "#image-overview-template",
-    props: ['item'],
-    computed: {
-        formattedDate() {
-            if(this.item.date_time) {
-                const parsed = luxon.DateTime.fromISO(this.item.date_time, {setZone: true});
-                if(this.item.date_time.length > 19) {
-                    return parsed.toLocaleString({ dateStyle: 'medium', timeStyle: 'long'});
-                } else {
-                    return parsed.toLocaleString({ dateStyle: 'medium', timeStyle: 'medium'}) + " (no offset information)";
-                }
-            } else {
-                return "#no_value";
-            }
-        }
-    }
-}
 
 const Breadcrumbs = {
     template: "#breadcrumbs-template",
