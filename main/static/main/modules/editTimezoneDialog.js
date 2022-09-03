@@ -1,4 +1,5 @@
 import { parseResponse, UiError } from "./errorHandler.js";
+import { DateTime, FixedOffsetZone } from "luxon";
 
 export default {
     // remark: we cannot use v-model:showModal below, because that will expand to something like @update:showModal="showModal = false",
@@ -98,14 +99,16 @@ export default {
             if(tz === 'N/A') {
                 return 'N/A';
             } else {
-                return luxon.FixedOffsetZone.instance(tz).formatOffset(0, 'short');
+                return FixedOffsetZone.instance(tz).formatOffset(0, 'short');
             }
         },
         extractTimezone(dt) {
-            const parsed = luxon.DateTime.fromISO(dt, {setZone: true});
             let key = 'N/A';
-            if (dt.length > 19) {
-                key = parsed.offset;
+            if(dt) {
+                const parsed = DateTime.fromISO(dt, {setZone: true});
+                if (dt.length > 19) {
+                    key = parsed.offset;
+                }
             }
             return key;
         },

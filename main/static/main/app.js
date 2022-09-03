@@ -1,3 +1,5 @@
+import { createApp } from 'vue';
+import { createRouter, createWebHashHistory } from 'vue-router';
 import IndexView from './modules/indexView.js'
 import DirectoryLink from './modules/directoryLink.js'
 import DirectoryDetailView from './modules/directoryDetailView.js'
@@ -15,8 +17,8 @@ const Breadcrumbs = {
     props: ['items']
 }
 
-const router = VueRouter.createRouter({
-    history: VueRouter.createWebHashHistory(),
+const router = createRouter({
+    history: createWebHashHistory(),
     routes: [
         { name: 'home', path: '/', component: IndexView },
         { path: '/about', component: About },
@@ -25,7 +27,13 @@ const router = VueRouter.createRouter({
     ],
 });
 
-const app = Vue.createApp({});
+class Settings {
+    constructor() {
+        this.dateTimeLocale = 'en-BE';
+    }
+}
+
+const app = createApp({});
 
 app.component('directory-link', DirectoryLink);
 app.component('image-overview', ImageOverview);
@@ -37,4 +45,4 @@ app.component('edit-timezone-dialog', EditTimezoneDialog);
 
 app.use(router);
 app.mount('#app');
-
+app.provide('settings', new Settings());

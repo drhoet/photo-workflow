@@ -1,4 +1,5 @@
 import { parseResponse } from "./errorHandler.js";
+import Cookies from 'js-cookie';
 
 export default {
     template: `

@@ -1,3 +1,6 @@
+import { inject } from 'vue';
+import { DateTime } from 'luxon';
+
 export default {
     template: `
         <router-link :to="{ name: 'image-detail-view', params: { id: item.id }}">
@@ -24,14 +27,20 @@ export default {
         </ul>
     `,
     props: ['item'],
+    setup() {
+        let settings = inject('settings');
+        return {
+            settings: settings
+        };
+    },
     computed: {
         formattedDate() {
             if(this.item.date_time) {
-                const parsed = luxon.DateTime.fromISO(this.item.date_time, {setZone: true});
+                const parsed = DateTime.fromISO(this.item.date_time, {setZone: true});
                 if(this.item.date_time.length > 19) {
-                    return parsed.toLocaleString({ dateStyle: 'medium', timeStyle: 'long'});
+                    return parsed.setLocale(this.settings.dateTimeLocale).toLocaleString({ dateStyle: 'medium', timeStyle: 'long'});
                 } else {
-                    return parsed.toLocaleString({ dateStyle: 'medium', timeStyle: 'medium'}) + " (no offset information)";
+                    return parsed.setLocale(this.settings.dateTimeLocale).toLocaleString({ dateStyle: 'medium', timeStyle: 'medium'}) + " (no offset information)";
                 }
             } else {
                 return "#no_value";
