@@ -6,17 +6,15 @@ export default {
         <router-link :to="{ name: 'image-detail-view', params: { id: item.id }}">
             <img class="thumbnail" :src="item.thumbnail" />
             <div class="item-id">
-                <i class="mdi mdi-information-outline"></i>
+                <i v-if="hasAttachments" class="mdi mdi-paperclip tooltip-symbol">
+                    <ul v-if="hasAttachments" class="tooltip-contents">
+                        <li v-for="att in item.attachments">{{att.name}}</li>
+                    </ul>
+                </i>
                 <span>{{item.name}}</span>
                 <i class="mdi mdi-earth"></i>
             </div>
         </router-link>
-        <div class="information">
-            <span>Attachments:</span>
-            <ul v-if="item.attachments" class="attachments">
-                <li v-for="att in item.attachments">{{att.name}}</li>
-            </ul>
-        </div>
         <ul v-if="item.errors" class="errors">
             <li v-for="err in item.errors" class="mdi mdi-alert">{{err}}</li>
         </ul>
@@ -45,6 +43,9 @@ export default {
             } else {
                 return "--";
             }
+        },
+        hasAttachments() {
+            return this.item.attachments.length > 0;
         }
     }
 }

@@ -147,9 +147,10 @@ tr:nth-child(2n + 1) {
 
 #items #images .item a {
     background-color: #3d3a3a;
+    margin-bottom: 0.25rem;
 }
 
-#items #images .item .thumbnail {
+#items #images .item a .thumbnail {
     display: block;
     margin: auto;
 }
@@ -159,6 +160,12 @@ tr:nth-child(2n + 1) {
     border-radius: 0 0 0.1rem 0.1rem;
     padding: 0.1rem;
     text-align: center;
+    display: flex;
+    flex-flow: row;
+}
+
+#items #images .item .item-id span {
+    flex-grow: 2;
 }
 
 #items #images .item ul.errors {
@@ -409,4 +416,34 @@ button:disabled {
     40% {
         box-shadow: 0 2.5em 0 0;
     }
+}
+
+/*
+ * Tooltip
+ */
+.tooltip-symbol {
+    position: relative;
+    display: inline-block;
+}
+
+.tooltip-contents {
+    visibility: hidden;
+    background-color: #4B88A2;
+    color: white;
+    position: absolute;
+    z-index: 1;
+    padding: 0.5rem;
+    text-align: left;
+    font-style: normal;
+    left: 50%;
+    min-width: 250px;
+    border-radius: 0.1rem;
+}
+
+.tooltip-symbol:hover .tooltip-contents {
+    visibility: visible;
+}
+
+ul.tooltip-contents {
+    padding-left: 1.5rem;
 }
