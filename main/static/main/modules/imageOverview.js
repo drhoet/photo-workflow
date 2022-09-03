@@ -23,7 +23,6 @@ export default {
         <ul class="properties">
             <li v-if="item.author" class="mdi mdi-account">{{item.author.name}}</li>
             <li class="mdi mdi-clock-outline">{{formattedDate}}</li>
-            <li class="mdi mdi-clock-outline">{{item.date_time}}</li>
         </ul>
     `,
     props: ['item'],
@@ -40,10 +39,11 @@ export default {
                 if(this.item.date_time.length > 19) {
                     return parsed.setLocale(this.settings.dateTimeLocale).toLocaleString({ dateStyle: 'medium', timeStyle: 'long'});
                 } else {
-                    return parsed.setLocale(this.settings.dateTimeLocale).toLocaleString({ dateStyle: 'medium', timeStyle: 'medium'}) + " (no offset information)";
+                    // luxon will assume the local time zone here, we don't want to print that, so we use the 'medium' timeStyle
+                    return parsed.setLocale(this.settings.dateTimeLocale).toLocaleString({ dateStyle: 'medium', timeStyle: 'medium'});
                 }
             } else {
-                return "#no_value";
+                return "--";
             }
         }
     }

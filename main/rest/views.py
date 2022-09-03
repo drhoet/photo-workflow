@@ -101,8 +101,6 @@ class ImageSetActionsView(APIView):
                 return Response({'result': 'OK'}, 200)
             ids = request.POST["ids"].split(",")
 
-            images = Image.objects.filter(pk__in = ids)
-
             if action == "edit_timezone":
                 mode = request.POST["mode"]
                 value = int(request.POST["value"])

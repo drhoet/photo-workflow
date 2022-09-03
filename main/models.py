@@ -1,6 +1,6 @@
 from django.db import models
-from django.db.models import F, ExpressionWrapper
-from django.db.models.functions import Coalesce
+from django.db.models import F
+from django.db.models.functions import Coalesce, Cast
 from django.dispatch import receiver
 from datetime import datetime, timezone, timedelta
 from PIL import Image as PIL_Image, ImageOps as PIL_ImageOps
@@ -226,6 +226,7 @@ class Attachment(models.Model):
 
 class ImageSetService:
     __instance = None
+    logger = logging.getLogger(__name__)
 
     @classmethod
     def instance(cls):
@@ -236,15 +237,17 @@ class ImageSetService:
             return cls.__instance
 
     def overwrite_timezone(self, image_ids, tz_minutes):
+        self.logger.info(f"Setting time zone to '{tz_minutes}' for images {image_ids}")
         images = Image.objects.filter(pk__in = image_ids, date_time_utc__isnull=False)
-        images.update(tz_offset = timedelta(minutes=tz_minutes), date_time_utc = F('date_time_utc') + Coalesce('tz_offset', 0) - timedelta(minutes=tz_minutes))
+        images.update(tz_offset = timedelta(minutes=tz_minutes), date_time_utc = F('date_time_utc') + Cast(Coalesce(F('tz_offset'), 0), output_field=models.DurationField()) - timedelta(minutes=tz_minutes))
     
     def translate_timezone(self, image_ids, tz_minutes):
         images = Image.objects.filter(pk__in = image_ids, date_time_utc__isnull=False, tz_offset__isnull=False)
         # below should really just be F('tz_offset') + timedelta(minutes=tz_minutes) but then django seems to think the output needs to be a
         # DateTimeField and things get messed up.
-        images.update(tz_offset = ExpressionWrapper(F('tz_offset'), output_field=models.IntegerField()) + (60_000_000 * tz_minutes), date_time_utc = F('date_time_utc') - timedelta(minutes=tz_minutes))
+        images.update(tz_offset = Cast(F('tz_offset'), output_field=models.IntegerField()) + Cast(timedelta(minutes=tz_minutes), output_field=models.IntegerField()), date_time_utc = F('date_time_utc') - timedelta(minutes=tz_minutes))
     
     def set_author(self, image_ids, author):
+        self.logger.info(f"Setting author to '{author}' for images {image_ids}")
         images = Image.objects.filter(pk__in = image_ids)
         images.update(author=author)
