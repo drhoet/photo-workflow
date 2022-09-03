@@ -1,7 +1,7 @@
 import os, logging
 
 from .utils.exiftool_ctxmngr import ExifTool
-from main.model.metadata_parser import Metadata, FujiXT20ImageParser
+from main.model.metadata_parser import Metadata, FujiXT20ImageParser, FallbackImageParser
 from main.model.metadata_writer import JpegImageSerializer, OriginalFileSerializer, FujiRawImageSerializer
 
 
@@ -63,7 +63,7 @@ class MetadataParserService:
             return cls.__instance
 
     def __init__(self):
-        self.parsers = [FujiXT20ImageParser()]
+        self.parsers = [FujiXT20ImageParser(), FallbackImageParser()]
 
     def parse_metadata(self, json: dict) -> Metadata:
         for p in self.parsers:
