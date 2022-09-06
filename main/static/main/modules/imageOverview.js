@@ -3,8 +3,8 @@ import { DateTime } from 'luxon';
 
 export default {
     template: `
-        <router-link :to="{ name: 'image-detail-view', params: { id: item.id }}">
-            <img class="thumbnail" :src="item.thumbnail" />
+        <a href="#" @click.prevent.capture.stop="onThumbnailClicked">
+            <img class="thumbnail" :src="item.thumbnail"/>
             <div class="item-id">
                 <i v-if="hasAttachments" class="mdi mdi-paperclip tooltip-symbol">
                     <ul v-if="hasAttachments" class="tooltip-contents">
@@ -14,7 +14,7 @@ export default {
                 <span>{{item.name}}</span>
                 <i v-if="item.coordinates" class="mdi mdi-earth"></i>
             </div>
-        </router-link>
+        </a>
         <ul v-if="item.errors" class="errors">
             <li v-for="err in item.errors" class="mdi mdi-alert">{{err}}</li>
         </ul>
@@ -24,6 +24,7 @@ export default {
         </ul>
     `,
     props: ['item'],
+    emits: ['item:open'],
     setup() {
         let settings = inject('settings');
         return {
@@ -46,6 +47,11 @@ export default {
         },
         hasAttachments() {
             return this.item.attachments.length > 0;
+        }
+    },
+    methods: {
+        onThumbnailClicked() {
+            this.$emit('item:open');
         }
     }
 }

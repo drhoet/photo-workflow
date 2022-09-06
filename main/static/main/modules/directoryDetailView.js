@@ -14,7 +14,7 @@ export default {
                     <span>
                         <div @click="showGeotagDialog=true">Geotag</div>
                         <div @click="showPickCoordinatesDialog=true">Set coordinates</div>
-                        <div @click="showPictureMap=true">Show picture map</div>
+                        <div @click="showPictureMapDialog=true">Show picture map</div>
                     </span>
                 </button>
                 <button @click="showEditAuthorDialog=true"><i class="mdi mdi-account"></i><span>Edit author</span></button>
@@ -29,7 +29,7 @@ export default {
                     </div>
                     <ul id="images">
                         <li v-for="image in directory.images" class="item">
-                            <image-overview :item="image"/>
+                            <image-overview :item="image" @item:open="onImageViewOpen(image)"/>
                         </li>
                     </ul>
                 </section>
@@ -37,7 +37,8 @@ export default {
                 <edit-timezone-dialog v-model:showModal="showEditTimezoneDialog" :items="directory.images" @update:timezone="editTimezone($event)"/>
                 <geotag-dialog v-model:showModal="showGeotagDialog" :directory="directory" @update:trackIds="geotag($event)"/>
                 <pick-coordinates-dialog v-model:showModal="showPickCoordinatesDialog" @update:coordinates="editCoordinates($event)"/>
-                <picture-map-dialog v-model:showModal="showPictureMap" :items="directory.images"/>
+                <picture-map-dialog v-model:showModal="showPictureMapDialog" :items="directory.images"/>
+                <image-carousel-dialog v-model:showModal="showImageCarouselDialog" :items="directory.images" :startImage="selectedImage"/>
             </template>
         </div>
     `,
@@ -125,7 +126,11 @@ export default {
             return fetch(url, { method: 'POST', body: formData })
                 .then(res => parseResponse(res, `Could not execute action "${action}"`, false))
                 .finally(() => this.loading = false);
-        }
+        },
+        onImageViewOpen(image) {
+            this.selectedImage = image;
+            this.showImageCarouselDialog = true;
+        },
     },
     data() {
         return {
@@ -136,7 +141,8 @@ export default {
             showEditTimezoneDialog: false,
             showGeotagDialog: false,
             showPickCoordinatesDialog: false,
-            showPictureMap: false,
+            showPictureMapDialog: false,
+            showImageCarouselDialog: false,
         }
     },
     mounted() {

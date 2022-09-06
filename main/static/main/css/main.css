@@ -327,6 +327,28 @@ tr:nth-child(2n + 1) {
 }
 
 /*
+ * Image carousel
+ */
+ #image-carousel-modal .modal-container {
+    padding: 0;
+    border-radius: 0;
+    min-width: 0;
+    max-width: 100vw;
+}
+
+#image-carousel-modal .modal-container .modal-header, #image-carousel-modal .modal-container .modal-footer {
+    display: none;
+}
+
+#image-carousel-modal .modal-container .modal-body {
+    margin: 0;
+}
+
+#image-carousel-modal .modal-container .modal-body img {
+    display: block;
+}
+
+/*
  * Selector
  */
 span.selector {
@@ -414,6 +436,11 @@ span.selector button:last-child {
 .modal-footer {
     margin-top: 1rem;
     display: flex;
+}
+
+.modal-body .spinner {
+    color: #9FD356;
+    margin: 5em;
 }
 
 button {
