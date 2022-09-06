@@ -33,7 +33,6 @@ export default {
             selectedTrackIds: [],
             tracks: [],
             overwrite: false,
-            loading: false,
         }
     },
     computed: {

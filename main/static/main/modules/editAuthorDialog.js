@@ -22,7 +22,6 @@ export default {
         return {
             selectedAuthorId: this.modelValue,
             authors: [],
-            loading: false,
         }
     },
     computed: {

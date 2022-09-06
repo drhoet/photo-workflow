@@ -14,6 +14,7 @@ export default {
                     <span>
                         <div @click="showGeotagDialog=true">Geotag</div>
                         <div @click="showPickCoordinatesDialog=true">Set coordinates</div>
+                        <div @click="showPictureMap=true">Show picture map</div>
                     </span>
                 </button>
                 <button @click="showEditAuthorDialog=true"><i class="mdi mdi-account"></i><span>Edit author</span></button>
@@ -36,6 +37,7 @@ export default {
                 <edit-timezone-dialog v-model:showModal="showEditTimezoneDialog" :items="directory.images" @update:timezone="editTimezone($event)"/>
                 <geotag-dialog v-model:showModal="showGeotagDialog" :directory="directory" @update:trackIds="geotag($event)"/>
                 <pick-coordinates-dialog v-model:showModal="showPickCoordinatesDialog" @update:coordinates="editCoordinates($event)"/>
+                <picture-map-dialog v-model:showModal="showPictureMap" :items="directory.images"/>
             </template>
         </div>
     `,
@@ -134,6 +136,7 @@ export default {
             showEditTimezoneDialog: false,
             showGeotagDialog: false,
             showPickCoordinatesDialog: false,
+            showPictureMap: false,
         }
     },
     mounted() {

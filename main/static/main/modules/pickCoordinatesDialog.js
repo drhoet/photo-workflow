@@ -28,7 +28,6 @@ export default {
             map: null,
             marker: null,
             overwrite: false,
-            loading: false,
         }
     },
     computed: {

@@ -318,6 +318,15 @@ tr:nth-child(2n + 1) {
 }
 
 /*
+ * Picture map dialog
+ */
+ #picture-map-modal .leaflet-map {
+    width: 50vw;
+    height: 50vh;
+    margin-bottom: 1rem;
+}
+
+/*
  * Selector
  */
 span.selector {

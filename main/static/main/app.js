@@ -11,6 +11,7 @@ import EditTimezoneDialog from './modules/editTimezoneDialog.js'
 import GeotagDialog from './modules/geotagDialog.js'
 import ImageOverview from './modules/imageOverview.js'
 import PickCoordinatesDialog from './modules/pickCoordinatesDialog.js'
+import PictureMapDialog from './modules/pictureMapDialog.js'
 
 const About = { template: '<div>About</div>' }
 
@@ -46,6 +47,7 @@ app.component('error-handler', ErrorHandler);
 app.component('edit-timezone-dialog', EditTimezoneDialog);
 app.component('geotag-dialog', GeotagDialog);
 app.component('pick-coordinates-dialog', PickCoordinatesDialog);
+app.component('picture-map-dialog', PictureMapDialog);
 
 app.use(router);
 app.mount('#app');
