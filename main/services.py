@@ -40,13 +40,13 @@ class ExifToolService(object):
                 ext = os.path.splitext(image.name)[1]
                 metadata = Metadata(image.date_time, None, image.author.name)
                 params = MetadataSerializerService.instance().serialize_metadata(ext, metadata);
-                if params:
+                if params is not None:
                     et.execute("-overwrite_original", "-use", "MWG", "-preserve", *params, image.name)
                 
                 for att in image.attachments.all():
                     ext = os.path.splitext(att.name)[1]
                     params = MetadataSerializerService.instance().serialize_metadata(ext, metadata);
-                    if params:
+                    if params is not None:
                         et.execute("-overwrite_original", "-use", "MWG", "-preserve", *params, att.name)
 
 

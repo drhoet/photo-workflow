@@ -149,9 +149,9 @@ class Image(models.Model):
                 new_auth = Author.objects.filter(name="Unknown").first()
             self.author = new_auth
 
-        if metadata.date_time_original:
+        if metadata.date_time_original is not None:
             self.date_time_utc = metadata.date_time_original.astimezone(timezone.utc)
-            if metadata.date_time_original.tzinfo:
+            if metadata.date_time_original.tzinfo is not None:
                 self.tz_offset = metadata.date_time_original.tzinfo.utcoffset(metadata.date_time_original)
 
     def create_thumbnail(self):
@@ -177,7 +177,7 @@ class Image(models.Model):
 
     @property
     def date_time(self):
-        if self.date_time_utc:
+        if self.date_time_utc is not None:
             if self.tz_offset is None:
                 return self.date_time_utc.replace(tzinfo=None)
             else:
@@ -188,11 +188,11 @@ class Image(models.Model):
     @property
     def errors(self):
         res = []
-        if not self.date_time_utc:
+        if self.date_time_utc is None:
             res.append('Missing DateTimeOriginal')
         elif self.tz_offset is None:
             res.append('Missing time zone information')
-        if not self.author:
+        if self.author is None:
             res.append('Missing author')
         return res
 
@@ -213,7 +213,7 @@ def auto_delete_file_on_delete(sender, instance, **kwargs):
     """
     Deletes file from filesystem when corresponding Image object is deleted.
     """
-    if instance.thumbnail:
+    if instance.thumbnail is not None:
         if os.path.isfile(instance.thumbnail.path):
             os.remove(instance.thumbnail.path)
 

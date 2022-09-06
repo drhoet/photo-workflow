@@ -32,7 +32,7 @@ class FujiRawImageSerializer:
 
     def serialize(self, metadata: Metadata) -> list:
         params = []
-        if metadata.date_time_original:
+        if metadata.date_time_original is not None:
             params.append(f"-AllDates={format_exif_datetimeoriginal(metadata.date_time_original)}")
             params.append(f"-OffsetTimeOriginal={format_exif_offsettime(metadata.date_time_original)}")
             params.append(f"-FileModifyDate={format_file_modify_date(metadata.date_time_original)}")  # set file modify date to picture taken date

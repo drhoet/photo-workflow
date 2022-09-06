@@ -96,7 +96,7 @@ class ImageSetActionsView(APIView):
     def post(self, request, *args, **kwargs):
         try:
             action = request.POST["action"]
-            if not request.POST["ids"]:
+            if request.POST["ids"] is None:
                 self.logger.info('No ids specified to do the action on. Just skipping...')
                 return Response({'result': 'OK'}, 200)
             ids = request.POST["ids"].split(",")
