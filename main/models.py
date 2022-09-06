@@ -266,7 +266,7 @@ def auto_delete_file_on_delete(sender, instance, **kwargs):
     """
     Deletes file from filesystem when corresponding Image object is deleted.
     """
-    if instance.thumbnail is not None:
+    if instance.thumbnail:
         if os.path.isfile(instance.thumbnail.path):
             os.remove(instance.thumbnail.path)
 
