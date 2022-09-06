@@ -334,3 +334,12 @@ class ImageSetService:
             image.gps_latitude=lat
             image.gps_altitude=alt
             image.save()
+    
+    def set_coordinates(self, image_ids, latitude, longitude, overwrite):
+        self.logger.info(f"Setting coordinates for {image_ids} with overwrite {overwrite} to {latitude}, {longitude}")
+        if overwrite:
+            images = Image.objects.filter(pk__in = image_ids)
+        else:
+            images = Image.objects.filter(pk__in = image_ids, gps_longitude__isnull=True, gps_latitude__isnull=True)
+        
+        images.update(gps_latitude=latitude, gps_longitude=longitude, gps_altitude=None)

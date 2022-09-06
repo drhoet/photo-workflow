@@ -35,6 +35,7 @@ export default {
                 <edit-author-dialog v-model:showModal="showEditAuthorDialog" :modelValue="0" @update:modelValue="editAuthor($event)"/>
                 <edit-timezone-dialog v-model:showModal="showEditTimezoneDialog" :items="directory.images" @update:timezone="editTimezone($event)"/>
                 <geotag-dialog v-model:showModal="showGeotagDialog" :directory="directory" @update:trackIds="geotag($event)"/>
+                <pick-coordinates-dialog v-model:showModal="showPickCoordinatesDialog" @update:coordinates="editCoordinates($event)"/>
             </template>
         </div>
     `,
@@ -87,6 +88,11 @@ export default {
             return this.postImageSetAction('edit_timezone', params)
                 .then(() => this.loadData(this.$route.params.id));
         },
+        editCoordinates(params) {
+            let ids = this.directory.images.map(img => img.id);
+            return this.postImageSetAction('set_coordinates', { ids: ids, lat: params.lat, lon: params.lon, overwrite: params.overwrite })
+                .then(() => this.loadData(this.$route.params.id));
+        },
         writeMetadata() {
             return this.postDirectoryAction('write_metadata')
                 .then(() => this.loadData(this.$route.params.id));
@@ -121,6 +127,7 @@ export default {
             showEditAuthorDialog: false,
             showEditTimezoneDialog: false,
             showGeotagDialog: false,
+            showPickCoordinatesDialog: false,
         }
     },
     mounted() {

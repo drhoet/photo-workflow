@@ -300,6 +300,24 @@ tr:nth-child(2n + 1) {
 }
 
 /*
+ * Pick Coordinates dialog
+ */
+#pick-coordinates-modal .leaflet-map {
+    width: 50vw;
+    height: 50vh;
+    margin-bottom: 1rem;
+}
+
+#pick-coordinates-modal #pick-coordinates-info {
+    display: flex;
+    flex-flow: row nowrap;
+}
+
+#pick-coordinates-modal label {
+    flex-grow: 1;
+}
+
+/*
  * Selector
  */
 span.selector {

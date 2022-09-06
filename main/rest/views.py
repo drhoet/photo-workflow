@@ -121,6 +121,11 @@ class ImageSetActionsView(APIView):
                 trackIds = request.POST["trackIds"].split(",")
                 overwrite = request.POST["overwrite"].casefold() == 'true'
                 ImageSetService.instance().geotag(ids, trackIds, overwrite)
+            elif action == "set_coordinates":
+                overwrite = request.POST["overwrite"].casefold() == 'true'
+                lat = float(request.POST["lat"])
+                lon = float(request.POST["lon"])
+                ImageSetService.instance().set_coordinates(ids, lat, lon, overwrite)
             else:
                 return Response({'message': "Unsupported action"}, 400)
 
