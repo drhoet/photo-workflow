@@ -8,6 +8,7 @@ import ModalDialog from './modules/modalDialog.js'
 import EditAuthorDialog from './modules/editAuthorDialog.js'
 import ErrorHandler from './modules/errorHandler.js'
 import EditTimezoneDialog from './modules/editTimezoneDialog.js'
+import GeotagDialog from './modules/geotagDialog.js'
 import ImageOverview from './modules/imageOverview.js'
 
 const About = { template: '<div>About</div>' }
@@ -42,6 +43,7 @@ app.component('breadcrumbs', Breadcrumbs);
 app.component('edit-author-dialog', EditAuthorDialog);
 app.component('error-handler', ErrorHandler);
 app.component('edit-timezone-dialog', EditTimezoneDialog);
+app.component('geotag-dialog', GeotagDialog);
 
 app.use(router);
 app.mount('#app');

@@ -12,7 +12,7 @@ export default {
                     </ul>
                 </i>
                 <span>{{item.name}}</span>
-                <i class="mdi mdi-earth"></i>
+                <i v-if="item.coordinates" class="mdi mdi-earth"></i>
             </div>
         </router-link>
         <ul v-if="item.errors" class="errors">

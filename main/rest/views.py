@@ -6,8 +6,8 @@ from rest_framework.response import Response
 from django.http import Http404
 from django.shortcuts import get_object_or_404
 
-from main.models import Directory, Image, Attachment, Author, ImageSetService
-from main.rest.serializers import DirectorySerializer, ImageSerializer, AuthorSerializer, AttachmentSerializer, DirectoryNestedSerializer
+from main.models import Directory, Image, Attachment, Author, ImageSetActionError, ImageSetService, MetadataIncompleteError
+from main.rest.serializers import DirectorySerializer, ImageSerializer, AuthorSerializer, AttachmentSerializer, DirectoryNestedSerializer, GpsTrackWithMetadataSerializer
 
 class AuthorListView(generics.ListAPIView):
     queryset = Author.objects.all()
@@ -70,14 +70,9 @@ class DirectoryActionsView(APIView):
             elif action == "organize_into_directories":
                 directory.organize_into_directories()
                 directory.scan(False)
-            # elif action == "complete_timestamps":
-            #     return HttpResponseRedirect(reverse("main:complete_timestamps", args=(pk,)))
-            # elif action == "geotag":
-            #     pass
             elif action == "write_metadata":
                  directory.write_images_metadata()
             elif action == "remove_dir_from_db":
-                parent_id = directory.parent.id
                 directory.remove_from_db()
             else:
                 return Response({'message': "Unsupported action"}, 400)
@@ -85,9 +80,18 @@ class DirectoryActionsView(APIView):
             return Response({'result': 'OK'}, 200)
         except Http404:
             return Response({'message': "Not found"}, 404)
+        except MetadataIncompleteError as exc:
+            return Response(exc.as_dict(), 400)
         except Exception as exc:
             self.logger.error(exc, exc_info=True)
             return Response({'message': "Unknown exception: " + getattr(exc, 'message', repr(exc))}, 500)
+
+
+class DirectoryTracksView(APIView):
+    def get(self, request, *args, **kwargs):
+        directory = get_object_or_404(Directory, pk=kwargs.get("pk"))
+        serializer = GpsTrackWithMetadataSerializer(directory.parse_tracks(), many=True, context={'request': request})
+        return Response(serializer.data)
 
 
 class ImageSetActionsView(APIView):
@@ -113,10 +117,16 @@ class ImageSetActionsView(APIView):
             elif action == "set_author":
                 author = get_object_or_404(Author, pk=request.POST["author"])
                 ImageSetService.instance().set_author(ids, author)
+            elif action == "geotag":
+                trackIds = request.POST["trackIds"].split(",")
+                overwrite = request.POST["overwrite"].casefold() == 'true'
+                ImageSetService.instance().geotag(ids, trackIds, overwrite)
             else:
                 return Response({'message': "Unsupported action"}, 400)
 
             return Response({'result': 'OK'}, 200)
+        except ImageSetActionError as exc:
+            return Response(exc.as_dict(), 400)
         except Exception as exc:
             self.logger.error(exc, exc_info=True)
             return Response({'message': "Unknown exception: " + getattr(exc, 'message', repr(exc))}, 500)

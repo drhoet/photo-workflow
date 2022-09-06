@@ -10,7 +10,7 @@ export default {
                 <button @click="scan(false)"><i class="mdi mdi-find-replace"></i><span>Find new items</span></button>
                 <button @click="scan(true)"><i class="mdi mdi-refresh"></i><span>Scan directory (reload)</span></button>
                 <button @click="organize()"><i class="mdi mdi-file-tree"></i><span>Organize into directories</span></button>
-                <button @click="geotag()"><i class="mdi mdi-earth"></i><span>Geotag</span></button>
+                <button @click="showGeotagDialog=true"><i class="mdi mdi-earth"></i><span>Geotag</span></button>
                 <button @click="showEditAuthorDialog=true"><i class="mdi mdi-account"></i><span>Edit author</span></button>
                 <button @click="showEditTimezoneDialog=true"><i class="mdi mdi-clock"></i><span>Edit timezone</span></button>
                 <button @click="writeMetadata()"><i class="mdi mdi-content-save"></i><span>Write metadata</span></button>
@@ -29,6 +29,7 @@ export default {
                 </section>
                 <edit-author-dialog v-model:showModal="showEditAuthorDialog" :modelValue="0" @update:modelValue="editAuthor($event)"/>
                 <edit-timezone-dialog v-model:showModal="showEditTimezoneDialog" :items="directory.images" @update:timezone="editTimezone($event)"/>
+                <geotag-dialog v-model:showModal="showGeotagDialog" :directory="directory" @update:trackIds="geotag($event)"/>
             </template>
         </div>
     `,
@@ -67,8 +68,9 @@ export default {
             return this.postDirectoryAction('organize_into_directories')
                 .then(() => this.loadData(this.$route.params.id));
         },
-        geotag() {
-            return this.postDirectoryAction('geotag')
+        geotag(params) {
+            let ids = this.directory.images.map(img => img.id);
+            return this.postImageSetAction('geotag', { ids: ids, trackIds: params.trackIds, overwrite: params.overwrite })
                 .then(() => this.loadData(this.$route.params.id));
         },
         editAuthor(authorId) {
@@ -113,6 +115,7 @@ export default {
             crumbs: null,
             showEditAuthorDialog: false,
             showEditTimezoneDialog: false,
+            showGeotagDialog: false,
         }
     },
     mounted() {

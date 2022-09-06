@@ -12,6 +12,7 @@ urlpatterns = [
     path("api/dir/<int:pk>/detail", views.DirectoryDetailView.as_view(), name="directory-detail"),
     path("api/dir/<int:pk>/crumbs", views.DirectoryCrumbsView.as_view(), name="directory-crumbs"),
     path("api/dir/<int:pk>/actions", views.DirectoryActionsView.as_view(), name="directory-actions"),
+    path("api/dir/<int:pk>/tracks", views.DirectoryTracksView.as_view(), name="directory-track"),
 
     path("api/imgset/actions", views.ImageSetActionsView.as_view(), name="image-set-actions"),
 

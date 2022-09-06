@@ -3,13 +3,16 @@ import logging
 from dataclasses import dataclass
 from datetime import datetime, timezone, timedelta
 from main.utils.exifdata import parse_exif_offsettime, parse_exif_datetimeoriginal, parse_file_filemodifytime
-
+from typing import Tuple
 
 @dataclass
 class Metadata:
     date_time_original: datetime
     rating: int
     artist: str
+    longitude: float
+    latitude: float
+    altitude: float
 
 
 class MetadataParser:
@@ -36,7 +39,15 @@ class RatingMixin:
             return None
 
 
-class FujiXT20ImageParser(AuthorMixin, RatingMixin, MetadataParser):
+class GpsCoordinatesMixin:
+    def parse_coordinates(self, json: dict) -> Tuple[float, float, float]:
+        lat = json["EXIF:GPSLatitude"] if "EXIF:GPSLatitude" in json else None
+        lon = json["EXIF:GPSLongitude"] if "EXIF:GPSLongitude" in json else None
+        alt = json["EXIF:GPSAltitude"] if "EXIF:GPSAltitude" in json else None
+        return (lon, lat, alt)
+
+
+class FujiXT20ImageParser(AuthorMixin, RatingMixin, GpsCoordinatesMixin, MetadataParser):
     def __init__(self):
         self.logger = logging.getLogger(__name__)
     
@@ -82,10 +93,11 @@ class FujiXT20ImageParser(AuthorMixin, RatingMixin, MetadataParser):
                 else:
                     self.logger.warn(f'The difference is too big: {diff}. Not setting a timezone.')
                     date_time_original = date_time_original_naive
-        return Metadata(date_time_original, self.parse_rating(json), self.parse_author(json))
+        lon, lat, alt = self.parse_coordinates(json)
+        return Metadata(date_time_original, self.parse_rating(json), self.parse_author(json), lon, lat, alt)
 
 
-class FallbackImageParser(AuthorMixin, RatingMixin, MetadataParser):
+class FallbackImageParser(AuthorMixin, RatingMixin, GpsCoordinatesMixin, MetadataParser):
     def __init__(self):
         self.logger = logging.getLogger(__name__)
     
@@ -109,4 +121,5 @@ class FallbackImageParser(AuthorMixin, RatingMixin, MetadataParser):
             if date_time_original is None:
                 self.logger.warn(f'No timezone information available for this file.')
                 date_time_original = date_time_original_naive
-        return Metadata(date_time_original, self.parse_rating(json), self.parse_author(json))
+        lon, lat, alt = self.parse_coordinates(json)
+        return Metadata(date_time_original, self.parse_rating(json), self.parse_author(json), lon, lat, alt)

@@ -8,15 +8,44 @@ from io import BytesIO
 from django.core.files import File
 import logging, time, os
 
-from .services import ExifToolService, MetadataParserService
-from .model import metadata_parser
+from .services import ExifToolService, MetadataParserService, GpsTrackParserService, GeotaggingService
 from .model.file_types import FileType
+from .utils.datetime import has_timezone
 
 class UiException(Exception):
     pass
 
+
 class MetadataIncompleteError(UiException):
-    pass
+
+    def __init__(self, name, errors):
+        self.name = name
+        self.errors = errors
+        super().__init__(f"Incomplete metadata for image {name}: {','.join(errors)}")
+
+    def as_dict(self):
+        return {
+            "type": "MetadataIncompleteError",
+            "message": str(self),
+            "image_name": self.name,
+            "image_errors": self.errors
+        }
+
+class ImageSetActionError(UiException):
+
+    def __init__(self, message, image_names):
+        self.image_names = image_names
+        self.message = message
+        super().__init__(f"{message}: {','.join(image_names)}")
+
+    def as_dict(self):
+        return {
+            "type": "ImageSetActionError",
+            "message": str(self),
+            "detail_message": self.message,
+            "image_names": self.image_names
+        }
+
 
 class Author(models.Model):
     name = models.CharField(max_length=255)
@@ -29,6 +58,8 @@ class Author(models.Model):
 
 
 class Directory(models.Model):
+    logger = logging.getLogger(__name__)
+
     parent = models.ForeignKey("self", null=True, blank=True, on_delete=models.CASCADE, related_name="subdirs")
     path = models.CharField(max_length=255)
 
@@ -96,14 +127,27 @@ class Directory(models.Model):
     def organize_into_directories(self):
         ExifToolService.instance().organize_into_directories(self.get_absolute_path())
 
-    def geotag(self):
-        ExifToolService.instance().geotag(self.get_absolute_path())
-
     def write_images_metadata(self):
         for img in self.images.all():
             if img.errors:
                 raise MetadataIncompleteError(img.name, img.errors)
         ExifToolService.instance().write_metadata(self.get_absolute_path(), *self.images.all())
+    
+    def parse_tracks(self):
+        abs_path = self.get_absolute_path()
+        contents = os.listdir(abs_path)
+
+        result = []
+        for item_name in contents:
+            item_path = os.path.join(abs_path, item_name)
+            track = GpsTrackParserService.instance().parse_track(item_path)
+            if track is not None:
+                result.append({
+                    "id": f"{self.id}/{item_name}",
+                    "display_name": item_name,
+                    "data": track
+                })
+        return result
     
     def _is_image(self, path):
         return os.path.isfile(path) and FileType.from_path(path) == FileType.MAIN_MEDIA
@@ -131,6 +175,9 @@ class Image(models.Model):
     # store the time offset, since DateTimeFields are stored in UTC...
     tz_offset = models.DurationField(null=True)
     thumbnail = models.FileField(upload_to=f"thumbnails", null=True)
+    gps_longitude = models.FloatField(null=True)
+    gps_latitude = models.FloatField(null=True)
+    gps_altitude = models.FloatField(null=True)
 
     def read_metadata(self):
         # read metadata from EXIF here. No need to save(), the caller can do that
@@ -153,6 +200,12 @@ class Image(models.Model):
             self.date_time_utc = metadata.date_time_original.astimezone(timezone.utc)
             if metadata.date_time_original.tzinfo is not None:
                 self.tz_offset = metadata.date_time_original.tzinfo.utcoffset(metadata.date_time_original)
+        
+        if metadata.longitude is not None and metadata.latitude is not None:
+            self.gps_longitude = metadata.longitude
+            self.gps_latitude = metadata.latitude
+            if metadata.altitude is not None:
+                self.gps_altitude = metadata.altitude
 
     def create_thumbnail(self):
         try:
@@ -251,3 +304,33 @@ class ImageSetService:
         self.logger.info(f"Setting author to '{author}' for images {image_ids}")
         images = Image.objects.filter(pk__in = image_ids)
         images.update(author=author)
+    
+    def geotag(self, image_ids, track_ids, overwrite):
+        self.logger.info(f"Geotagging: {track_ids} for {image_ids} with overwrite {overwrite}")
+        if overwrite:
+            images = Image.objects.filter(pk__in = image_ids)
+        else:
+            images = Image.objects.filter(pk__in = image_ids, gps_longitude__isnull=True, gps_latitude__isnull=True, gps_altitude__isnull=True)
+        
+        faulty_images = []
+        for image in images:
+            if not has_timezone(image.date_time):
+                faulty_images.append(image.name)
+        if faulty_images:
+            raise ImageSetActionError("Cannot geotag all images because some have no complete date/time set. Fix this first.", faulty_images)
+        
+        track_paths = []
+        for track_id in track_ids:
+            dir_id, file_name = track_id.split('/')
+            dir = Directory.objects.get(pk=dir_id)
+            track_paths.append(os.path.join(dir.get_absolute_path(), file_name))
+        
+        geo_context = GeotaggingService.instance().create_geotagging_context(track_paths)
+        
+        for image in images:
+            lon, lat, alt = GeotaggingService.instance().geotag(image.date_time, geo_context)
+            self.logger.info(f"Found coords {lon},{lat},{alt} for image {image}")
+            image.gps_longitude=lon
+            image.gps_latitude=lat
+            image.gps_altitude=alt
+            image.save()

@@ -88,6 +88,7 @@ tr:nth-child(2n + 1) {
     font-size: 1rem;
     white-space: nowrap;
     opacity: 0;
+    z-index: 100;
 }
 
 #actions button:hover {
@@ -237,6 +238,47 @@ tr:nth-child(2n + 1) {
 }
 
 /*
+ * Geotag dialog
+ */
+#geotag-modal #track-maps {
+    display: flex;
+    flex-flow: row wrap;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+#geotag-modal .track {
+    display: inline-block;
+    /* 30 px is the padding on modal-container, and 2rem because we want a gap of 1 rem between the maps and have max 3 maps on a row */
+    width: calc((75vw - 60px - 2rem) / 3);
+}
+
+#geotag-modal .track label {
+    width: 100%;
+    display: inline-block;
+    color: #4B88A2;
+    background-color: #E5E4E4;
+    cursor: pointer; 
+    box-sizing: border-box;
+    padding: 0.5rem 1rem;
+}
+
+#geotag-modal .track label span {
+    vertical-align: text-bottom;
+    margin-left: 0.5rem;
+}
+
+#geotag-modal .track label:has(input:checked) {
+    color: #FAFFFD;
+    background-color: #4B88A2;
+}
+
+#geotag-modal .leaflet-map {
+    height: calc((75vw - 60px - 2rem) / 3 * 0.6);
+}
+
+/*
  * Selector
  */
 span.selector {
@@ -297,7 +339,8 @@ span.selector button:last-child {
 }
 
 .modal-container {
-    width: 50%;
+    min-width: 25%;
+    max-width: 75%;
     margin: 0px auto;
     padding: 20px 30px;
     color: #282424;
