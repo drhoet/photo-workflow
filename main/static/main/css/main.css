@@ -102,6 +102,27 @@ tr:nth-child(2n + 1) {
     opacity: 1;
 }
 
+#actions button.multiple {
+    cursor: auto;
+    position: relative;
+}
+
+#actions button.multiple span {
+    height: auto;
+    top: 0;
+}
+
+#actions button.multiple span div {
+    height: 4rem;
+    cursor: pointer;
+    line-height: 4rem;
+}
+
+#actions button.multiple span div:hover {
+    background-color: #9FD356;
+    color: #FAFFFD;
+}
+
 #items {
     display: flex;
     flex-flow: row wrap;

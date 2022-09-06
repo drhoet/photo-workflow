@@ -10,7 +10,12 @@ export default {
                 <button @click="scan(false)"><i class="mdi mdi-find-replace"></i><span>Find new items</span></button>
                 <button @click="scan(true)"><i class="mdi mdi-refresh"></i><span>Scan directory (reload)</span></button>
                 <button @click="organize()"><i class="mdi mdi-file-tree"></i><span>Organize into directories</span></button>
-                <button @click="showGeotagDialog=true"><i class="mdi mdi-earth"></i><span>Geotag</span></button>
+                <button class="multiple"><i class="mdi mdi-earth"></i>
+                    <span>
+                        <div @click="showGeotagDialog=true">Geotag</div>
+                        <div @click="showPickCoordinatesDialog=true">Set coordinates</div>
+                    </span>
+                </button>
                 <button @click="showEditAuthorDialog=true"><i class="mdi mdi-account"></i><span>Edit author</span></button>
                 <button @click="showEditTimezoneDialog=true"><i class="mdi mdi-clock"></i><span>Edit timezone</span></button>
                 <button @click="writeMetadata()"><i class="mdi mdi-content-save"></i><span>Write metadata</span></button>
