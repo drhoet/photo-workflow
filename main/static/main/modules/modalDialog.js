@@ -2,7 +2,7 @@ export default {
     template: `
         <template v-if="showModal">
             <div class="modal-mask">
-                <div class="modal-wrapper">
+                <div class="modal-wrapper" @click.self="onClickOutside">
                     <div class="modal-container">
                         <div class="modal-header">
                             <slot name="header"></slot>
@@ -29,7 +29,15 @@ export default {
             type: Boolean,
             default: true,
         },
-        okButtonDisabled: Boolean
+        okButtonDisabled: Boolean,
+        closeOnEscape: {
+            type: Boolean,
+            default: true,
+        },
+        closeOnClickOutside: {
+            type: Boolean,
+            default: false,
+        }
     },
     emits: ['update:showModal', 'ok', 'cancel'],
     methods: {
@@ -40,6 +48,22 @@ export default {
         cancel() {
             this.$emit('update:showModal', false);
             this.$emit('cancel');
+        },
+        onClickOutside() {
+            if(this.closeOnClickOutside) {
+                this.cancel();
+            }
+        },
+        onKeyDown(e) {
+            if(this.showModal && this.closeOnEscape && e.key === 'Escape') {
+                this.cancel();
+            }
         }
+    },
+    created() {
+        document.addEventListener('keydown', this.onKeyDown);
+    },
+    destroyed() {
+        document.removeEventListener('keydown', this.onKeyDown);
     }
 }
