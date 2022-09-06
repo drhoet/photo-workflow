@@ -2,9 +2,9 @@ import os, logging
 
 from .utils.exiftool_ctxmngr import ExifTool
 from .model.metadata_parser import Metadata, FujiXT20ImageParser, FallbackImageParser
-from .model.metadata_writer import JpegImageSerializer, OriginalFileSerializer, FujiRawImageSerializer
+from .model.metadata_writer import JpegImageSerializer, MetadataType, OriginalFileSerializer, FujiRawImageSerializer, MovVideoSerializer
 from .model.gps_track import GpsTrack, GpsTrackSection, GpxTrackParser, KmlTrackParser
-from typing import List
+from typing import List, Tuple
 from datetime import datetime
 
 class ExifToolService(object):
@@ -87,12 +87,24 @@ class MetadataSerializerService:
             return cls.__instance
 
     def __init__(self):
-        self.serializers = [JpegImageSerializer(), OriginalFileSerializer(), FujiRawImageSerializer()]
+        self.serializers = [JpegImageSerializer(), OriginalFileSerializer(), FujiRawImageSerializer(), MovVideoSerializer()]
 
     def serialize_metadata(self, extension, metadata: Metadata) -> list:
         for p in self.serializers:
             if p.can_serialize(extension):
                 return p.serialize(metadata)
+        raise ValueError("No serializer for file extension %s" % (extension))
+
+    def supports_metadata_type(self, extension: str, type: MetadataType) -> bool:
+        for p in self.serializers:
+            if p.can_serialize(extension):
+                return type in p.supported_metadata_types
+        raise ValueError("No serializer for file extension %s" % (extension))
+
+    def supported_metadata_types(self, extension: str) -> Tuple[MetadataType]:
+        for p in self.serializers:
+            if p.can_serialize(extension):
+                return p.supported_metadata_types
         raise ValueError("No serializer for file extension %s" % (extension))
 
 

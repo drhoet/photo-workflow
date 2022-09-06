@@ -75,12 +75,16 @@ export default {
                 .then(() => this.loadData(this.$route.params.id));
         },
         geotag(params) {
-            let ids = this.directory.images.map(img => img.id);
+            let ids = this.directory.images
+                .filter(img => img.supported_metadata_types.includes('COORDINATES'))
+                .map(img => img.id);
             return this.postImageSetAction('geotag', { ids: ids, trackIds: params.trackIds, overwrite: params.overwrite })
                 .then(() => this.loadData(this.$route.params.id));
         },
         editAuthor(authorId) {
-            let ids = this.directory.images.map(img => img.id);
+            let ids = this.directory.images
+                .filter(img => img.supported_metadata_types.includes('ARTIST'))
+                .map(img => img.id);
             return this.postImageSetAction('set_author', { ids: ids, author: authorId })
                 .then(() => this.loadData(this.$route.params.id));
         },
@@ -89,7 +93,9 @@ export default {
                 .then(() => this.loadData(this.$route.params.id));
         },
         editCoordinates(params) {
-            let ids = this.directory.images.map(img => img.id);
+            let ids = this.directory.images
+                .filter(img => img.supported_metadata_types.includes('COORDINATES'))
+                .map(img => img.id);
             return this.postImageSetAction('set_coordinates', { ids: ids, lat: params.lat, lon: params.lon, overwrite: params.overwrite })
                 .then(() => this.loadData(this.$route.params.id));
         },

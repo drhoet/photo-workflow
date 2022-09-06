@@ -1,5 +1,7 @@
+import os
 from rest_framework import serializers
 from main.models import Directory, Image, Author, Attachment
+from main.services import MetadataSerializerService
 
 class AttachmentSerializer(serializers.ModelSerializer):
     class Meta:
@@ -35,10 +37,11 @@ class ImageNestedSerializer(serializers.HyperlinkedModelSerializer):
     attachments = AttachmentNestedSerializer(many=True)
     date_time = serializers.SerializerMethodField()
     coordinates = serializers.SerializerMethodField()
+    supported_metadata_types = serializers.SerializerMethodField()
 
     class Meta:
         model = Image
-        fields = ['id', 'url', 'name', 'author', 'date_time', 'coordinates', 'errors', 'attachments', 'thumbnail']
+        fields = ['id', 'url', 'name', 'author', 'date_time', 'coordinates', 'supported_metadata_types', 'errors', 'attachments', 'thumbnail']
     
     def get_date_time(self, obj):
         return obj.date_time.isoformat() if obj.date_time is not None else None
@@ -52,6 +55,10 @@ class ImageNestedSerializer(serializers.HyperlinkedModelSerializer):
             }
         else:
             return None
+    
+    def get_supported_metadata_types(self, obj):
+        ext = os.path.splitext(obj.name)[1]
+        return [x.name for x in MetadataSerializerService.instance().supported_metadata_types(ext)]
 
 
 class DirectoryNestedSerializer(serializers.HyperlinkedModelSerializer):
