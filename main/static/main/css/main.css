@@ -164,7 +164,13 @@ tr:nth-child(2n + 1) {
     display: flex;
     flex-flow: column;
     width: 300px;
-    margin: 0.25rem;
+    margin: 0.10rem;
+    padding: 0.15rem;
+}
+
+#items #images .item.selected {
+    background-color: #4B88A2;
+    border-radius: 0.1rem;
 }
 
 #items #images .item a {

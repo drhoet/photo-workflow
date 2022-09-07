@@ -72,14 +72,13 @@ export default {
             this.$emit('update:showModal', false);
         },
         updateTimezone() {
-            let ids = this.items
-                .filter(item => this.mode === 'overwrite' || (this.mode === 'translate' && this.extractTimezone(item.date_time) !== 'N/A'))
-                .map(item => item.id);
+            let supported_items = this.items
+                .filter(item => this.mode === 'overwrite' || (this.mode === 'translate' && this.extractTimezone(item.date_time) !== 'N/A'));
 
             this.$emit('update:timezone', {
                 mode: this.mode,
                 value: this.value,
-                ids: ids,
+                items: supported_items,
             });
             this.closeModal();
         },

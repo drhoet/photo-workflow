@@ -1,4 +1,4 @@
-import { parseResponse } from "./errorHandler.js";
+import { parseResponse, UiError } from "./errorHandler.js";
 import Cookies from 'js-cookie';
 
 export default {
@@ -12,13 +12,13 @@ export default {
                 <button @click="organize()"><i class="mdi mdi-file-tree"></i><span>Organize into directories</span></button>
                 <button class="multiple"><i class="mdi mdi-earth"></i>
                     <span>
-                        <div @click="showGeotagDialog=true">Geotag</div>
-                        <div @click="showPickCoordinatesDialog=true">Set coordinates</div>
-                        <div @click="showPictureMapDialog=true">Show picture map</div>
+                        <div @click="modals.geotag=true">Geotag</div>
+                        <div @click="modals.pickCoordinates=true">Set coordinates</div>
+                        <div @click="modals.pictureMap=true">Show picture map</div>
                     </span>
                 </button>
-                <button @click="showEditAuthorDialog=true"><i class="mdi mdi-account"></i><span>Edit author</span></button>
-                <button @click="showEditTimezoneDialog=true"><i class="mdi mdi-clock"></i><span>Edit timezone</span></button>
+                <button @click="modals.editAuthor=true"><i class="mdi mdi-account"></i><span>Edit author</span></button>
+                <button @click="modals.editTimezone=true"><i class="mdi mdi-clock"></i><span>Edit timezone</span></button>
                 <button @click="writeMetadata()"><i class="mdi mdi-content-save"></i><span>Write metadata</span></button>
             </section>
             <div v-if="loading" class="spinner">Loading...</div>
@@ -28,20 +28,25 @@ export default {
                         <directory-link v-for="subdir in directory.subdirs" :item="subdir"/>
                     </div>
                     <ul id="images">
-                        <li v-for="image in directory.images" class="item">
+                        <li v-for="image in directory.images" class="item" :class="{selected: isImageSelected(image)}" @click="onImageSelected(image, $event)">
                             <image-overview :item="image" @item:open="onImageViewOpen(image)"/>
                         </li>
                     </ul>
                 </section>
-                <edit-author-dialog v-model:showModal="showEditAuthorDialog" :modelValue="0" @update:modelValue="editAuthor($event)"/>
-                <edit-timezone-dialog v-model:showModal="showEditTimezoneDialog" :items="directory.images" @update:timezone="editTimezone($event)"/>
-                <geotag-dialog v-model:showModal="showGeotagDialog" :directory="directory" @update:trackIds="geotag($event)"/>
-                <pick-coordinates-dialog v-model:showModal="showPickCoordinatesDialog" @update:coordinates="editCoordinates($event)"/>
-                <picture-map-dialog v-model:showModal="showPictureMapDialog" :items="directory.images"/>
-                <image-carousel-dialog v-model:showModal="showImageCarouselDialog" :items="directory.images" :startImage="selectedImage"/>
+                <edit-author-dialog v-model:showModal="modals.editAuthor" :modelValue="0" @update:modelValue="editAuthor($event)"/>
+                <edit-timezone-dialog v-model:showModal="modals.editTimezone" :items="applyToItems" @update:timezone="editTimezone($event)"/>
+                <geotag-dialog v-model:showModal="modals.geotag" :directory="directory" @update:trackIds="geotag($event)"/>
+                <pick-coordinates-dialog v-model:showModal="modals.pickCoordinates" @update:coordinates="editCoordinates($event)"/>
+                <picture-map-dialog v-model:showModal="modals.pictureMap" :items="applyToItems"/>
+                <image-carousel-dialog v-model:showModal="modals.imageCarousel" :items="directory.images" :startImage="lastSelectedItem"/>
             </template>
         </div>
     `,
+    computed: {
+        applyToItems() {
+            return this.selectedItems.length > 0 ? this.selectedItems: this.directory.images;
+        }
+    },
     methods: {
         loadData(id) {
             this.loading = true;
@@ -58,7 +63,22 @@ export default {
                     })),
                 fetch(`/main/api/dir/${id}/detail`, { method: 'get', headers: { 'content-type': 'application/json' } })
                     .then(res => parseResponse(res, `Could not load directory with id ${id}`, true) )
-                    .then(json => this.directory = json )
+                    .then(json => {
+                        this.directory = json;
+                        // apply selection after reload: the objects are new, ids are probably the same (except on reload)
+                        let selectedIds = this.selectedItems.length > 0 ? this.selectedItems.map(el => el.id) : [];
+                        let lastSelectedItemId = this.lastSelectedItem ? this.lastSelectedItem.id : null;
+                        this.selectedItems.length = 0; // clear, so we don't have old items left if some would have disappeared from the directory
+                        this.lastSelectedItem = null; // clear, same reason
+                        for(let item of this.directory.images) {
+                            if(selectedIds.includes(item.id)) {
+                                this.selectedItems.push(item);
+                            }
+                            if(lastSelectedItemId === item.id) {
+                                this.lastSelectedItem = item;
+                            }
+                        }
+                    })
             ]).then(() => {
                 this.loading = false;
                 document.title = `Workflow - ${this.directory.path}`;
@@ -78,27 +98,42 @@ export default {
                 .then(() => this.loadData(this.$route.params.id));
         },
         geotag(params) {
-            let ids = this.directory.images
+            let ids = this.applyToItems
                 .filter(img => img.supported_metadata_types.includes('COORDINATES'))
                 .map(img => img.id);
+            if(ids.length == 0) {
+                throw new UiError('No images selected that support geotagging.');
+            }
             return this.postImageSetAction('geotag', { ids: ids, trackIds: params.trackIds, overwrite: params.overwrite })
                 .then(() => this.loadData(this.$route.params.id));
         },
         editAuthor(authorId) {
-            let ids = this.directory.images
+            let ids = this.applyToItems
                 .filter(img => img.supported_metadata_types.includes('ARTIST'))
                 .map(img => img.id);
+            if(ids.length == 0) {
+                throw new UiError('No images selected that support setting the author.');
+            }
             return this.postImageSetAction('set_author', { ids: ids, author: authorId })
                 .then(() => this.loadData(this.$route.params.id));
         },
         editTimezone(params) {
-            return this.postImageSetAction('edit_timezone', params)
+            let ids = params.items
+                .filter(img => img.supported_metadata_types.includes('DATE_TIME'))
+                .map(img => img.id);
+            if(ids.length == 0) {
+                throw new UiError('No images selected that support coordinates.');
+            }
+            return this.postImageSetAction('edit_timezone', {mode: params.mode, value: params.value, ids: ids})
                 .then(() => this.loadData(this.$route.params.id));
         },
         editCoordinates(params) {
-            let ids = this.directory.images
+            let ids = this.applyToItems
                 .filter(img => img.supported_metadata_types.includes('COORDINATES'))
                 .map(img => img.id);
+            if(ids.length == 0) {
+                throw new UiError('No images selected that support coordinates.');
+            }
             return this.postImageSetAction('set_coordinates', { ids: ids, lat: params.lat, lon: params.lon, overwrite: params.overwrite })
                 .then(() => this.loadData(this.$route.params.id));
         },
@@ -127,27 +162,95 @@ export default {
                 .then(res => parseResponse(res, `Could not execute action "${action}"`, false))
                 .finally(() => this.loading = false);
         },
-        onImageViewOpen(image) {
-            this.selectedImage = image;
-            this.showImageCarouselDialog = true;
+        onImageSelected(item, event) {
+            if(event.ctrlKey) {
+                let idx = this.selectedItems.indexOf(item);
+                if(idx >= 0) {
+                    this.selectedItems.splice(idx, 1);
+                } else {
+                    this.selectedItems.push(item);
+                }
+            } else if(this.lastSelectedItem && event.shiftKey) {
+                document.getSelection().removeAllRanges();
+                let idxStart = this.directory.images.indexOf(this.lastSelectedItem);
+                let idxEnd = this.directory.images.indexOf(item);
+                if(idxStart > idxEnd) {
+                    let tmp = idxEnd;
+                    idxEnd = idxStart;
+                    idxStart = tmp;
+                }
+                for(let i = idxStart; i <= idxEnd; ++i) {
+                    let newItem = this.directory.images[i];
+                    if(!this.selectedItems.includes(newItem)) { // don't add duplicates!
+                        this.selectedItems.push(newItem);
+                    }
+                }
+            } else {
+                if(this.selectedItems.length == 1 && this.selectedItems.includes(item)) {
+                    this.selectedItems.length = 0;
+                } else {
+                    this.selectedItems.length = 0;
+                    this.selectedItems.push(item);
+                }
+            }
+            this.lastSelectedItem = item;
         },
+        onImageViewOpen(image) {
+            this.lastSelectedItem = image;
+            this.modals.imageCarousel = true;
+        },
+        isImageSelected(image) {
+            return this.selectedItems.includes(image);
+        },
+        onKeyDown(e) {
+            if(e.key == "Shift" && !e.repeat) { // on shift down (make sure we don't trigger when the key stays down)
+                this.onSelectStartHandler = document.onselectstart; // back-up onselectstart
+                document.onselectstart = (e) => false; // don't allow it
+            }
+            if(e.key == "Escape") {
+                for(let modal of Object.keys(this.modals)) {
+                    if(this.modals[modal]) {
+                        return; // if any modal is open, we don't handle the escape key.
+                    }
+                }
+                this.selectedItems.length = 0;
+            }
+        },
+        onKeyUp(e) {
+            if(e.key == "Shift") {
+                document.onselectstart = this.onSelectStartHandler; // restore onselectstart
+            }
+        }
     },
     data() {
         return {
             loading: true,
             directory: null,
             crumbs: null,
-            showEditAuthorDialog: false,
-            showEditTimezoneDialog: false,
-            showGeotagDialog: false,
-            showPickCoordinatesDialog: false,
-            showPictureMapDialog: false,
-            showImageCarouselDialog: false,
-            selectedImage: null
+            lastSelectedItem: null,
+            selectedItems: [],
+            onSelectStartHandler: null,
+            activeModal: null,
+            modals: {
+                editAuthor: false,
+                editTimezone: false,
+                geotag: false,
+                pickCoordinates: false,
+                pictureMap: false,
+                imageCarousel: false
+            }
         }
     },
     mounted() {
         return this.loadData(this.$route.params.id);
+    },
+    created() {
+        document.addEventListener('keydown', this.onKeyDown);
+        document.addEventListener('keyup', this.onKeyUp);
+    },
+    destroyed() {
+        document.removeEventListener('keydown', this.onKeyDown);
+        document.removeEventListener('keyup', this.onKeyUp);
     },
     async beforeRouteUpdate(to, from) {
         return this.loadData(to.params.id);
