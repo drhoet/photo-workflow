@@ -77,6 +77,8 @@ export default {
     watch: {
         showModal: function(newVal, oldVal) {
             if(newVal) {
+                this.loading = true;
+
                 // build a circular list of the items
                 let prev = null;
                 let head = null;

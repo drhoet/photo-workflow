@@ -143,6 +143,7 @@ export default {
             showPickCoordinatesDialog: false,
             showPictureMapDialog: false,
             showImageCarouselDialog: false,
+            selectedImage: null
         }
     },
     mounted() {
