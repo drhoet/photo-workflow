@@ -7,7 +7,7 @@ from django.http import Http404
 from django.shortcuts import get_object_or_404
 
 from main.models import Directory, Image, Attachment, Author, ImageSetActionError, ImageSetService, MetadataIncompleteError
-from main.rest.serializers import DirectorySerializer, ImageSerializer, AuthorSerializer, AttachmentSerializer, DirectoryNestedSerializer, GpsTrackWithMetadataSerializer
+from main.rest.serializers import DirectorySerializer, AuthorSerializer, AttachmentSerializer, DirectoryNestedSerializer, GpsTrackWithMetadataSerializer
 
 class AuthorListView(generics.ListAPIView):
     queryset = Author.objects.all()
@@ -32,11 +32,6 @@ class RootListView(generics.ListAPIView):
 class DirectoryDetailView(generics.RetrieveAPIView):
     queryset = Directory.objects.all()
     serializer_class = DirectorySerializer
-
-
-class ImageDetailView(generics.RetrieveAPIView):
-    queryset = Image.objects.all()
-    serializer_class = ImageSerializer
 
 
 class ImageMetadataView(APIView):

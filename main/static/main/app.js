@@ -3,7 +3,6 @@ import { createRouter, createWebHashHistory } from 'vue-router';
 import IndexView from './modules/indexView.js'
 import DirectoryLink from './modules/directoryLink.js'
 import DirectoryDetailView from './modules/directoryDetailView.js'
-import ImageDetailView from './modules/imageDetailView.js'
 import ModalDialog from './modules/modalDialog.js'
 import EditAuthorDialog from './modules/editAuthorDialog.js'
 import ErrorHandler from './modules/errorHandler.js'
@@ -26,8 +25,7 @@ const router = createRouter({
     routes: [
         { name: 'home', path: '/', component: IndexView },
         { path: '/about', component: About },
-        { name: 'directory-detail-view', path: '/dir/:id/detail', component: DirectoryDetailView },
-        { name: 'image-detail-view', path: '/img/:id/detail', component: ImageDetailView }
+        { name: 'directory-detail-view', path: '/dir/:id/detail', component: DirectoryDetailView }
     ],
 });
 

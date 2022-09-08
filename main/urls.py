@@ -16,7 +16,6 @@ urlpatterns = [
 
     path("api/imgset/actions", views.ImageSetActionsView.as_view(), name="image-set-actions"),
 
-    path("api/img/<int:pk>/detail", views.ImageDetailView.as_view(), name="image-detail"),
     path("api/img/<int:pk>/metadata", views.ImageMetadataView.as_view(), name="image-metadata"),
 
     path("api/author", views.AuthorListView.as_view(), name="author-list"),
