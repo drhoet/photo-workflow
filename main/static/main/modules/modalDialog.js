@@ -3,7 +3,8 @@ export default {
         <template v-if="showModal">
             <div class="modal-mask">
                 <div class="modal-wrapper" @click.self="onClickOutside">
-                    <div class="modal-container">
+                    <div class="spinner" :class="{hidden: !loading}">Loading...</div>
+                    <div class="modal-container" :class="{hidden: loading}">
                         <div class="modal-header">
                             <slot name="header"></slot>
                         </div>
@@ -35,6 +36,10 @@ export default {
             default: true,
         },
         closeOnClickOutside: {
+            type: Boolean,
+            default: false,
+        },
+        loading: {
             type: Boolean,
             default: false,
         }

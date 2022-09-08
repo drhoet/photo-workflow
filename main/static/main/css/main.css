@@ -43,6 +43,10 @@ tr:nth-child(2n + 1) {
     background-color: #E5E4E4;
 }
 
+.hidden {
+    display: none;
+}
+
 #breadcrumbs {
     font-size: 1.3rem;
     margin-bottom: 1rem;
@@ -444,11 +448,6 @@ span.selector button:last-child {
     display: flex;
 }
 
-.modal-body .spinner {
-    color: #9FD356;
-    margin: 5em;
-}
-
 button {
     margin-right: 0.5rem;
     background-color: #E5E4E4;
@@ -492,8 +491,8 @@ button:disabled {
     height: 2.5em;
     -webkit-animation-fill-mode: both;
     animation-fill-mode: both;
-    -webkit-animation: load7 1.8s infinite ease-in-out;
-    animation: load7 1.8s infinite ease-in-out;
+    -webkit-animation: spinner7 1.8s infinite ease-in-out;
+    animation: spinner7 1.8s infinite ease-in-out;
 }
 .spinner {
     color: #ffffff;
@@ -521,7 +520,7 @@ button:disabled {
 .spinner:after {
     left: 3.5em;
 }
-@-webkit-keyframes load7 {
+@-webkit-keyframes spinner7 {
     0%,
     80%,
     100% {
@@ -531,7 +530,7 @@ button:disabled {
         box-shadow: 0 2.5em 0 0;
     }
 }
-@keyframes load7 {
+@keyframes spinner7 {
     0%,
     80%,
     100% {

@@ -5,7 +5,7 @@ export default {
     // remark: we cannot use v-model:showModal below, because that will expand to something like @update:showModal="showModal = false",
     // attempting to update the prop showModal.
     template: `
-        <modal :showModal="showModal" @update:showModal="closeModal" @ok="updateTrackIds" :okButtonDisabled="!trackIdsChosen" id="geotag-modal">
+        <modal :showModal="showModal" @update:showModal="closeModal" @ok="updateTrackIds" :okButtonDisabled="!trackIdsChosen" :loading="loading" id="geotag-modal">
             <template v-slot:header>
                 <h3>Select tracks to be used for geotagging</h3>
             </template>
@@ -33,6 +33,7 @@ export default {
             selectedTrackIds: [],
             tracks: [],
             overwrite: false,
+            loading: false,
         }
     },
     computed: {
@@ -56,6 +57,7 @@ export default {
                         throw new UiError('No track files found in this directory.', false);
                     }
                     this.tracks = json;
+                    this.loading = false;
                     return nextTick; // this async method is resolved when vue has done the next DOM update. That update should have created the map-divs.
                 })
                 .then(() => {
@@ -89,6 +91,7 @@ export default {
     watch: {
         showModal: function(newVal, oldVal) {
             if(newVal) {
+                this.loading = true;
                 this.selectedTrackIds = [];
                 return this.fetchTracks();
             }
