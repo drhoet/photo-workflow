@@ -14,13 +14,13 @@ export default {
                         <button @click="toggleMetadata" :class="{active: showMetadata}"><div v-if="metadataLoading" class="spinner small">Loading...</div><i class="mdi mdi-information-outline"></i></button>
                     </section>
                     <section v-if="showMetadata" id="metadata">
-                        <table v-for="(metadataBlock, header) in metadata">
+                        <table v-for="metadataBlock in metadata">
                             <tr>
-                                <th colspan=2>{{header}}</th>
+                                <th colspan=2>{{metadataBlock.header}}</th>
                             </tr>
-                            <tr v-for="(item, key) in metadataBlock">
-                                <td>{{key}}</td>
-                                <td>{{item}}</td>
+                            <tr v-for="item in metadataBlock.items">
+                                <td>{{item.key}}</td>
+                                <td>{{item.value}}</td>
                             </tr>
                         </table>
                     </section>
@@ -92,23 +92,38 @@ export default {
                 fetch(`/main/api/img/${id}/metadata`, { method: 'get', headers: { 'content-type': 'application/json' } })
                         .then(res => parseResponse(res, `Could not load metadata for file with id ${id}`, true))
                         .then(json => {
-                            this.metadata = {};
+                            let dict = {};
                             for(const [key, value] of Object.entries(json)) {
                                 const groupSplitIdx = key.indexOf(':');
                                 if (groupSplitIdx < 0) {
-                                    if(!('General' in this.metadata)) {
-                                        this.metadata['General'] = {};
+                                    if(!('General' in dict)) {
+                                        dict['General'] = {};
                                     }
-                                    this.metadata['General'][key] = value;
+                                    dict['General'][key] = value;
                                 } else {
                                     const group = key.slice(0, groupSplitIdx);
-                                    const groupKey = key.slice(groupSplitIdx + 1);
-                                    if (!(group in this.metadata)) {
-                                        this.metadata[group] = {};
+                                    const itemKey = key.slice(groupSplitIdx + 1);
+                                    if (!(group in dict)) {
+                                        dict[group] = {};
                                     }
-                                    this.metadata[group][groupKey] = value;
+                                    dict[group][itemKey] = value;
                                 }
                             }
+                            let sortedMetadata = [];
+                            Object.entries(dict).sort().forEach(function([groupName, group]){
+                                let sortedGroup = [];
+                                Object.entries(group).sort().forEach(function([key, value]) {
+                                    sortedGroup.push({
+                                        key: key,
+                                        value: value
+                                    });
+                                });
+                                sortedMetadata.push({
+                                    header: groupName,
+                                    items: sortedGroup
+                                });
+                            });
+                            this.metadata = sortedMetadata;
                             this.metadataLoading = false;
                             this.showMetadata = true;
                         });
