@@ -220,23 +220,6 @@ tr:nth-child(2n + 1) {
 }
 
 /*
- * Image detail view
- */
-#metadata {
-    color: #282424;
-    background-color: #FAFFFD;
-    overflow: scroll;
-    position: absolute;
-    right: 0;
-    margin-right: calc(4rem + 8px);
-    height: calc(100vh - 2 * 48px);
-}
-
-#metadata table {
-    width: 100%;
-}
-
-/*
  * Select author dialog
  */
 #edit-author-modal .modal-body {
@@ -344,18 +327,36 @@ tr:nth-child(2n + 1) {
     border-radius: 0;
     min-width: 0;
     max-width: 100vw;
+    background-color: #282424;
 }
 
-#image-carousel-modal .modal-container .modal-header, #image-carousel-modal .modal-container .modal-footer {
+#image-carousel-modal .modal-header, #image-carousel-modal .modal-footer {
     display: none;
 }
 
-#image-carousel-modal .modal-container .modal-body {
+#image-carousel-modal .modal-body {
     margin: 0;
+    display: flex;
+    flex-flow: row nowrap;
+    position: relative; /* makes the metadata-box, which is absolutely positioned, position itself relative to this one */
 }
 
-#image-carousel-modal .modal-container .modal-body img {
+#image-carousel-modal .modal-body img {
     display: block;
+}
+
+#image-carousel-modal #metadata {
+    color: #282424;
+    background-color: #FAFFFD;
+    overflow: scroll;
+    position: absolute;
+    right: 0;
+    margin-right: 4rem;
+    height: calc(100vh - 2 * 48px);
+}
+
+#image-carousel-modal #metadata table {
+    width: 100%;
 }
 
 /*
@@ -539,6 +540,17 @@ button:disabled {
     40% {
         box-shadow: 0 2.5em 0 0;
     }
+}
+
+.spinner.small {
+    font-size: 6px;
+}
+
+button .spinner {
+    position: absolute;
+    margin: 0;
+    top: 8px;
+    right: 25px;
 }
 
 /*

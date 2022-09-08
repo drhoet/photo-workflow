@@ -1,13 +1,30 @@
+import { parseResponse } from "./errorHandler.js";
+
 export default {
     // remark: we cannot use v-model:showModal below, because that will expand to something like @update:showModal="showModal = false",
     // attempting to update the prop showModal.
     template: `
-        <modal :showModal="showModal" @update:showModal="closeModal" :closable="false" :cancellable="false" :closeOnClickOutside="true" id="image-carousel-modal">
+        <modal :showModal="showModal" @update:showModal="closeModal" :closable="false" :cancellable="false" :closeOnClickOutside="true" :loading="loading" id="image-carousel-modal">
             <template v-slot:body>
-                <div v-if="loading" class="spinner">Loading...</div>
-                <section v-else id="image">
-                    <img :src="imageUrl" />
-                </section>
+                <template v-if="!loading">
+                    <section id="image">
+                        <img :src="imageUrl" />
+                    </section>
+                    <section id="secondary-actions">
+                        <button @click="toggleMetadata" :class="{active: showMetadata}"><div v-if="metadataLoading" class="spinner small">Loading...</div><i class="mdi mdi-information-outline"></i></button>
+                    </section>
+                    <section v-if="showMetadata" id="metadata">
+                        <table v-for="(metadataBlock, header) in metadata">
+                            <tr>
+                                <th colspan=2>{{header}}</th>
+                            </tr>
+                            <tr v-for="(item, key) in metadataBlock">
+                                <td>{{key}}</td>
+                                <td>{{item}}</td>
+                            </tr>
+                        </table>
+                    </section>
+                </template>
             </template>
         </modal>
     `,
@@ -26,6 +43,8 @@ export default {
             if(this.showModal) {
                 switch(e.key) {
                     case 'ArrowLeft':
+                    case 'j':
+                        this.showMetadata = false;
                         for(let i = this.imageCache.length - 1; i > 0; --i) {
                             this.imageCache[i] = this.imageCache[i - 1];
                         }
@@ -34,6 +53,8 @@ export default {
                         this.loadCache();
                         break;
                     case 'ArrowRight':
+                    case 'l':
+                        this.showMetadata = false;
                         for(let i = 1; i < this.imageCache.length; ++i) {
                             this.imageCache[i - 1] = this.imageCache[i];
                         }
@@ -41,6 +62,10 @@ export default {
                         this.currentlyShownItemHolder = this.currentlyShownItemHolder.next;
                         this.loadCache();
                         break;
+                    case 'i':
+                        this.toggleMetadata();
+                        break;
+                    
                 }
             }
         },
@@ -57,6 +82,37 @@ export default {
         },
         createImageUrl(image) {
             return '/main/img/' + image.id + '/download?maxw=' + this.contentMaxWidth + '&maxh=' + this.contentMaxHeight;
+        },
+        toggleMetadata() {
+            if(this.showMetadata) {
+                this.showMetadata = false;
+            } else {
+                this.metadataLoading = true;
+                let id = this.currentlyShownItemHolder.item.id;
+                fetch(`/main/api/img/${id}/metadata`, { method: 'get', headers: { 'content-type': 'application/json' } })
+                        .then(res => parseResponse(res, `Could not load metadata for file with id ${id}`, true))
+                        .then(json => {
+                            this.metadata = {};
+                            for(const [key, value] of Object.entries(json)) {
+                                const groupSplitIdx = key.indexOf(':');
+                                if (groupSplitIdx < 0) {
+                                    if(!('General' in this.metadata)) {
+                                        this.metadata['General'] = {};
+                                    }
+                                    this.metadata['General'][key] = value;
+                                } else {
+                                    const group = key.slice(0, groupSplitIdx);
+                                    const groupKey = key.slice(groupSplitIdx + 1);
+                                    if (!(group in this.metadata)) {
+                                        this.metadata[group] = {};
+                                    }
+                                    this.metadata[group][groupKey] = value;
+                                }
+                            }
+                            this.metadataLoading = false;
+                            this.showMetadata = true;
+                        });
+            }
         }
     },
     data() {
@@ -66,6 +122,9 @@ export default {
             currentlyShownItemHolder: null,
             contentMaxWidth: Math.floor(0.95 * window.innerWidth),
             contentMaxHeight: Math.floor(0.95 * window.innerHeight),
+            showMetadata: false,
+            metadata: null,
+            metadataLoading: false,
         }
     },
     created() {
@@ -78,6 +137,7 @@ export default {
         showModal: function(newVal, oldVal) {
             if(newVal) {
                 this.loading = true;
+                this.showMetadata = false;
 
                 // build a circular list of the items
                 let prev = null;
