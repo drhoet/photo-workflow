@@ -1,4 +1,5 @@
 import { parseResponse } from "./errorHandler.js";
+import Cookies from "js-cookie";
 
 export default {
     // remark: we cannot use v-model:showModal below, because that will expand to something like @update:showModal="showModal = false",
@@ -7,6 +8,29 @@ export default {
         <modal :showModal="showModal" @update:showModal="closeModal" :closable="false" :cancellable="false" :closeOnClickOutside="true" :loading="loading" id="image-carousel-modal">
             <template v-slot:body>
                 <template v-if="!loading">
+                    <section id="properties">
+                        <section id="rating-overview">
+                            <header>
+                                <span>Rating</span>
+                                <i class="mdi mdi-information-outline tooltip-symbol">
+                                    <div class="tooltip-contents">
+                                        Actual / recommended number of items for each rating.
+                                        Since the number of items with 1<i class="mdi mdi-star"></i> has no recommendation, the value is just the actual number.<br/><br/>
+                                        The last row in the table shows the total number of rated items in this directory.<br/><br/>
+                                        The highlighted value is the current rating for this image.
+                                    </div>
+                                </i>
+                            </header>
+                            <table>
+                                <tr v-for="(r, index) in ratingsOverview" :class="{active: currentlyShownItemHolder.item.rating === 5 - index}">
+                                    <th class="mdi mdi-star">{{5 - index}}</th><td>{{r}}</td>
+                                </tr>
+                                <tr>
+                                    <th class="mdi mdi-star"></th><td>{{ratedItemsCount}}</td>
+                                </tr>
+                            </table>
+                        </section>
+                    </section>
                     <section id="image">
                         <img :src="imageUrl" />
                     </section>
@@ -65,7 +89,16 @@ export default {
                     case 'i':
                         this.toggleMetadata();
                         break;
-                    
+                    case '0':
+                    case '1':
+                    case '2':
+                    case '3':
+                    case '4':
+                    case '5':
+                    case '`':
+                        let rating = (e.key === '`') ? 0: parseInt(e.key);
+                        this.updateRating(this.currentlyShownItemHolder.item, rating);
+                        break;
                 }
             }
         },
@@ -128,6 +161,46 @@ export default {
                             this.showMetadata = true;
                         });
             }
+        },
+        updateRating(item, rating) {
+            this.postBackgroundAction('set_rating', {value: rating, ids: [item.id]})
+                .then(() => {
+                    item.rating = rating;
+                    this.refreshRatingsOverview();
+                })
+            
+        },
+        refreshRatingsOverview() {
+            this.ratingsOverview = [0, 0, 0, 0, 0];
+            this.ratedItemsCount = 0;
+            for(let item of this.items) {
+                let itemRating = item.rating;
+                if(itemRating > 0) {
+                    ++this.ratedItemsCount;
+                    this.ratingsOverview[5 - itemRating]++;
+                }
+            }
+            if(this.ratedItemsCount > 0) {
+                // at 1*, we write the number of items
+                // at 2* and up, we write the <number> / <recommended number>
+                let recommended = this.ratedItemsCount;
+                for(let i = this.ratingsOverview.length - 2; i >= 0; --i) {
+                    recommended = recommended / 5;
+                    this.ratingsOverview[i] = `${this.ratingsOverview[i]} / ${Math.round(recommended)}`;
+                }
+            }
+        },
+        postBackgroundAction(action, params) {
+            let formData = new FormData();
+            formData.append('csrfmiddlewaretoken', Cookies.get('csrftoken'));
+            formData.append('action', action);
+            if (params) {
+                for (const [key, val] of Object.entries(params)) {
+                    formData.append(key, val);
+                }
+            }
+            return fetch('/main/api/imgset/actions', { method: 'POST', body: formData })
+                .then(res => parseResponse(res, `Could not execute action "${action}"`, false));
         }
     },
     data() {
@@ -140,6 +213,8 @@ export default {
             showMetadata: false,
             metadata: null,
             metadataLoading: false,
+            ratingsOverview: [],
+            ratedItemsCount: 0,
         }
     },
     created() {
@@ -188,6 +263,8 @@ export default {
                     ctrl.loadCache();
                 }
                 this.imageCache[3] = img; // always the middle element
+
+                this.refreshRatingsOverview();
             } else {
                 this.imageCache = [];
             }

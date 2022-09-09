@@ -40,7 +40,7 @@ class ImageNestedSerializer(serializers.HyperlinkedModelSerializer):
 
     class Meta:
         model = Image
-        fields = ['id', 'name', 'author', 'date_time', 'coordinates', 'supported_metadata_types', 'errors', 'attachments', 'thumbnail']
+        fields = ['id', 'name', 'author', 'date_time', 'coordinates', 'rating', 'supported_metadata_types', 'errors', 'attachments', 'thumbnail']
     
     def get_date_time(self, obj):
         return obj.date_time.isoformat() if obj.date_time is not None else None

@@ -11,6 +11,7 @@ export default {
                         <li v-for="att in item.attachments">{{att.name}}</li>
                     </ul>
                 </i>
+                <i class="mdi mdi-star"></i>{{item.rating}}
                 <span>{{item.name}}</span>
                 <i v-if="item.coordinates" class="mdi mdi-earth"></i>
             </div>

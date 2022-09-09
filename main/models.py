@@ -178,6 +178,7 @@ class Image(models.Model):
     gps_longitude = models.FloatField(null=True)
     gps_latitude = models.FloatField(null=True)
     gps_altitude = models.FloatField(null=True)
+    rating = models.IntegerField(null=False, default=0)
 
     def read_metadata(self):
         # read metadata from EXIF here. No need to save(), the caller can do that
@@ -343,3 +344,8 @@ class ImageSetService:
             images = Image.objects.filter(pk__in = image_ids, gps_longitude__isnull=True, gps_latitude__isnull=True)
         
         images.update(gps_latitude=latitude, gps_longitude=longitude, gps_altitude=None)
+
+    def set_rating(self, image_ids, rating):
+        self.logger.info(f"Setting rating for {image_ids} to {rating}")
+        images = Image.objects.filter(pk__in = image_ids)
+        images.update(rating = rating)

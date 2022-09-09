@@ -359,6 +359,50 @@ tr:nth-child(2n + 1) {
     width: 100%;
 }
 
+#image-carousel-modal #properties {
+    display: flex;
+    flex-flow: column nowrap;
+    color: #FAFFFD;
+}
+
+#image-carousel-modal #properties header {
+    border-top: 1px solid #FAFFFD;
+    border-bottom: 1px solid #FAFFFD;
+    padding: 0.25rem;
+    display: flex;
+    flex-flow: row nowrap;
+    font-weight: bold;
+}
+
+#image-carousel-modal #properties header span {
+    flex: 1;
+    text-align: center;
+}
+
+#image-carousel-modal #rating-overview {
+    margin-top: auto;
+}
+
+#image-carousel-modal #rating-overview table tr {
+    background-color: transparent;
+}
+
+#image-carousel-modal #rating-overview table tr td {
+    border: none;
+    text-align: right;
+}
+
+#image-carousel-modal #rating-overview table tr th {
+    border: none;
+    background-color: transparent;
+    color: white;
+    padding: 0.5rem;
+}
+
+#image-carousel-modal #rating-overview table tr.active {
+    background-color: #9FD356;
+}
+
 /*
  * Selector
  */

@@ -1,4 +1,4 @@
-import { createApp } from 'vue';
+import { createApp, inject } from 'vue';
 import { createRouter, createWebHashHistory } from 'vue-router';
 import IndexView from './modules/indexView.js'
 import DirectoryLink from './modules/directoryLink.js'
@@ -32,6 +32,7 @@ const router = createRouter({
 class Settings {
     constructor() {
         this.dateTimeLocale = 'en-BE';
+        this.numberLocale = 'en-BE';
     }
 }
 
@@ -48,6 +49,13 @@ app.component('geotag-dialog', GeotagDialog);
 app.component('pick-coordinates-dialog', PickCoordinatesDialog);
 app.component('picture-map-dialog', PictureMapDialog);
 app.component('image-carousel-dialog', ImageCarouselDialog);
+
+app.config.globalProperties.$filters = {
+    formatPercentage(value, precision) {
+        let settings = inject('settings');
+        return new Intl.NumberFormat(settings.numberLocale, { style: 'percent', maximumFractionDigits: precision }).format(value);
+    }
+};
 
 app.use(router);
 app.mount('#app');

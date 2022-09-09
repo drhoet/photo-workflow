@@ -121,6 +121,9 @@ class ImageSetActionsView(APIView):
                 lat = float(request.POST["lat"])
                 lon = float(request.POST["lon"])
                 ImageSetService.instance().set_coordinates(ids, lat, lon, overwrite)
+            elif action == "set_rating":
+                value = int(request.POST["value"])
+                ImageSetService.instance().set_rating(ids, value)
             else:
                 return Response({'message': "Unsupported action"}, 400)
 
