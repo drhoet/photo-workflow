@@ -45,6 +45,14 @@ export default {
     computed: {
         applyToItems() {
             return this.selectedItems.length > 0 ? this.selectedItems: this.directory.images;
+        },
+        keyHandlerSuspended() {
+            for(let modal of Object.keys(this.modals)) {
+                if(this.modals[modal]) {
+                    return true; // if any modal is open, we suspend the key handlers
+                }
+            }
+            return false;
         }
     },
     methods: {
@@ -203,20 +211,21 @@ export default {
             return this.selectedItems.includes(image);
         },
         onKeyDown(e) {
+            if(this.keyHandlerSuspended) {
+                return;
+            }
             if(e.key == "Shift" && !e.repeat) { // on shift down (make sure we don't trigger when the key stays down)
                 this.onSelectStartHandler = document.onselectstart; // back-up onselectstart
                 document.onselectstart = (e) => false; // don't allow it
             }
             if(e.key == "Escape") {
-                for(let modal of Object.keys(this.modals)) {
-                    if(this.modals[modal]) {
-                        return; // if any modal is open, we don't handle the escape key.
-                    }
-                }
                 this.selectedItems.length = 0;
             }
         },
         onKeyUp(e) {
+            if(this.keyHandlerSuspended) {
+                return;
+            }
             if(e.key == "Shift") {
                 document.onselectstart = this.onSelectStartHandler; // restore onselectstart
             }
