@@ -26,9 +26,10 @@ class JpegImageSerializer:
             params.append(f"-OffsetTimeOriginal={format_exif_offsettime(metadata.date_time_original)}")
             params.append(f"-FileModifyDate={format_file_modify_date(metadata.date_time_original)}")  # set file modify date to picture taken date
         if metadata.longitude is not None and metadata.latitude is not None:
-            params.append(f"-GPSLongitude={metadata.longitude} -GPSLatitude={metadata.latitude}")
+            params.append(f"-GPSLongitude={metadata.longitude}")
+            params.append(f"-GPSLatitude='{metadata.latitude}'")
             if metadata.altitude is not None:
-                params.append(f"-GPSAltitude={metadata.altitude}")
+                params.append(f"-GPSAltitude='{metadata.altitude}'")
         if metadata.artist is not None and metadata.date_time_original is not None:
             params.append(f"-Copyright=Copyright © {metadata.date_time_original.year} Dries Hoet, all rights reserved.")
         return params

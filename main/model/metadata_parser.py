@@ -66,9 +66,9 @@ class FujiXT20ImageParser(AuthorMixin, RatingMixin, GpsCoordinatesMixin, Metadat
             self.logger.info(f'There is a value for EXIF:DateTimeOriginal: {date_time_original_naive}')
 
             # if we could not find the date_time of the picture, it makes no sense to figure out the offset...
-            if "EXIF:OffsetTime" in json:
-                tz = parse_exif_offsettime(json["EXIF:OffsetTime"])
-                self.logger.info(f'There is a value for EXIF:OffsetTime: {tz}')
+            if "EXIF:OffsetTimeOriginal" in json:
+                tz = parse_exif_offsettime(json["EXIF:OffsetTimeOriginal"])
+                self.logger.info(f'There is a value for EXIF:OffsetTimeOriginal: {tz}')
                 if tz is not None:
                     date_time_original = date_time_original_naive.replace(tzinfo=tz)
             
@@ -112,9 +112,9 @@ class FallbackImageParser(AuthorMixin, RatingMixin, GpsCoordinatesMixin, Metadat
             date_time_original_naive = parse_exif_datetimeoriginal(json["EXIF:DateTimeOriginal"])
             self.logger.info(f'There is a value for EXIF:DateTimeOriginal: {date_time_original_naive}')
             # if we could not find the date_time of the picture, it makes no sense to figure out the offset...
-            if "EXIF:OffsetTime" in json:
-                tz = parse_exif_offsettime(json["EXIF:OffsetTime"])
-                self.logger.info(f'There is a value for EXIF:OffsetTime: {tz}')
+            if "EXIF:OffsetTimeOriginal" in json:
+                tz = parse_exif_offsettime(json["EXIF:OffsetTimeOriginal"])
+                self.logger.info(f'There is a value for EXIF:OffsetTimeOriginal: {tz}')
                 if tz is not None:
                     date_time_original = date_time_original_naive.replace(tzinfo=tz)
             
