@@ -179,6 +179,8 @@ class Image(models.Model):
     gps_latitude = models.FloatField(null=True)
     gps_altitude = models.FloatField(null=True)
     rating = models.IntegerField(null=False, default=0)
+    pick_label = models.CharField(max_length=10, null=True) # red, yellow, green
+    color_label = models.CharField(max_length=10, null=True) # red, orange, yellow, green, blue, magenta, gray, black, white
 
     def read_metadata(self):
         # read metadata from EXIF here. No need to save(), the caller can do that
@@ -196,6 +198,15 @@ class Image(models.Model):
             if new_auth is None:
                 new_auth = Author.objects.filter(name="Unknown").first()
             self.author = new_auth
+        
+        if metadata.rating is not None:
+            self.rating = int(metadata.rating)
+        
+        if metadata.pick_label is not None:
+            self.pick_label = metadata.pick_label
+        
+        if metadata.color_label is not None:
+            self.color_label = metadata.color_label
 
         if metadata.date_time_original is not None:
             self.date_time_utc = metadata.date_time_original.astimezone(timezone.utc)
@@ -349,3 +360,13 @@ class ImageSetService:
         self.logger.info(f"Setting rating for {image_ids} to {rating}")
         images = Image.objects.filter(pk__in = image_ids)
         images.update(rating = rating)
+    
+    def set_pick_label(self, image_ids, pick_label):
+        self.logger.info(f"Setting PickLabel for {image_ids} to {pick_label}")
+        images = Image.objects.filter(pk__in = image_ids)
+        images.update(pick_label = pick_label)
+    
+    def set_color_label(self, image_ids, color_label):
+        self.logger.info(f"Setting ColorLabel for {image_ids} to {color_label}")
+        images = Image.objects.filter(pk__in = image_ids)
+        images.update(color_label = color_label)

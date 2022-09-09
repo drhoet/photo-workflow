@@ -124,6 +124,14 @@ class ImageSetActionsView(APIView):
             elif action == "set_rating":
                 value = int(request.POST["value"])
                 ImageSetService.instance().set_rating(ids, value)
+            elif action == "set_pick_label":
+                value = request.POST["value"]
+                value = None if value == 'null' else value
+                ImageSetService.instance().set_pick_label(ids, value)
+            elif action == "set_color_label":
+                value = request.POST["value"]
+                value = None if value == 'null' else value
+                ImageSetService.instance().set_color_label(ids, value)
             else:
                 return Response({'message': "Unsupported action"}, 400)
 

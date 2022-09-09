@@ -13,6 +13,8 @@ export default {
                 </i>
                 <i class="mdi mdi-star"></i>{{item.rating}}
                 <span>{{item.name}}</span>
+                <i v-if="item.pick_label" class="mdi mdi-flag" :class="item.pick_label"></i>
+                <i v-if="item.color_label" class="mdi mdi-checkbox-blank" :class="item.color_label"></i>
                 <i v-if="item.coordinates" class="mdi mdi-earth"></i>
             </div>
         </a>

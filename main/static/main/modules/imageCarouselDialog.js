@@ -3,10 +3,23 @@ import Cookies from "js-cookie";
 
 export default {
     template: `
-        <modal :showModal="showModal" @cancel="closeModal" :closable="false" :cancellable="false" :closeOnClickOutside="true" :loading="loading" id="image-carousel-modal">
+        <modal :showModal="showModal" @cancel="closeModal" :closable="false" :cancellable="false" :closeOnClickOutside="true" :closeOnEscape="!keyHandlerSuspended" :loading="loading" id="image-carousel-modal">
             <template v-slot:body>
                 <template v-if="!loading">
                     <section id="properties">
+                        <section id="colors-flags">
+                            <header>
+                                <span>Colors & flags</span>
+                            </header>
+                            <table>
+                                <tr @click="modals.selectPickLabel = true">
+                                    <th>Flag</th><td class="mdi" :class="[pickLabel, pickLabel ? 'mdi-flag' : 'mdi-flag-off-outline']"></td>
+                                </tr>
+                                <tr @click="modals.selectColorLabel = true">
+                                    <th>Color</th><td class="mdi" :class="[colorLabel, colorLabel ? 'mdi-checkbox-blank' : 'mdi-checkbox-blank-off-outline']"></td>
+                                </tr>
+                            </table>
+                        </section>
                         <section id="rating-overview">
                             <header>
                                 <span>Rating</span>
@@ -20,7 +33,7 @@ export default {
                                 </i>
                             </header>
                             <table>
-                                <tr v-for="(r, index) in ratingsOverview" :class="{active: currentlyShownItemHolder.item.rating === 5 - index}">
+                                <tr v-for="(r, index) in ratingsOverview" :class="{active: currentlyShownItemHolder.item.rating === 5 - index}" @click="updateCurrentItemRating(5 - index)">
                                     <th class="mdi mdi-star">{{5 - index}}</th><td>{{r}}</td>
                                 </tr>
                                 <tr>
@@ -46,15 +59,32 @@ export default {
                             </tr>
                         </table>
                     </section>
+                    <select-dialog v-model:showModal="modals.selectPickLabel" :options="settings.pickLabels" :modelValue="pickLabel" @update:modelValue="editPickLabel($event)"/>
+                    <select-dialog v-model:showModal="modals.selectColorLabel" :options="settings.colorLabels" :modelValue="colorLabel" @update:modelValue="editColorLabel($event)"/>
                 </template>
             </template>
         </modal>
     `,
+    inject: ['settings'],
     props: ['showModal', 'items', 'startImage'],
     emits: ['update:showModal'],
     computed: {
         imageUrl() {
             return this.imageCache[3].src; // always the middle element
+        },
+        pickLabel() {
+            return this.currentlyShownItemHolder.item.pick_label;
+        },
+        colorLabel() {
+            return this.currentlyShownItemHolder.item.color_label;
+        },
+        keyHandlerSuspended() {
+            for(let modal of Object.keys(this.modals)) {
+                if(this.modals[modal]) {
+                    return true; // if any modal is open, we suspend the key handlers
+                }
+            }
+            return false;
         }
     },
     methods: {
@@ -63,6 +93,9 @@ export default {
         },
         onKeyDown(e) {
             if(this.showModal) {
+                if(this.keyHandlerSuspended) {
+                    return;
+                }
                 switch(e.key) {
                     case 'ArrowLeft':
                     case 'j':
@@ -95,7 +128,13 @@ export default {
                     case '5':
                     case '`':
                         let rating = (e.key === '`') ? 0: parseInt(e.key);
-                        this.updateRating(this.currentlyShownItemHolder.item, rating);
+                        this.updateCurrentItemRating(rating);
+                        break;
+                    case 'f':
+                        this.modals.selectPickLabel = true;
+                        break;
+                    case 'c':
+                        this.modals.selectColorLabel = true;
                         break;
                 }
             }
@@ -120,8 +159,8 @@ export default {
             } else {
                 this.metadataLoading = true;
                 let id = this.currentlyShownItemHolder.item.id;
-                fetch(`/main/api/img/${id}/metadata`, { method: 'get', headers: { 'content-type': 'application/json' } })
-                        .then(res => parseResponse(res, `Could not load metadata for file with id ${id}`, true))
+                return fetch(`/main/api/img/${id}/metadata`, { method: 'get', headers: { 'content-type': 'application/json' } })
+                        .then(res => parseResponse(res, `Could not load metadata for file with id ${id}`, false))
                         .then(json => {
                             let dict = {};
                             for(const [key, value] of Object.entries(json)) {
@@ -160,12 +199,13 @@ export default {
                         });
             }
         },
-        updateRating(item, rating) {
-            this.postBackgroundAction('set_rating', {value: rating, ids: [item.id]})
+        updateCurrentItemRating(rating) {
+            let item = this.currentlyShownItemHolder.item;
+            return this.postBackgroundAction('set_rating', {value: rating, ids: [item.id]})
                 .then(() => {
                     item.rating = rating;
                     this.refreshRatingsOverview();
-                })
+                });
             
         },
         refreshRatingsOverview() {
@@ -187,6 +227,20 @@ export default {
                     this.ratingsOverview[i] = `${this.ratingsOverview[i]} / ${Math.round(recommended)}`;
                 }
             }
+        },
+        editColorLabel(value) {
+            let item = this.currentlyShownItemHolder.item;
+            return this.postBackgroundAction('set_color_label', {value: value, ids: [item.id]})
+                .then(() => {
+                    item.color_label = value;
+                });
+        },
+        editPickLabel(value) {
+            let item = this.currentlyShownItemHolder.item;
+            return this.postBackgroundAction('set_pick_label', {value: value, ids: [item.id]})
+                .then(() => {
+                    item.pick_label = value;
+                });
         },
         postBackgroundAction(action, params) {
             let formData = new FormData();
@@ -213,6 +267,12 @@ export default {
             metadataLoading: false,
             ratingsOverview: [],
             ratedItemsCount: 0,
+            selectOptions: {},
+            selectOptionActive: null,
+            modals: {
+                selectColorLabel: false,
+                selectPickLabel: false,
+            },
         }
     },
     created() {

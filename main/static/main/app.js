@@ -12,6 +12,7 @@ import ImageOverview from './modules/imageOverview.js'
 import PickCoordinatesDialog from './modules/pickCoordinatesDialog.js'
 import PictureMapDialog from './modules/pictureMapDialog.js'
 import ImageCarouselDialog from './modules/imageCarouselDialog.js';
+import SelectDialog from './modules/selectDialog.js';
 
 const About = { template: '<div>About</div>' }
 
@@ -33,6 +34,25 @@ class Settings {
     constructor() {
         this.dateTimeLocale = 'en-BE';
         this.numberLocale = 'en-BE';
+
+        this.pickLabels = [
+            { value: null, label: 'N/A', key: ' ', icon: 'flag-off-outline' },
+            { value: 'red', label: '<unused>', key: 'r', icon: 'flag' },
+            { value: 'yellow', label: '<unused>', key: 'y', icon: 'flag' },
+            { value: 'green', label: 'Selection', key: 'g', icon: 'flag' }
+        ];
+        this.colorLabels = [
+            { value: null, label: 'N/A', key: ' ', icon: 'checkbox-blank-off-outline' },
+            { value: 'red', label: 'Needs editing', key: 'r', icon: 'checkbox-blank' },
+            { value: 'orange', label: '<unused>', key: 'o', icon: 'checkbox-blank' },
+            { value: 'yellow', label: '<unused>', key: 'y', icon: 'checkbox-blank' },
+            { value: 'green', label: '<unused>', key: 'g', icon: 'checkbox-blank' },
+            { value: 'blue', label: '<unused>', key: 'b', icon: 'checkbox-blank' },
+            { value: 'magenta', label: '<unused>', key: 'm', icon: 'checkbox-blank' },
+            { value: 'gray', label: '<unused>', key: 'e', icon: 'checkbox-blank' },
+            { value: 'black', label: '<unused>', key: 'b', icon: 'checkbox-blank' },
+            { value: 'white', label: '<unused>', key: 'w', icon: 'checkbox-blank' },
+        ]
     }
 }
 
@@ -49,6 +69,7 @@ app.component('geotag-dialog', GeotagDialog);
 app.component('pick-coordinates-dialog', PickCoordinatesDialog);
 app.component('picture-map-dialog', PictureMapDialog);
 app.component('image-carousel-dialog', ImageCarouselDialog);
+app.component('select-dialog', SelectDialog);
 
 app.config.globalProperties.$filters = {
     formatPercentage(value, precision) {

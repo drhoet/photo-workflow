@@ -47,6 +47,42 @@ tr:nth-child(2n + 1) {
     display: none;
 }
 
+.red {
+    color: red;
+}
+
+.orange {
+    color: #FA824C;
+}
+
+.yellow {
+    color: gold;
+}
+
+.green {
+    color: green;
+}
+
+.blue {
+    color: blue;
+}
+
+.magenta {
+    color: magenta;
+}
+
+.gray {
+    color: gray;
+}
+
+.black {
+    color: black;
+}
+
+.white {
+    color: white;
+}
+
 #breadcrumbs {
     font-size: 1.3rem;
     margin-bottom: 1rem;
@@ -366,12 +402,11 @@ tr:nth-child(2n + 1) {
 }
 
 #image-carousel-modal #properties header {
-    border-top: 1px solid #FAFFFD;
-    border-bottom: 1px solid #FAFFFD;
-    padding: 0.25rem;
+    padding: 0.5rem;
     display: flex;
     flex-flow: row nowrap;
     font-weight: bold;
+    background-color: #4B88A2;
 }
 
 #image-carousel-modal #properties header span {
@@ -379,27 +414,62 @@ tr:nth-child(2n + 1) {
     text-align: center;
 }
 
-#image-carousel-modal #rating-overview {
-    margin-top: auto;
+#image-carousel-modal #properties table {
+    width: 100%;
 }
 
-#image-carousel-modal #rating-overview table tr {
+#image-carousel-modal #properties table tr {
     background-color: transparent;
 }
 
-#image-carousel-modal #rating-overview table tr td {
+#image-carousel-modal #properties table tr td {
     border: none;
     text-align: right;
 }
 
-#image-carousel-modal #rating-overview table tr th {
+#image-carousel-modal #properties table tr th {
     border: none;
     background-color: transparent;
-    color: white;
+    color: #FAFFFD;
     padding: 0.5rem;
 }
 
-#image-carousel-modal #rating-overview table tr.active {
+#image-carousel-modal #properties table tr.active {
+    background-color: #9FD356;
+}
+
+#image-carousel-modal #colors-flags {
+    margin-top: auto;
+}
+
+#image-carousel-modal .select-dialog .modal-body {
+    background-color: #FAFFFD;
+    display: flex;
+    flex-flow: column nowrap;
+    border-radius: 0.3rem;
+}
+
+#image-carousel-modal .select-dialog .modal-body .option {
+    padding: 0.5rem;
+    cursor: pointer;
+}
+
+#image-carousel-modal .option i {
+    margin-right: 0.5rem;
+}
+
+#image-carousel-modal .select-dialog .modal-body .option:first-child {
+    border-top-left-radius: 0.3rem;
+    border-top-right-radius: 0.3rem;
+}
+
+#image-carousel-modal .select-dialog .modal-body .option:last-child {
+    border-bottom-left-radius: 0.3rem;
+    border-bottom-right-radius: 0.3rem;
+}
+
+#image-carousel-modal .select-dialog .modal-body .option:hover {
+    color: #FAFFFD;
     background-color: #9FD356;
 }
 
@@ -617,6 +687,7 @@ button .spinner {
     left: 50%;
     min-width: 250px;
     border-radius: 0.1rem;
+    font-weight: normal;
 }
 
 .tooltip-symbol:hover .tooltip-contents {

@@ -5,12 +5,14 @@ from enum import Enum, auto
 class MetadataType(Enum):
     DATE_TIME = auto()
     RATING = auto()
+    PICK_LABEL = auto()
+    COLOR_LABEL = auto()
     ARTIST = auto()
     COORDINATES = auto()
 
 
 class JpegImageSerializer:
-    supported_metadata_types = (MetadataType.ARTIST, MetadataType.RATING, MetadataType.DATE_TIME, MetadataType.COORDINATES)
+    supported_metadata_types = (MetadataType.ARTIST, MetadataType.RATING, MetadataType.PICK_LABEL, MetadataType.COLOR_LABEL, MetadataType.DATE_TIME, MetadataType.COORDINATES)
 
     def can_serialize(self, extension) -> bool:
         return ".jpeg" == extension.lower() or ".jpg" == extension.lower()
@@ -21,6 +23,14 @@ class JpegImageSerializer:
             params.append(f"-Artist={metadata.artist}")
         if metadata.rating is not None:
             params.append(f"-Rating={metadata.rating}")
+        if metadata.pick_label is not None:
+            params.append(f"-PickLabel={metadata.pick_label}")
+        else:
+            params.append("-PickLabel=")
+        if metadata.color_label is not None:
+            params.append(f"-ColorLabel={metadata.color_label}")
+        else:
+            params.append(f"-ColorLabel=")
         if metadata.date_time_original is not None:
             params.append(f"-AllDates={format_exif_datetimeoriginal(metadata.date_time_original)}")
             params.append(f"-OffsetTimeOriginal={format_exif_offsettime(metadata.date_time_original)}")
