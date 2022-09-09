@@ -1,11 +1,8 @@
-import { parseResponse, UiError } from "./errorHandler.js";
 import { DateTime, FixedOffsetZone } from "luxon";
 
 export default {
-    // remark: we cannot use v-model:showModal below, because that will expand to something like @update:showModal="showModal = false",
-    // attempting to update the prop showModal.
     template: `
-        <modal :showModal="showModal" @update:showModal="closeModal" @ok="updateTimezone" id="edit-timezone-modal">
+        <modal :showModal="showModal" @ok="updateTimezone" @cancel="closeModal" id="edit-timezone-modal">
             <template v-slot:header>
                 <h3>Edit timezone</h3>
             </template>

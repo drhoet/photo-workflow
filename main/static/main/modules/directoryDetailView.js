@@ -239,7 +239,6 @@ export default {
             lastSelectedItem: null,
             selectedItems: [],
             onSelectStartHandler: null,
-            activeModal: null,
             modals: {
                 editAuthor: false,
                 editTimezone: false,

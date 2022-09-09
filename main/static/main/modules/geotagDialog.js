@@ -2,10 +2,8 @@ import { parseResponse, UiError } from "./errorHandler.js";
 import { nextTick } from 'vue';
 
 export default {
-    // remark: we cannot use v-model:showModal below, because that will expand to something like @update:showModal="showModal = false",
-    // attempting to update the prop showModal.
     template: `
-        <modal :showModal="showModal" @update:showModal="closeModal" @ok="updateTrackIds" :okButtonDisabled="!trackIdsChosen" :loading="loading" id="geotag-modal">
+        <modal :showModal="showModal" @ok="updateTrackIds" @cancel="closeModal" :okButtonDisabled="!trackIdsChosen" :loading="loading" id="geotag-modal">
             <template v-slot:header>
                 <h3>Select tracks to be used for geotagging</h3>
             </template>

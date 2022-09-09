@@ -44,14 +44,12 @@ export default {
             default: false,
         }
     },
-    emits: ['update:showModal', 'ok', 'cancel'],
+    emits: ['ok', 'cancel'],
     methods: {
         ok() {
-            this.$emit('update:showModal', false);
             this.$emit('ok');
         },
         cancel() {
-            this.$emit('update:showModal', false);
             this.$emit('cancel');
         },
         onClickOutside() {

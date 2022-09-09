@@ -1,10 +1,8 @@
 import { parseResponse } from "./errorHandler.js";
 
 export default {
-    // remark: we cannot use v-model:showModal below, because that will expand to something like @update:showModal="showModal = false",
-    // attempting to update the prop showModal.
     template: `
-        <modal :showModal="showModal" @update:showModal="closeModal" @ok="updateAuthor" :okButtonDisabled="!authorChosen" id="edit-author-modal">
+        <modal :showModal="showModal" @ok="updateAuthor" @cancel="closeModal" :okButtonDisabled="!authorChosen" id="edit-author-modal">
             <template v-slot:header>
                 <h3>Edit author</h3>
             </template>

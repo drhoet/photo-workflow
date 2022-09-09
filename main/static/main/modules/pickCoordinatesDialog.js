@@ -1,10 +1,8 @@
 import { nextTick } from 'vue';
 
 export default {
-    // remark: we cannot use v-model:showModal below, because that will expand to something like @update:showModal="showModal = false",
-    // attempting to update the prop showModal.
     template: `
-        <modal :showModal="showModal" @update:showModal="closeModal" @ok="updateTrackIds" :okButtonDisabled="!coordinatesChosen" id="pick-coordinates-modal">
+        <modal :showModal="showModal" @ok="updateTrackIds" @cancel="closeModal" :okButtonDisabled="!coordinatesChosen" id="pick-coordinates-modal">
             <template v-slot:header>
                 <h3>Select a point on the map</h3>
             </template>

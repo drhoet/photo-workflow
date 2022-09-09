@@ -2,10 +2,8 @@ import { parseResponse } from "./errorHandler.js";
 import Cookies from "js-cookie";
 
 export default {
-    // remark: we cannot use v-model:showModal below, because that will expand to something like @update:showModal="showModal = false",
-    // attempting to update the prop showModal.
     template: `
-        <modal :showModal="showModal" @update:showModal="closeModal" :closable="false" :cancellable="false" :closeOnClickOutside="true" :loading="loading" id="image-carousel-modal">
+        <modal :showModal="showModal" @cancel="closeModal" :closable="false" :cancellable="false" :closeOnClickOutside="true" :loading="loading" id="image-carousel-modal">
             <template v-slot:body>
                 <template v-if="!loading">
                     <section id="properties">

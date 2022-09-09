@@ -1,10 +1,8 @@
 import { nextTick } from 'vue';
 
 export default {
-    // remark: we cannot use v-model:showModal below, because that will expand to something like @update:showModal="showModal = false",
-    // attempting to update the prop showModal.
     template: `
-        <modal :showModal="showModal" @update:showModal="closeModal" @ok="closeModal" :cancellable="false" id="picture-map-modal">
+        <modal :showModal="showModal" @ok="closeModal" @cancel="closeModal" :cancellable="false" id="picture-map-modal">
             <template v-slot:header>
                 <h3>Images in this directory</h3>
             </template>
