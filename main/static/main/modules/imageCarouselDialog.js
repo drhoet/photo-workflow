@@ -92,7 +92,6 @@ export default {
             this.$emit('update:showModal', false);
         },
         onKeyDown(e) {
-            if(this.showModal) {
                 if(this.keyHandlerSuspended) {
                     return;
                 }
@@ -117,6 +116,13 @@ export default {
                         this.currentlyShownItemHolder = this.currentlyShownItemHolder.next;
                         this.loadCache();
                         break;
+            }
+        },
+        onKeyUp(e) {
+            if(this.keyHandlerSuspended) {
+                return;
+            }
+            switch(e.key) {
                     case 'i':
                         this.toggleMetadata();
                         break;
@@ -136,7 +142,6 @@ export default {
                     case 'c':
                         this.modals.selectColorLabel = true;
                         break;
-                }
             }
         },
         loadCache() {
@@ -275,12 +280,6 @@ export default {
             },
         }
     },
-    created() {
-        document.addEventListener('keydown', this.onKeyDown);
-    },
-    destroyed() {
-        document.removeEventListener('keydown', this.onKeyDown);
-    },
     watch: {
         showModal: function(newVal, oldVal) {
             if(newVal) {
@@ -323,7 +322,13 @@ export default {
                 this.imageCache[3] = img; // always the middle element
 
                 this.refreshRatingsOverview();
+
+                document.addEventListener('keydown', this.onKeyDown);
+                document.addEventListener('keyup', this.onKeyUp);        
             } else {
+                document.removeEventListener('keydown', this.onKeyDown);
+                document.removeEventListener('keyup', this.onKeyUp);
+        
                 this.imageCache = [];
             }
         }

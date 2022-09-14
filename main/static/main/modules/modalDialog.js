@@ -58,15 +58,18 @@ export default {
             }
         },
         onKeyDown(e) {
-            if(this.showModal && this.closeOnEscape && e.key === 'Escape') {
+            if(this.closeOnEscape && e.key === 'Escape') {
                 this.cancel();
             }
         }
     },
-    created() {
-        document.addEventListener('keydown', this.onKeyDown);
-    },
-    destroyed() {
-        document.removeEventListener('keydown', this.onKeyDown);
+    watch: {
+        showModal(newVal, oldVal) {
+            if(newVal) {
+                document.addEventListener('keydown', this.onKeyDown);
+            } else {
+                document.removeEventListener('keydown', this.onKeyDown);
+            }
+        }
     }
 }
