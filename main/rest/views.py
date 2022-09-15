@@ -6,8 +6,8 @@ from rest_framework.response import Response
 from django.http import Http404
 from django.shortcuts import get_object_or_404
 
-from main.models import Directory, Image, Attachment, Author, ImageSetActionError, ImageSetService, MetadataIncompleteError
-from main.rest.serializers import DirectorySerializer, AuthorSerializer, AttachmentSerializer, DirectoryNestedSerializer, GpsTrackWithMetadataSerializer
+from main.models import Directory, Image, Attachment, Author, ImageSetActionError, ImageSetService, MetadataIncompleteError, Tag
+from main.rest.serializers import DirectorySerializer, AuthorSerializer, AttachmentSerializer, DirectoryNestedSerializer, GpsTrackWithMetadataSerializer, TagSerializer
 
 class AuthorListView(generics.ListAPIView):
     queryset = Author.objects.all()
@@ -22,6 +22,16 @@ class AuthorDetailView(generics.RetrieveAPIView):
 class AttachmentDetailView(generics.RetrieveAPIView): 
     queryset = Attachment.objects.all()
     serializer_class = AttachmentSerializer
+
+
+class TagTreeView(generics.ListAPIView):
+    queryset = Tag.objects.filter(parent = None)
+    serializer_class = TagSerializer
+
+
+class TagDetailView(generics.RetrieveAPIView):
+    queryset = Tag.objects.all()
+    serializer_class = TagSerializer
 
 
 class RootListView(generics.ListAPIView):
@@ -132,6 +142,9 @@ class ImageSetActionsView(APIView):
                 value = request.POST["value"]
                 value = None if value == 'null' else value
                 ImageSetService.instance().set_color_label(ids, value)
+            elif action == "set_tags":
+                value = request.POST["tagIds"].split(",") if request.POST["tagIds"] else None
+                ImageSetService.instance().set_tags(ids, value)
             else:
                 return Response({'message': "Unsupported action"}, 400)
 

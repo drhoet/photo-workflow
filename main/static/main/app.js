@@ -13,6 +13,9 @@ import PickCoordinatesDialog from './modules/pickCoordinatesDialog.js'
 import PictureMapDialog from './modules/pictureMapDialog.js'
 import ImageCarouselDialog from './modules/imageCarouselDialog.js';
 import SelectDialog from './modules/selectDialog.js';
+import TaggingDialog from './modules/taggingDialog.js';
+
+import TaggingService from './services/taggingService.js';
 
 const About = { template: '<div>About</div>' }
 
@@ -52,7 +55,7 @@ class Settings {
             { value: 'gray', label: '<unused>', key: 'e', icon: 'checkbox-blank' },
             { value: 'black', label: '<unused>', key: 'b', icon: 'checkbox-blank' },
             { value: 'white', label: '<unused>', key: 'w', icon: 'checkbox-blank' },
-        ]
+        ];
     }
 }
 
@@ -70,6 +73,7 @@ app.component('pick-coordinates-dialog', PickCoordinatesDialog);
 app.component('picture-map-dialog', PictureMapDialog);
 app.component('image-carousel-dialog', ImageCarouselDialog);
 app.component('select-dialog', SelectDialog);
+app.component('tagging-dialog', TaggingDialog);
 
 app.config.globalProperties.$filters = {
     formatPercentage(value, precision) {
@@ -81,3 +85,4 @@ app.config.globalProperties.$filters = {
 app.use(router);
 app.mount('#app');
 app.provide('settings', new Settings());
+app.provide('taggingService', new TaggingService());

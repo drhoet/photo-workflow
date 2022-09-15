@@ -75,6 +75,13 @@ WSGI_APPLICATION = 'workflow.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/3.1/ref/settings/#databases
 
+## HACK-alert: The following code forces django to use pysqlite3 instead of sqlite3 for loading sqlite.
+# We do this because the sqlite3 that is bundled with our python3 is an oldish version and we need
+# a version > 3.35 (to make bulk_create return the ids of the generated rows)
+__import__('pysqlite3')
+import sys
+sys.modules['sqlite3'] = sys.modules.pop('pysqlite3')
+
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 DATABASES = {
     'default': {

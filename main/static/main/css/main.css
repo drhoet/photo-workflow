@@ -83,6 +83,19 @@ tr:nth-child(2n + 1) {
     color: white;
 }
 
+.help {
+    background-color: cornsilk;
+    padding: 0.25rem;
+}
+
+.help .shortcut {
+    border: 1px solid;
+    border-radius: 0.25rem;
+    padding: 0.15rem;
+    background-color: blanchedalmond;
+    color: cornflowerblue;
+}
+
 #breadcrumbs {
     font-size: 1.3rem;
     margin-bottom: 1rem;
@@ -469,6 +482,57 @@ tr:nth-child(2n + 1) {
 }
 
 #image-carousel-modal .select-dialog .modal-body .option:hover {
+    color: #FAFFFD;
+    background-color: #9FD356;
+}
+
+#tagging-modal .modal-body {
+    display: flex;
+    flex-flow: column nowrap;
+    background-color: #FAFFFD;
+    width: 55rem;
+}
+
+#tagging-modal #search {
+    margin: 0.25rem;
+}
+
+#tagging-modal #selected-tags {
+    display: flex;
+    flex-flow: row wrap;
+    padding: 0.25rem;
+    gap: 0.25rem;
+}
+
+#tagging-modal #selected-tags .tag {
+    color: #FAFFFD;
+    background-color: #4B88A2;
+    border-radius: 0.25rem;
+    padding: 0.25rem 0.25rem 0.25rem 1rem;
+}
+
+#tagging-modal #selected-tags .tag i {
+    padding: 0.25rem;
+    cursor: pointer;
+    vertical-align: middle;
+}
+
+#tagging-modal #selected-tags .tag i:hover {
+    color: red;
+    background-color: #345e70;
+}
+
+#tagging-modal #proposals {
+    max-height: 30vh;
+    overflow-y: scroll;
+}
+
+#tagging-modal #proposals .tag {
+    padding: 0.5rem 0.25rem;
+    cursor: pointer;
+}
+
+#tagging-modal #proposals .tag.active {
     color: #FAFFFD;
     background-color: #9FD356;
 }

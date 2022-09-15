@@ -43,4 +43,4 @@ class ExifTool(object):
         return output[: -len(self.sentinel)]
 
     def get_metadata(self, *filenames):
-        return json.loads(self.execute("-G", "-j", "-n", *filenames))
+        return json.loads(self.execute("-use", "MWG", "-G1", "-j", "-n", *filenames))

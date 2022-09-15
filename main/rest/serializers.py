@@ -1,6 +1,7 @@
 import os
 from rest_framework import serializers
-from main.models import Directory, Image, Author, Attachment
+from rest_framework_recursive.fields import RecursiveField
+from main.models import Directory, Image, Author, Attachment, Tag
 from main.services import MetadataSerializerService
 
 class AttachmentSerializer(serializers.ModelSerializer):
@@ -31,16 +32,36 @@ class AuthorNestedSerializer(serializers.HyperlinkedModelSerializer):
         fields = ['id', 'url', 'name']
 
 
+class TagSerializer(serializers.HyperlinkedModelSerializer):
+    subtags = serializers.ListField(child=RecursiveField(), source='subtags.all')
+
+    class Meta:
+        model = Tag
+        fields = ['id', 'name', 'subtags']
+
+
+class TagNestedSerializer(serializers.HyperlinkedModelSerializer):
+    full_name = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Tag
+        fields = ['id', 'name', 'full_name']
+    
+    def get_full_name(self, obj):
+        return obj.get_full_name()
+
+
 class ImageNestedSerializer(serializers.HyperlinkedModelSerializer):
     author = AuthorNestedSerializer(read_only=True)
     attachments = AttachmentNestedSerializer(many=True)
     date_time = serializers.SerializerMethodField()
     coordinates = serializers.SerializerMethodField()
     supported_metadata_types = serializers.SerializerMethodField()
+    tags = TagNestedSerializer(many=True)
 
     class Meta:
         model = Image
-        fields = ['id', 'name', 'author', 'date_time', 'coordinates', 'rating', 'pick_label', 'color_label', 'supported_metadata_types', 'errors', 'attachments', 'thumbnail']
+        fields = ['id', 'name', 'author', 'date_time', 'coordinates', 'rating', 'pick_label', 'color_label', 'tags', 'supported_metadata_types', 'errors', 'attachments', 'thumbnail']
     
     def get_date_time(self, obj):
         return obj.date_time.isoformat() if obj.date_time is not None else None

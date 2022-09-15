@@ -7,12 +7,13 @@ class MetadataType(Enum):
     RATING = auto()
     PICK_LABEL = auto()
     COLOR_LABEL = auto()
+    TAGS = auto()
     ARTIST = auto()
     COORDINATES = auto()
 
 
 class JpegImageSerializer:
-    supported_metadata_types = (MetadataType.ARTIST, MetadataType.RATING, MetadataType.PICK_LABEL, MetadataType.COLOR_LABEL, MetadataType.DATE_TIME, MetadataType.COORDINATES)
+    supported_metadata_types = (MetadataType.ARTIST, MetadataType.RATING, MetadataType.PICK_LABEL, MetadataType.COLOR_LABEL, MetadataType.TAGS, MetadataType.DATE_TIME, MetadataType.COORDINATES)
 
     def can_serialize(self, extension) -> bool:
         return ".jpeg" == extension.lower() or ".jpg" == extension.lower()
@@ -20,28 +21,32 @@ class JpegImageSerializer:
     def serialize(self, metadata: Metadata) -> list:
         params = []
         if metadata.artist is not None:
-            params.append(f"-Artist={metadata.artist}")
+            params.append(f"-MWG:Creator={metadata.artist}")
         if metadata.rating is not None:
-            params.append(f"-Rating={metadata.rating}")
+            params.append(f"-MWG:Rating={metadata.rating}")
         if metadata.pick_label is not None:
-            params.append(f"-PickLabel={metadata.pick_label}")
+            params.append(f"-XMP-digiKam:PickLabel={metadata.pick_label}")
         else:
-            params.append("-PickLabel=")
+            params.append("-XMP-digiKam:PickLabel=")
         if metadata.color_label is not None:
-            params.append(f"-ColorLabel={metadata.color_label}")
+            params.append(f"-XMP-digiKam:ColorLabel={metadata.color_label}")
         else:
-            params.append(f"-ColorLabel=")
+            params.append(f"-XMP-digiKam:ColorLabel=")
         if metadata.date_time_original is not None:
             params.append(f"-AllDates={format_exif_datetimeoriginal(metadata.date_time_original)}")
-            params.append(f"-OffsetTimeOriginal={format_exif_offsettime(metadata.date_time_original)}")
-            params.append(f"-FileModifyDate={format_file_modify_date(metadata.date_time_original)}")  # set file modify date to picture taken date
+            params.append(f"-ExifIFD:OffsetTimeOriginal={format_exif_offsettime(metadata.date_time_original)}")
+            params.append(f"-System:FileModifyDate={format_file_modify_date(metadata.date_time_original)}")  # set file modify date to picture taken date
         if metadata.longitude is not None and metadata.latitude is not None:
             params.append(f"-GPSLongitude={metadata.longitude}")
             params.append(f"-GPSLatitude='{metadata.latitude}'")
             if metadata.altitude is not None:
                 params.append(f"-GPSAltitude='{metadata.altitude}'")
         if metadata.artist is not None and metadata.date_time_original is not None:
-            params.append(f"-Copyright=Copyright © {metadata.date_time_original.year} Dries Hoet, all rights reserved.")
+            params.append(f"-MWG:Copyright=Copyright © {metadata.date_time_original.year} Dries Hoet, all rights reserved.")
+        if metadata.tags:
+            sorted_tags = sorted(metadata.tags)
+            params.append(f"-XMP-digiKam:TagsList={', '.join(sorted_tags)}")
+            params.append(f"-XMP-lr:HierarchicalSubject={', '.join(map(lambda t: t.replace('/', '|'), sorted_tags))}")
         return params
 
 
@@ -65,8 +70,8 @@ class FujiRawImageSerializer:
         params = []
         if metadata.date_time_original is not None:
             params.append(f"-AllDates={format_exif_datetimeoriginal(metadata.date_time_original)}")
-            params.append(f"-OffsetTimeOriginal={format_exif_offsettime(metadata.date_time_original)}")
-            params.append(f"-FileModifyDate={format_file_modify_date(metadata.date_time_original)}")  # set file modify date to picture taken date
+            params.append(f"-ExifIFD:OffsetTimeOriginal={format_exif_offsettime(metadata.date_time_original)}")
+            params.append(f"-System:FileModifyDate={format_file_modify_date(metadata.date_time_original)}")  # set file modify date to picture taken date
         return params
 
 

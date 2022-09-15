@@ -7,6 +7,16 @@ export default {
             <template v-slot:body>
                 <template v-if="!loading">
                     <section id="properties">
+                        <section id="tags">
+                            <header>
+                                <span>Tags</span>
+                            </header>
+                            <table>
+                                <tr v-for="tag in tags">
+                                    <td>{{tag.full_name}}</td>
+                                </tr>
+                            </table>
+                        </section>
                         <section id="colors-flags">
                             <header>
                                 <span>Colors & flags</span>
@@ -61,6 +71,7 @@ export default {
                     </section>
                     <select-dialog v-model:showModal="modals.selectPickLabel" :options="settings.pickLabels" :modelValue="pickLabel" @update:modelValue="editPickLabel($event)"/>
                     <select-dialog v-model:showModal="modals.selectColorLabel" :options="settings.colorLabels" :modelValue="colorLabel" @update:modelValue="editColorLabel($event)"/>
+                    <tagging-dialog v-model:showModal="modals.tagging" :tags="tags" @update:tags="editTags($event)" />
                 </template>
             </template>
         </modal>
@@ -78,6 +89,9 @@ export default {
         colorLabel() {
             return this.currentlyShownItemHolder.item.color_label;
         },
+        tags() {
+            return this.currentlyShownItemHolder.item.tags;
+        },
         keyHandlerSuspended() {
             for(let modal of Object.keys(this.modals)) {
                 if(this.modals[modal]) {
@@ -92,30 +106,30 @@ export default {
             this.$emit('update:showModal', false);
         },
         onKeyDown(e) {
-                if(this.keyHandlerSuspended) {
-                    return;
-                }
-                switch(e.key) {
-                    case 'ArrowLeft':
-                    case 'j':
-                        this.showMetadata = false;
-                        for(let i = this.imageCache.length - 1; i > 0; --i) {
-                            this.imageCache[i] = this.imageCache[i - 1];
-                        }
-                        this.imageCache[0] = null;
-                        this.currentlyShownItemHolder = this.currentlyShownItemHolder.prev;
-                        this.loadCache();
-                        break;
-                    case 'ArrowRight':
-                    case 'l':
-                        this.showMetadata = false;
-                        for(let i = 1; i < this.imageCache.length; ++i) {
-                            this.imageCache[i - 1] = this.imageCache[i];
-                        }
-                        this.imageCache[this.imageCache.length - 1] = null;
-                        this.currentlyShownItemHolder = this.currentlyShownItemHolder.next;
-                        this.loadCache();
-                        break;
+            if(this.keyHandlerSuspended) {
+                return;
+            }
+            switch(e.key) {
+                case 'ArrowLeft':
+                case 'j':
+                    this.showMetadata = false;
+                    for(let i = this.imageCache.length - 1; i > 0; --i) {
+                        this.imageCache[i] = this.imageCache[i - 1];
+                    }
+                    this.imageCache[0] = null;
+                    this.currentlyShownItemHolder = this.currentlyShownItemHolder.prev;
+                    this.loadCache();
+                    break;
+                case 'ArrowRight':
+                case 'l':
+                    this.showMetadata = false;
+                    for(let i = 1; i < this.imageCache.length; ++i) {
+                        this.imageCache[i - 1] = this.imageCache[i];
+                    }
+                    this.imageCache[this.imageCache.length - 1] = null;
+                    this.currentlyShownItemHolder = this.currentlyShownItemHolder.next;
+                    this.loadCache();
+                    break;
             }
         },
         onKeyUp(e) {
@@ -123,25 +137,28 @@ export default {
                 return;
             }
             switch(e.key) {
-                    case 'i':
-                        this.toggleMetadata();
-                        break;
-                    case '0':
-                    case '1':
-                    case '2':
-                    case '3':
-                    case '4':
-                    case '5':
-                    case '`':
-                        let rating = (e.key === '`') ? 0: parseInt(e.key);
-                        this.updateCurrentItemRating(rating);
-                        break;
-                    case 'f':
-                        this.modals.selectPickLabel = true;
-                        break;
-                    case 'c':
-                        this.modals.selectColorLabel = true;
-                        break;
+                case 'i':
+                    this.toggleMetadata();
+                    break;
+                case '0':
+                case '1':
+                case '2':
+                case '3':
+                case '4':
+                case '5':
+                case '`':
+                    let rating = (e.key === '`') ? 0: parseInt(e.key);
+                    this.updateCurrentItemRating(rating);
+                    break;
+                case 'f':
+                    this.modals.selectPickLabel = true;
+                    break;
+                case 'c':
+                    this.modals.selectColorLabel = true;
+                    break;
+                case 't':
+                    this.modals.tagging = true;
+                    break;
             }
         },
         loadCache() {
@@ -247,6 +264,14 @@ export default {
                     item.pick_label = value;
                 });
         },
+        editTags(value) {
+            let item = this.currentlyShownItemHolder.item;
+            let tagIds = value.map(t => t.id);
+            return this.postBackgroundAction('set_tags', {tagIds: tagIds, ids: [item.id]})
+                .then(() => {
+                    item.tags = value;
+                });
+        },
         postBackgroundAction(action, params) {
             let formData = new FormData();
             formData.append('csrfmiddlewaretoken', Cookies.get('csrftoken'));
@@ -277,11 +302,12 @@ export default {
             modals: {
                 selectColorLabel: false,
                 selectPickLabel: false,
+                tagging: false,
             },
         }
     },
     watch: {
-        showModal: function(newVal, oldVal) {
+        showModal(newVal, oldVal) {
             if(newVal) {
                 this.loading = true;
                 this.showMetadata = false;

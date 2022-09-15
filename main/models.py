@@ -7,6 +7,7 @@ from PIL import Image as PIL_Image, ImageOps as PIL_ImageOps
 from io import BytesIO
 from django.core.files import File
 import logging, time, os
+from typing import List
 
 from .services import ExifToolService, MetadataParserService, GpsTrackParserService, GeotaggingService
 from .model.file_types import FileType
@@ -57,6 +58,33 @@ class Author(models.Model):
         return self.name
 
 
+class Tag(models.Model):
+    logger = logging.getLogger(__name__)
+
+    parent = models.ForeignKey("self", null=True, blank=True, on_delete=models.CASCADE, related_name="subtags")
+    name = models.CharField(max_length=255)
+
+    def get_full_name(self):
+        if self.parent is None:
+            return self.name
+        else:
+            return f"{self.parent.get_full_name()}/{self.name}"
+
+    def __str__(self):
+        return self.get_full_name()
+
+    @classmethod
+    def find_hierarchical_tag(cls, parent, name):
+        (first_section_name, _, remainder) = name.partition('/')
+        first_section_tag = Tag.objects.get(parent = parent, name = first_section_name)
+        if not first_section_tag:
+            return None
+        elif not remainder:
+            return first_section_tag
+        else:
+            return Tag.find_hierarchical_tag(first_section_tag, remainder)
+
+
 class Directory(models.Model):
     logger = logging.getLogger(__name__)
 
@@ -74,9 +102,9 @@ class Directory(models.Model):
         # then scan for all contents and add them to the DB
         abs_path = self.get_absolute_path()
         contents = os.listdir(abs_path)
-        new_images = []
-        new_dirs = []
-        new_attachments = []
+        new_images : List[Image] = []
+        new_dirs : List[Directory] = []
+        new_attachments : List[Attachment] = []
 
         # create sub-items (both images and subdirs)
         existing_images = self.images.values_list('name', flat=True)
@@ -98,6 +126,9 @@ class Directory(models.Model):
 
         Image.objects.bulk_create(new_images, batch_size=100)
         Directory.objects.bulk_create(new_dirs, batch_size=100)
+        
+        image_tags = [Image.tags.through(image_id=img.id, tag_id=tag.id) for img in new_images for tag in img._unsaved_tags]
+        Image.tags.through.objects.bulk_create(image_tags, batch_size=100)
 
         # create attachments
         existing_images = self.images.all()
@@ -181,7 +212,8 @@ class Image(models.Model):
     rating = models.IntegerField(null=False, default=0)
     pick_label = models.CharField(max_length=10, null=True) # red, yellow, green
     color_label = models.CharField(max_length=10, null=True) # red, orange, yellow, green, blue, magenta, gray, black, white
-
+    tags = models.ManyToManyField(Tag, related_name='tags')
+    
     def read_metadata(self):
         # read metadata from EXIF here. No need to save(), the caller can do that
         json = self.read_exif_json_from_file()
@@ -218,6 +250,14 @@ class Image(models.Model):
             self.gps_latitude = metadata.latitude
             if metadata.altitude is not None:
                 self.gps_altitude = metadata.altitude
+        
+        self._unsaved_tags = []
+        if metadata.tags: # check for empty list
+            for tag in metadata.tags:
+                db_tag = Tag.find_hierarchical_tag(None, tag)
+                if db_tag:
+                    # cannot append to self.tags here, since this object is probably not saved to the DB yet, so does not have an id
+                    self._unsaved_tags.append(db_tag)
 
     def create_thumbnail(self):
         try:
@@ -370,3 +410,11 @@ class ImageSetService:
         self.logger.info(f"Setting ColorLabel for {image_ids} to {color_label}")
         images = Image.objects.filter(pk__in = image_ids)
         images.update(color_label = color_label)
+
+    def set_tags(self, image_ids, tagIds):
+        self.logger.info(f"Setting Tags for {image_ids} to {tagIds}")
+        tags = Tag.objects.filter(pk__in = tagIds) if tagIds else []
+        images = Image.objects.filter(pk__in = image_ids)
+        for image in images:
+            image.tags.set(tags)
+

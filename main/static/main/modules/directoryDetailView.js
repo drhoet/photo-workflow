@@ -221,6 +221,12 @@ export default {
             if(e.key == "Escape") {
                 this.selectedItems.length = 0;
             }
+            if(e.key == ' ') {
+                if(this.lastSelectedItem == null) {
+                    this.lastSelectedItem = this.directory.images[0];
+                }
+                this.modals.imageCarousel = true;
+            }
         },
         onKeyUp(e) {
             if(this.keyHandlerSuspended) {

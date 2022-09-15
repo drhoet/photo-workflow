@@ -17,7 +17,7 @@ export default {
     methods: {
         loadData() {
             this.loading = true;
-            return fetch(`/main/api/roots`, { method: 'get', headers: { 'content-type': 'application/json' } })
+            return fetch(`/main/api/dirs`, { method: 'get', headers: { 'content-type': 'application/json' } })
                     .then(res => parseResponse(res, `Could not load directory roots`, true))
                     .then(json => this.roots = json)
                     .then(() => {

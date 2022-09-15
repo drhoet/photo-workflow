@@ -8,7 +8,7 @@ app_name = "main"
 urlpatterns = [
     path("img/<int:pk>/download", image.ImageDownloadView.as_view(), name="img_download"),
 
-    path("api/roots", views.RootListView.as_view(), name="root-list"),
+    path("api/dirs", views.RootListView.as_view(), name="root-list"),
     path("api/dir/<int:pk>/detail", views.DirectoryDetailView.as_view(), name="directory-detail"),
     path("api/dir/<int:pk>/crumbs", views.DirectoryCrumbsView.as_view(), name="directory-crumbs"),
     path("api/dir/<int:pk>/actions", views.DirectoryActionsView.as_view(), name="directory-actions"),
@@ -22,4 +22,7 @@ urlpatterns = [
     path("api/author/<int:pk>/detail", views.AuthorDetailView.as_view(), name="author-detail"),
     
     path("api/attachment/<int:pk>/detail", views.AttachmentDetailView.as_view(), name="attachment-detail"),
+
+    path("api/tags", views.TagTreeView.as_view(), name="tag-tree"),
+    path("api/tag/<int:pk>/detail", views.TagDetailView.as_view(), name="tag-detail"),
 ]
