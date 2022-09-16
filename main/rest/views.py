@@ -119,6 +119,9 @@ class ImageSetActionsView(APIView):
                     ImageSetService.instance().translate_timezone(ids, value)
                 else:
                     raise ValueError(f'Invalid mode: {mode}')
+            elif action == "shift_time":
+                minutes = int(request.POST["minutes"])
+                ImageSetService.instance().shift_time(ids, minutes)
             elif action == "set_author":
                 author = get_object_or_404(Author, pk=request.POST["author"])
                 ImageSetService.instance().set_author(ids, author)

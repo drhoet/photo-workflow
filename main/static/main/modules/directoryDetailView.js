@@ -18,7 +18,12 @@ export default {
                     </span>
                 </button>
                 <button @click="modals.editAuthor=true"><i class="mdi mdi-account"></i><span>Edit author</span></button>
-                <button @click="modals.editTimezone=true"><i class="mdi mdi-clock"></i><span>Edit timezone</span></button>
+                <button class="multiple"><i class="mdi mdi-clock"></i>
+                    <span>
+                        <div @click="modals.shiftTime=true">Shift time</div>
+                        <div @click="modals.editTimezone=true">Edit timezone</div>
+                    </span>
+                </button>
                 <button @click="writeMetadata()"><i class="mdi mdi-content-save"></i><span>Write metadata</span></button>
             </section>
             <div v-if="loading" class="spinner">Loading...</div>
@@ -34,6 +39,7 @@ export default {
                     </ul>
                 </section>
                 <edit-author-dialog v-model:showModal="modals.editAuthor" :modelValue="0" @update:modelValue="editAuthor($event)"/>
+                <shift-time-dialog v-model:showModal="modals.shiftTime" @update:time="shiftTime($event)"/>
                 <edit-timezone-dialog v-model:showModal="modals.editTimezone" :items="applyToItems" @update:timezone="editTimezone($event)"/>
                 <geotag-dialog v-model:showModal="modals.geotag" :directory="directory" @update:trackIds="geotag($event)"/>
                 <pick-coordinates-dialog v-model:showModal="modals.pickCoordinates" @update:coordinates="editCoordinates($event)"/>
@@ -133,6 +139,16 @@ export default {
                 throw new UiError('No images selected that support coordinates.');
             }
             return this.postImageSetAction('edit_timezone', {mode: params.mode, value: params.value, ids: ids})
+                .then(() => this.loadData(this.$route.params.id));
+        },
+        shiftTime(minutes) {
+            let ids = this.applyToItems
+                .filter(img => img.supported_metadata_types.includes('DATE_TIME'))
+                .map(img => img.id);
+            if(ids.length == 0) {
+                throw new UiError('No images selected that support coordinates.');
+            }
+            return this.postImageSetAction('shift_time', {minutes: minutes, ids: ids})
                 .then(() => this.loadData(this.$route.params.id));
         },
         editCoordinates(params) {
@@ -247,6 +263,7 @@ export default {
             onSelectStartHandler: null,
             modals: {
                 editAuthor: false,
+                shiftTime: false,
                 editTimezone: false,
                 geotag: false,
                 pickCoordinates: false,

@@ -352,6 +352,10 @@ class ImageSetService:
         # DateTimeField and things get messed up.
         images.update(tz_offset = Cast(F('tz_offset'), output_field=models.IntegerField()) + Cast(timedelta(minutes=tz_minutes), output_field=models.IntegerField()), date_time_utc = F('date_time_utc') - timedelta(minutes=tz_minutes))
     
+    def shift_time(self, image_ids, minutes):
+        images = Image.objects.filter(pk__in = image_ids, date_time_utc__isnull=False)
+        images.update(date_time_utc = F('date_time_utc') + timedelta(minutes=minutes))
+
     def set_author(self, image_ids, author):
         self.logger.info(f"Setting author to '{author}' for images {image_ids}")
         images = Image.objects.filter(pk__in = image_ids)

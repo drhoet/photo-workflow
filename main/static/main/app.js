@@ -6,6 +6,7 @@ import DirectoryDetailView from './modules/directoryDetailView.js'
 import ModalDialog from './modules/modalDialog.js'
 import EditAuthorDialog from './modules/editAuthorDialog.js'
 import ErrorHandler from './modules/errorHandler.js'
+import ShiftTimeDialog from './modules/shiftTimeDialog.js';
 import EditTimezoneDialog from './modules/editTimezoneDialog.js'
 import GeotagDialog from './modules/geotagDialog.js'
 import ImageOverview from './modules/imageOverview.js'
@@ -67,6 +68,7 @@ app.component('modal', ModalDialog);
 app.component('breadcrumbs', Breadcrumbs);
 app.component('edit-author-dialog', EditAuthorDialog);
 app.component('error-handler', ErrorHandler);
+app.component('shift-time-dialog', ShiftTimeDialog);
 app.component('edit-timezone-dialog', EditTimezoneDialog);
 app.component('geotag-dialog', GeotagDialog);
 app.component('pick-coordinates-dialog', PickCoordinatesDialog);
