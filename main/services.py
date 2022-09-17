@@ -3,9 +3,11 @@ import os, logging
 from .utils.exiftool_ctxmngr import ExifTool
 from .model.metadata_parser import Metadata, FujiXT20ImageParser, FallbackImageParser
 from .model.metadata_writer import JpegImageSerializer, MetadataType, OriginalFileSerializer, FujiRawImageSerializer, MovVideoSerializer
+from .model.thumbnail import ImageThumbnailCreator, VideoThumbnailCreator
 from .model.gps_track import GpsTrack, GpsTrackSection, GpxTrackParser, KmlTrackParser
 from typing import List, Tuple
 from datetime import datetime
+from io import BytesIO
 
 class ExifToolService(object):
     __instance = None
@@ -187,3 +189,27 @@ class GeotaggingService:
             return first + frac * (second - first)
         else:
             return None
+
+
+class ThumbnailService:
+    __instance = None
+
+    @classmethod
+    def instance(cls):
+        if cls.__instance is not None:
+            return cls.__instance
+        else:
+            cls.__instance = ThumbnailService()
+            cls.__instance.logger = logging.getLogger(__name__)
+            return cls.__instance
+
+    def __init__(self):
+        self.thumbnailers = [ImageThumbnailCreator(), VideoThumbnailCreator()]
+
+    def create_thumbnail(self, path: str) -> BytesIO:
+        extension = os.path.splitext(path)[1]
+        for p in self.thumbnailers:
+            if p.can_thumbnail(extension):
+                return p.create_thumbnail(path)
+        self.logger.warn('No thumbnail service found for %s' % extension);
+        return None

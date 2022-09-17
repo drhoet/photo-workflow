@@ -231,6 +231,12 @@ tr:nth-child(2n + 1) {
     margin-bottom: 0.25rem;
 }
 
+#items #images .item a .thumbnail-container {
+    min-width: 300px;
+    min-height: 200px;
+    display: flex;
+}
+
 #items #images .item a .thumbnail {
     display: block;
     margin: auto;

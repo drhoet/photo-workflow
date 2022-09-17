@@ -98,7 +98,7 @@ class FujiXT20ImageParser(AuthorMixin, RatingMixin, PickLabelMixin, ColorLabelMi
     
     def can_parse(self, json: dict) -> bool:
         return (
-            json.get("File:FileType", None) == "JPEG"
+            json.get("File:FileType", None) in ["JPEG", "MOV"]
             and json.get("IFD0:Make", None) == "FUJIFILM"
             and json.get("IFD0:Model", None) == "X-T20"
         )

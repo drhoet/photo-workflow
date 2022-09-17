@@ -4,7 +4,9 @@ import { DateTime } from 'luxon';
 export default {
     template: `
         <a href="#" @click.prevent.capture.stop="onThumbnailClicked">
-            <img class="thumbnail" :src="item.thumbnail"/>
+            <div class="thumbnail-container">
+                <img class="thumbnail" :src="item.thumbnail"/>
+            </div>
             <div class="item-id">
                 <i v-if="hasAttachments" class="mdi mdi-paperclip tooltip-symbol">
                     <ul v-if="hasAttachments" class="tooltip-contents">

@@ -3,13 +3,12 @@ from django.db.models import F
 from django.db.models.functions import Coalesce, Cast
 from django.dispatch import receiver
 from datetime import datetime, timezone, timedelta
-from PIL import Image as PIL_Image, ImageOps as PIL_ImageOps
-from io import BytesIO
 from django.core.files import File
+from pathlib import Path
 import logging, time, os
 from typing import List
 
-from .services import ExifToolService, MetadataParserService, GpsTrackParserService, GeotaggingService
+from .services import ExifToolService, MetadataParserService, GpsTrackParserService, GeotaggingService, ThumbnailService
 from .model.file_types import FileType
 from .utils.datetime import has_timezone
 
@@ -261,22 +260,10 @@ class Image(models.Model):
 
     def create_thumbnail(self):
         try:
-            pil_image = PIL_Image.open(os.path.join(self.parent.get_absolute_path(), self.name))
-            pil_image = PIL_ImageOps.exif_transpose(pil_image)
-            
-            width_percent = (300 / float(pil_image.size[0]))
-            height_percent = (200 / float(pil_image.size[1]))
-
-            percent = min(width_percent, height_percent)
-
-            target_width = int((float(pil_image.size[0]) * float(percent)))
-            target_height = int((float(pil_image.size[1]) * float(percent)))
-            self.logger.info(f"Resizing image {self.name} to ({target_width}, {target_height})")
-            pil_image = pil_image.resize((target_width, target_height), PIL_Image.ANTIALIAS)
-
-            img_raw = BytesIO()
-            pil_image.save(img_raw, "JPEG")
-            self.thumbnail = File(img_raw, name=f"{self.parent.id}/{self.name}")
+            path = os.path.join(self.parent.get_absolute_path(), self.name)
+            img_raw = ThumbnailService.instance().create_thumbnail(path)
+            thumbnail_path = Path(f"{self.parent.id}/{self.name}").with_suffix('.jpg')
+            self.thumbnail = File(img_raw, name=thumbnail_path)
         except Exception as err:
             self.logger.warn(f"Could not create thumbnail for {self.name}: {err}")
 
