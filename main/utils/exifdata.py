@@ -30,3 +30,7 @@ def format_exif_offsettime(dt: datetime) -> str:
 
 def format_file_modify_date(dt: datetime) -> str:
     return format_exif_datetimeoriginal(dt) + format_exif_offsettime(dt)
+
+
+def format_exif_fulldatetime(dt: datetime) -> str:
+    return dt.strftime("%Y:%m:%d %H:%M:%S%z")

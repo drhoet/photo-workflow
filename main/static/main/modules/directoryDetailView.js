@@ -136,7 +136,7 @@ export default {
                 .filter(img => img.supported_metadata_types.includes('DATE_TIME'))
                 .map(img => img.id);
             if(ids.length == 0) {
-                throw new UiError('No images selected that support coordinates.');
+                throw new UiError('No images selected that support changing the Date/Time.');
             }
             return this.postImageSetAction('edit_timezone', {mode: params.mode, value: params.value, ids: ids})
                 .then(() => this.loadData(this.$route.params.id));
@@ -146,7 +146,7 @@ export default {
                 .filter(img => img.supported_metadata_types.includes('DATE_TIME'))
                 .map(img => img.id);
             if(ids.length == 0) {
-                throw new UiError('No images selected that support coordinates.');
+                throw new UiError('No images selected that support changing the Date/Time.');
             }
             return this.postImageSetAction('shift_time', {minutes: minutes, ids: ids})
                 .then(() => this.loadData(this.$route.params.id));
