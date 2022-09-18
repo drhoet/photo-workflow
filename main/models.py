@@ -100,7 +100,7 @@ class Directory(models.Model):
 
         # then scan for all contents and add them to the DB
         abs_path = self.get_absolute_path()
-        contents = os.listdir(abs_path)
+        contents = os.scandir(abs_path)
         new_images : List[Image] = []
         new_dirs : List[Directory] = []
         new_attachments : List[Attachment] = []
@@ -108,13 +108,13 @@ class Directory(models.Model):
         # create sub-items (both images and subdirs)
         existing_images = self.images.values_list('name', flat=True)
         existing_dirs = self.subdirs.values_list('path', flat=True)
-        for item_name in contents:
-            item_path = os.path.join(abs_path, item_name)
-            if self._is_image(item_path) and not item_name in existing_images:
-                img = Image(parent=self, name=item_name)
+        for entry in contents:
+            if self._is_image(entry) and not entry.name in existing_images:
+                img = Image(parent=self, name=entry.name)
                 new_images.append(img)
-            elif os.path.isdir(item_path) and not item_name in existing_dirs:
-                new_dirs.append(Directory(parent=self, path=item_name))
+            elif entry.is_dir() and not entry.name in existing_dirs:
+                new_dirs.append(Directory(parent=self, path=entry.name))
+
 
         # if we have new images, scan their metadata and create a thumbnail
         if new_images:
@@ -131,12 +131,11 @@ class Directory(models.Model):
 
         # create attachments
         existing_images = self.images.all()
-        for item_name in contents:
-            item_path = os.path.join(abs_path, item_name)
-            if self._is_attachment(item_path):
-                related_image = self._find_related_image(existing_images, item_name)
-                if related_image is not None and not related_image.attachments.filter(name=item_name).exists():
-                    att = Attachment(parent=related_image, name=item_name, attachment_type=FileType.from_path(item_path).name)
+        for entry in contents:
+            if self._is_attachment(entry):
+                related_image = self._find_related_image(existing_images, entry.name)
+                if related_image is not None and not related_image.attachments.filter(name=entry.name).exists():
+                    att = Attachment(parent=related_image, name=entry.name, attachment_type=FileType.from_path(entry.path).name)
                     new_attachments.append(att)
         Attachment.objects.bulk_create(new_attachments, batch_size=100)
 
@@ -165,25 +164,24 @@ class Directory(models.Model):
     
     def parse_tracks(self):
         abs_path = self.get_absolute_path()
-        contents = os.listdir(abs_path)
+        contents = os.scandir(abs_path)
 
         result = []
-        for item_name in contents:
-            item_path = os.path.join(abs_path, item_name)
-            track = GpsTrackParserService.instance().parse_track(item_path)
+        for entry in contents:
+            track = GpsTrackParserService.instance().parse_track(entry.path)
             if track is not None:
                 result.append({
-                    "id": f"{self.id}/{item_name}",
-                    "display_name": item_name,
+                    "id": f"{self.id}/{entry.name}",
+                    "display_name": entry.name,
                     "data": track
                 })
         return result
     
-    def _is_image(self, path):
-        return os.path.isfile(path) and FileType.from_path(path) == FileType.MAIN_MEDIA
+    def _is_image(self, dirEntry):
+        return dirEntry.is_file() and FileType.from_path(dirEntry.path) == FileType.MAIN_MEDIA
 
-    def _is_attachment(self, path):
-        return os.path.isfile(path) and FileType.from_path(path) != FileType.MAIN_MEDIA
+    def _is_attachment(self, dirEntry):
+        return dirEntry.is_file() and FileType.from_path(dirEntry.path) != FileType.MAIN_MEDIA
 
     def _find_related_image(self, images, path):
         for i in images:

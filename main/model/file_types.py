@@ -7,13 +7,12 @@ class FileType(Enum):
     SIDECAR = 3
     UNKNOWN = 99
 
+    # path MUST be a file path, otherwise the result is undefined!
     def from_path(path):
         ext = os.path.splitext(path)[1]
-        if os.path.isfile(path):
-            if ext.lower() == ".jpg" or ext.lower() == ".jpeg" or ext.lower() == ".mov":
-                return FileType.MAIN_MEDIA
-            if ext.lower() == ".raf" or ext.lower() == ".orf":
-                return FileType.RAW
-            else:
-                return FileType.UNKNOWN
-        return None
+        if ext.lower() == ".jpg" or ext.lower() == ".jpeg" or ext.lower() == ".mov":
+            return FileType.MAIN_MEDIA
+        if ext.lower() == ".raf" or ext.lower() == ".orf":
+            return FileType.RAW
+        else:
+            return FileType.UNKNOWN
