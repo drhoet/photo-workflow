@@ -1,3 +1,4 @@
+from concurrent.futures import ThreadPoolExecutor
 import os, logging
 
 from .utils.exiftool_ctxmngr import ExifTool
@@ -204,12 +205,31 @@ class ThumbnailService:
             return cls.__instance
 
     def __init__(self):
-        self.thumbnailers = [ImageThumbnailCreator(), VideoThumbnailCreator()]
+        img_thumbnailer = ImageThumbnailCreator()
+        self.dummy_thumbnail = img_thumbnailer.create_dummy_thumbnail()
+        self.thumbnailers = [img_thumbnailer, VideoThumbnailCreator()]
+
+        self.executor = ThreadPoolExecutor(max_workers=10)
+
+    def create_dummy_thumbnail(self) -> BytesIO:
+        return self.dummy_thumbnail
+
+    def create_thumbnail_async(self, img_abs_path: str, thumbnail_file) -> BytesIO:
+        self.executor.submit(self.refresh_thumbnail, img_abs_path, thumbnail_file)
+
+    def refresh_thumbnail(self, img_abs_path: str, thumbnail_file):
+        try:
+            img_raw = self.create_thumbnail(img_abs_path)
+            if img_raw:
+                with thumbnail_file.open("wb") as out:
+                    out.write(img_raw.getbuffer())
+        except Exception as exc:
+            self.logger.error(exc, exc_info=True)
 
     def create_thumbnail(self, path: str) -> BytesIO:
         extension = os.path.splitext(path)[1]
         for p in self.thumbnailers:
             if p.can_thumbnail(extension):
-                return p.create_thumbnail(path)
+                return p.create_thumbnail(path, 300, 200)
         self.logger.warn('No thumbnail service found for %s' % extension);
         return None

@@ -10,12 +10,18 @@ class ImageThumbnailCreator:
     def can_thumbnail(self, extension: str) -> bool:
         return extension.casefold() in [".jpeg", ".jpg"]
 
-    def create_thumbnail(self, path: str) -> BytesIO:
+    def create_dummy_thumbnail(self) -> BytesIO:
+        pil_image = PIL_Image.open('main/loading.jpg')
+        img_raw = BytesIO()
+        pil_image.save(img_raw, "JPEG")
+        return img_raw
+
+    def create_thumbnail(self, path: str, width: int, height: int) -> BytesIO:
         pil_image = PIL_Image.open(path)
         pil_image = PIL_ImageOps.exif_transpose(pil_image)
         
-        width_percent = (300 / float(pil_image.size[0]))
-        height_percent = (200 / float(pil_image.size[1]))
+        width_percent = (width / float(pil_image.size[0]))
+        height_percent = (height / float(pil_image.size[1]))
 
         percent = min(width_percent, height_percent)
 
@@ -35,7 +41,7 @@ class VideoThumbnailCreator:
     def can_thumbnail(self, extension: str) -> bool:
         return extension.casefold() in [".mov"]
     
-    def create_thumbnail(self, path: str) -> BytesIO:
+    def create_thumbnail(self, path: str, width: int, height: int) -> BytesIO:
         probe = ffmpeg.probe(path)
         time = float(probe['streams'][0]['duration']) // 2
 
@@ -43,8 +49,8 @@ class VideoThumbnailCreator:
         (out, err) = (
             ffmpeg
                 .input(path, ss=time)
-                .filter('scale', 300, 200, force_original_aspect_ratio='decrease')
-                .filter('pad', 300, 200, '(ow-iw)/2', '(oh-ih)/2')
+                .filter('scale', width, height, force_original_aspect_ratio='decrease')
+                .filter('pad', width, height, '(ow-iw)/2', '(oh-ih)/2')
                 .overlay(overlay_file)
                 .output('pipe:', format='singlejpeg', vframes=1)
                 .run(capture_stdout=True, capture_stderr=True)

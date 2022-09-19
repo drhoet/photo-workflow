@@ -121,13 +121,17 @@ class Directory(models.Model):
             json = ExifToolService.instance().read_metadata(self.get_absolute_path(), *new_images)
             for i, j in zip(new_images, json):
                 i.load_metadata(j)
-                i.create_thumbnail()
+                i.create_dummy_thumbnail()
 
         Image.objects.bulk_create(new_images, batch_size=100)
         Directory.objects.bulk_create(new_dirs, batch_size=100)
         
         image_tags = [Image.tags.through(image_id=img.id, tag_id=tag.id) for img in new_images for tag in img._unsaved_tags]
         Image.tags.through.objects.bulk_create(image_tags, batch_size=100)
+
+        # schedule refreshing thumbnails
+        for i in new_images:
+            i.refresh_thumbnail()
 
         # create attachments
         existing_images = self.images.all()
@@ -256,14 +260,17 @@ class Image(models.Model):
                     # cannot append to self.tags here, since this object is probably not saved to the DB yet, so does not have an id
                     self._unsaved_tags.append(db_tag)
 
-    def create_thumbnail(self):
+    def create_dummy_thumbnail(self):
         try:
-            path = os.path.join(self.parent.get_absolute_path(), self.name)
-            img_raw = ThumbnailService.instance().create_thumbnail(path)
+            img_raw = ThumbnailService.instance().create_dummy_thumbnail()
             thumbnail_path = Path(f"{self.parent.id}/{self.name}").with_suffix('.jpg')
             self.thumbnail = File(img_raw, name=thumbnail_path)
         except Exception as err:
             self.logger.warn(f"Could not create thumbnail for {self.name}: {err}")
+
+    def refresh_thumbnail(self):
+        path = os.path.join(self.parent.get_absolute_path(), self.name)
+        ThumbnailService.instance().create_thumbnail_async(path, self.thumbnail)
 
     @property
     def date_time(self):
