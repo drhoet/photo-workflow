@@ -29,11 +29,16 @@ export default {
             <div v-if="loading" class="spinner">Loading...</div>
             <template v-else>
                 <section id="items">
-                    <div id="subdirs">
+                    <div v-if="showSubdirs" id="subdirs">
                         <directory-link v-for="subdir in directory.subdirs" :item="subdir"/>
                     </div>
-                    <ul id="images">
-                        <li v-for="image in directory.images" class="item" :class="{selected: isImageSelected(image)}" @click="onImageSelected(image, $event)">
+                    <div v-if="showFilters" id="filters">
+                        <div id="rating-filters">
+                            <button v-for="index in 6" @click="toggleStarsFilter(index-1)" class="mdi mdi-star" :class="{active: filter.stars.includes(index - 1)}">{{index - 1}}</button>
+                        </div>
+                    </div>
+                    <ul v-if="showImages" id="images">
+                        <li v-for="image in filteredImages" class="item" :class="{selected: isImageSelected(image)}" @click="onImageSelected(image, $event)">
                             <image-overview :item="image" @item:open="onImageViewOpen(image)"/>
                         </li>
                     </ul>
@@ -59,6 +64,21 @@ export default {
                 }
             }
             return false;
+        },
+        showSubdirs() {
+            return this.directory.subdirs.length > 0;
+        },
+        showFilters() {
+            return this.showImages;
+        },
+        showImages() {
+            return this.directory.images.length > 0;
+        },
+        filteredImages() {
+            return this.directory.images
+                .filter((img) => {
+                    return this.filter.stars.includes(img.rating);
+                });
         }
     },
     methods: {
@@ -252,6 +272,14 @@ export default {
             if(e.key == "Shift") {
                 document.onselectstart = this.onSelectStartHandler; // restore onselectstart
             }
+        },
+        toggleStarsFilter(cnt) {
+            const idx = this.filter.stars.indexOf(cnt);
+            if(idx >= 0) {
+                this.filter.stars.splice(idx, 1);
+            } else {
+                this.filter.stars.push(cnt);
+            }
         }
     },
     data() {
@@ -270,7 +298,10 @@ export default {
                 pickCoordinates: false,
                 pictureMap: false,
                 imageCarousel: false
-            }
+            },
+            filter: {
+                stars: [0, 1, 2, 3, 4, 5]
+            },
         }
     },
     mounted() {
