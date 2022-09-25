@@ -42,9 +42,9 @@ class Settings {
 
         this.pickLabels = [
             { value: null, label: 'N/A', key: ' ', icon: 'flag-off-outline' },
-            { value: 'red', label: '<unused>', key: 'r', icon: 'flag' },
+            { value: 'red', label: 'Delete', key: 'd', icon: 'flag' },
             { value: 'yellow', label: '<unused>', key: 'y', icon: 'flag' },
-            { value: 'green', label: 'Selection', key: 'g', icon: 'flag' }
+            { value: 'green', label: 'Selection', key: 's', icon: 'flag' }
         ];
         this.colorLabels = [
             { value: null, label: 'N/A', key: ' ', icon: 'checkbox-blank-off-outline' },

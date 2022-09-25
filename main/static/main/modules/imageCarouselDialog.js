@@ -3,7 +3,7 @@ import Cookies from "js-cookie";
 
 export default {
     template: `
-        <modal :showModal="showModal" @cancel="closeModal" :closable="false" :cancellable="false" :closeOnClickOutside="true" :closeOnEscape="!keyHandlerSuspended" :loading="loading" id="image-carousel-modal">
+        <modal :showModal="showModal" @cancel="closeModal" :closable="false" :cancellable="false" :closeOnClickOutside="true" :closeOnEscape="!keyHandlerSuspended" :loading="loading" id="image-carousel-modal" class="dark">
             <template v-slot:body>
                 <template v-if="!loading">
                     <section id="properties">

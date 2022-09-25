@@ -4,7 +4,8 @@ export default {
             <template v-slot:body>
                 <div v-for="option in options" class="option" @click="selectOption(option.value)">
                     <i class="mdi" :class="['mdi-' + option.icon, option.value]"></i>
-                    <span>{{option.label}}</span>
+                    <span class="label">{{option.label}}</span>
+                    <span v-if="option.key" class="shortcut">{{shortcutToDisplay(option.key)}}</span>
                 </div>
             </template>
         </modal>
@@ -32,5 +33,27 @@ export default {
         closeModal() {
             this.$emit('update:showModal', false);
         },
+        onKeyUp(e) {
+            for(const opt of this.options) {
+                if(e.key === opt.key) {
+                    this.selectOption(opt.value);
+                }
+            }
+        },
+        shortcutToDisplay(key) {
+            switch(key) {
+                case ' ': return 'space';
+                default: return key;
+            }
+        }
+    },
+    watch: {
+        showModal(newVal, oldVal) {
+            if(newVal) {
+                document.addEventListener('keyup', this.onKeyUp);        
+            } else {
+                document.removeEventListener('keyup', this.onKeyUp);
+            }
+        }
     }
 }
