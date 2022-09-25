@@ -71,7 +71,7 @@ export default {
                     </section>
                     <select-dialog v-model:showModal="modals.selectPickLabel" :options="settings.pickLabels" :modelValue="pickLabel" @update:modelValue="editPickLabel($event)"/>
                     <select-dialog v-model:showModal="modals.selectColorLabel" :options="settings.colorLabels" :modelValue="colorLabel" @update:modelValue="editColorLabel($event)"/>
-                    <tagging-dialog v-model:showModal="modals.tagging" :tags="tags" @update:tags="editTags($event)" />
+                    <tagging-dialog v-model:showModal="modals.tagging" :initialTags="tags" @update:tags="editTags($event)" />
                 </template>
             </template>
         </modal>

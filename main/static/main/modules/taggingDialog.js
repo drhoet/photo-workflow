@@ -4,13 +4,20 @@ export default {
     template: `
         <modal :showModal="showModal" @cancel="closeModal" :closable="false" :cancellable="true" :closeOnEscape="true" :loading="loading" id="tagging-modal">
             <template v-slot:body>
-                <div id="selected-tags">
-                    <span v-for="tag in tags" class="tag">{{tag.full_name}}<i class="mdi mdi-close" @click="removeTag(tag)"></i></span>
+                <div id="tag-picker">
+                    <div id="selected-tags">
+                        <span v-for="tag in tags" class="tag">{{tag.full_name}}<i class="mdi mdi-close" @click="removeTag(tag)"></i></span>
+                    </div>
+                    <input v-model="searchText" @keydown.tab.prevent="pickTag" @keydown.enter.prevent="done" @keydown.down.prevent="selectNext" @keydown.up.prevent="selectPrevious" id="search" ref="search" autocomplete="off"/>
+                    <div class="help">Press <span class="shortcut">tab</span> to select a tag, press <span class="shortcut">enter</span> to apply all tabs to the image. Typing <span class="shortcut">/</span> will make the filter only search in a tag segment.</div>
+                    <div id="proposals" ref="proposals">
+                        <div v-for="(proposal, index) in proposals" class="tag" :class="{active: index == selectedIndex}" @click="pickSelectedTag(index)">{{proposal.full_name}}</div>
+                    </div>
                 </div>
-                <input v-model="searchText" @keydown.tab.prevent="pickTag" @keydown.enter.prevent="done" @keydown.down.prevent="selectNext" @keydown.up.prevent="selectPrevious" id="search" ref="search" autocomplete="off"/>
-                <div class="help">Press <span class="shortcut">tab</span> to select a tag, press <span class="shortcut">enter</span> to apply all tabs to the image. Typing <span class="shortcut">/</span> will make the filter only search in a tag segment.</div>
-                <div id="proposals" ref="proposals">
-                    <div v-for="(proposal, index) in proposals" class="tag" :class="{active: index == selectedIndex}" @click="pickSelectedTag(index)">{{proposal.full_name}}</div>
+                <div id="tag-tree-view">
+                    <ul>
+                        <tree-view-node v-for="node in tagTree" :node="node" labelKey="tag.name" childrenKey="subtags" />
+                    </ul>
                 </div>
             </template>
         </modal>
@@ -21,7 +28,7 @@ export default {
             type: Boolean,
             required: true
         },
-        tags: {
+        initialTags: {
             type: Object,
             required: true
         },
@@ -82,6 +89,8 @@ export default {
             searchText: '',
             selectedIndex: 0,
             proposals: [],
+            tagTree: [],
+            tags: [...this.initialTags], // make a copy here! We don't want to update the array coming from the parent component
         }
     },
     watch: {
@@ -94,11 +103,13 @@ export default {
                     this.taggingService.load()
                         .then(() => {
                             this.proposals = this.taggingService.find(this.searchText);
+                            this.tagTree = this.taggingService.tags;
                             this.loading = false;
                             nextTick(() => this.$refs.search.focus());
                         });
                 } else {
                     this.proposals = this.taggingService.find(this.searchText);
+                    this.tagTree = this.taggingService.tags;
                     nextTick(() => this.$refs.search.focus());
                 }
             }

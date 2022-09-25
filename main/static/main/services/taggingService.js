@@ -4,14 +4,24 @@ export default class TaggingService {
 
     constructor() {
         this.tags = null;
+        this.loading = false;
         this.loaded = false;
     }
 
-    async load() {
-        const res = await fetch(`/main/api/tags`, { method: 'get', headers: { 'content-type': 'application/json' } });
-        const json = await parseResponse(res, `Could not load tags`, true);
-        this.tags = this.#load('', json);
-        this.loaded = true;
+    load(reload) {
+        if(!this.loading) {
+            if(!this.loaded || reload) {
+                this.loading = true;
+                this.loadingPromise = fetch(`/main/api/tags`, { method: 'get', headers: { 'content-type': 'application/json' } })
+                    .then((res) => parseResponse(res, `Could not load tags`, true))
+                    .then((json) => {
+                        this.tags = this.#load('', json);
+                        this.loading = false;
+                        this.loaded = true;
+                    });
+            }
+        }
+        return this.loadingPromise;
     }
 
     #load(prefix, tagList) {

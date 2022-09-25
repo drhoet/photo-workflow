@@ -242,6 +242,7 @@ export default {
                     this.lastSelectedItem = this.directory.images[0];
                 }
                 this.modals.imageCarousel = true;
+                e.preventDefault();
             }
         },
         onKeyUp(e) {

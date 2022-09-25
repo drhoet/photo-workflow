@@ -15,6 +15,7 @@ import PictureMapDialog from './modules/pictureMapDialog.js'
 import ImageCarouselDialog from './modules/imageCarouselDialog.js';
 import SelectDialog from './modules/selectDialog.js';
 import TaggingDialog from './modules/taggingDialog.js';
+import TreeViewNode from './modules/treeViewNode.js';
 
 import TaggingService from './services/taggingService.js';
 
@@ -76,6 +77,7 @@ app.component('picture-map-dialog', PictureMapDialog);
 app.component('image-carousel-dialog', ImageCarouselDialog);
 app.component('select-dialog', SelectDialog);
 app.component('tagging-dialog', TaggingDialog);
+app.component('tree-view-node', TreeViewNode);
 
 app.config.globalProperties.$filters = {
     formatPercentage(value, precision) {
