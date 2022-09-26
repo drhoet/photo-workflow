@@ -105,11 +105,15 @@ tr:nth-child(2n + 1) {
 #contents {
     display: flex;
     flex-flow: row nowrap;
+    align-items: flex-start;
 }
 
 #actions, #secondary-actions {
     display: flex;
     flex-flow: column nowrap;
+    align-items: flex-start;
+    position: sticky;
+    top: 8px;
 }
 
 #actions button, #secondary-actions button {
