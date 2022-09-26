@@ -49,13 +49,13 @@ export default {
                 <geotag-dialog v-model:showModal="modals.geotag" :directory="directory" @update:trackIds="geotag($event)"/>
                 <pick-coordinates-dialog v-model:showModal="modals.pickCoordinates" @update:coordinates="editCoordinates($event)"/>
                 <picture-map-dialog v-model:showModal="modals.pictureMap" :items="applyToItems"/>
-                <image-carousel-dialog v-model:showModal="modals.imageCarousel" :items="directory.images" :startImage="lastSelectedItem"/>
+                <image-carousel-dialog v-model:showModal="modals.imageCarousel" :items="filteredImages" :startImage="lastSelectedItem"/>
             </template>
         </div>
     `,
     computed: {
         applyToItems() {
-            return this.selectedItems.length > 0 ? this.selectedItems: this.directory.images;
+            return this.selectedItems.length > 0 ? this.selectedItems: this.filteredImages;
         },
         keyHandlerSuspended() {
             for(let modal of Object.keys(this.modals)) {
