@@ -255,6 +255,11 @@ export default {
                 this.modals.imageCarousel = true;
                 e.preventDefault();
             }
+            if(e.key == 'a' && e.ctrlKey) {
+                this.selectedItems.length = 0;
+                this.selectedItems.push(...this.filteredImages);
+                e.preventDefault();
+            }
         },
         onKeyUp(e) {
             if(this.keyHandlerSuspended) {
