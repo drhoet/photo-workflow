@@ -66,7 +66,7 @@ export default {
             this.$refs.search.focus();
         },
         done() {
-            this.$emit('update:tags', this.tags);
+            this.$emit('update:tags', [...this.tags]);
             this.closeModal();
         },
         closeModal() {
@@ -116,7 +116,7 @@ export default {
             selectedIndex: 0,
             proposals: [],
             tagTree: [],
-            tags: [...this.initialTags], // make a copy here! We don't want to update the array coming from the parent component
+            tags: [],
             newSubTagParent: null,
             modals: {
                 createTag: false,
@@ -128,6 +128,7 @@ export default {
             if(newVal) {
                 this.searchText = '';
                 this.selectedIndex = 0;
+                this.tags = [...this.initialTags]; // make a copy here! We don't want to update the array coming from the parent component
                 if(!this.taggingService.loaded) {
                     this.loading = true;
                     this.taggingService.load()

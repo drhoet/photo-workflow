@@ -50,13 +50,13 @@ class Settings {
         ];
         this.colorLabels = [
             { value: null, label: 'N/A', key: ' ', icon: 'checkbox-blank-off-outline' },
-            { value: 'red', label: 'Needs editing', key: 'r', icon: 'checkbox-blank' },
+            { value: 'red', label: 'Needs editing', key: 'e', icon: 'checkbox-blank' },
             { value: 'orange', label: '<unused>', key: 'o', icon: 'checkbox-blank' },
             { value: 'yellow', label: '<unused>', key: 'y', icon: 'checkbox-blank' },
             { value: 'green', label: '<unused>', key: 'g', icon: 'checkbox-blank' },
             { value: 'blue', label: '<unused>', key: 'b', icon: 'checkbox-blank' },
             { value: 'magenta', label: '<unused>', key: 'm', icon: 'checkbox-blank' },
-            { value: 'gray', label: '<unused>', key: 'e', icon: 'checkbox-blank' },
+            { value: 'gray', label: '<unused>', key: 'a', icon: 'checkbox-blank' },
             { value: 'black', label: '<unused>', key: 'b', icon: 'checkbox-blank' },
             { value: 'white', label: '<unused>', key: 'w', icon: 'checkbox-blank' },
         ];

@@ -151,10 +151,19 @@ export default {
                     this.modals.selectPickLabel = true;
                     break;
                 case 'c':
-                    this.modals.selectColorLabel = true;
+                    if(e.ctrlKey) {
+                        this.tagsClipboard = [...this.tags];
+                    } else {
+                        this.modals.selectColorLabel = true;
+                    }
                     break;
                 case 't':
                     this.modals.tagging = true;
+                    break;
+                case 'v':
+                    if(e.ctrlKey) {
+                        this.editTags(this.tagsClipboard);
+                    }
                     break;
             }
         },
@@ -262,6 +271,7 @@ export default {
                 });
         },
         editTags(value) {
+            console.log(value);
             let item = this.currentlyShownItemHolder.item;
             let tagIds = value.map(t => t.id);
             return this.postBackgroundAction('set_tags', {tagIds: tagIds, ids: [item.id]})
@@ -287,6 +297,7 @@ export default {
             ratedItemsCount: 0,
             selectOptions: {},
             selectOptionActive: null,
+            tagsClipboard: [],
             modals: {
                 selectColorLabel: false,
                 selectPickLabel: false,

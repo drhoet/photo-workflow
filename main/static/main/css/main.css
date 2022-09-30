@@ -590,11 +590,17 @@ tr:nth-child(2n + 1) {
 /*
  * select-dialog
  */
+ #image-carousel-modal .select-dialog .modal-container {
+    padding: 0;
+    min-width: 0;
+ }
+
  #image-carousel-modal .select-dialog .modal-body {
     background-color: #FAFFFD;
     display: flex;
     flex-flow: column nowrap;
     border-radius: 0.3rem;
+    margin: 0;
 }
 
 #image-carousel-modal .select-dialog .modal-body .option {
