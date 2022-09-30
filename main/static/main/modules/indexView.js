@@ -1,5 +1,3 @@
-import { parseResponse } from "./errorHandler.js";
-
 export default {
     template: `
         <div v-if="loading" class="spinner">Loading...</div>
@@ -14,11 +12,12 @@ export default {
             </div>
         </div>
     `,
+    inject: ['backendService'],
     methods: {
         loadData() {
             this.loading = true;
             return fetch(`/main/api/dirs`, { method: 'get', headers: { 'content-type': 'application/json' } })
-                    .then(res => parseResponse(res, `Could not load directory roots`, true))
+                    .then(res => this.backendService.parseResponse(res, `Could not load directory roots`, true))
                     .then(json => this.roots = json)
                     .then(() => {
                         this.loading = false;

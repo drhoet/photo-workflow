@@ -1,5 +1,4 @@
-import { parseResponse, UiError } from "./errorHandler.js";
-import Cookies from 'js-cookie';
+import { UiError } from "./errorHandler.js";
 
 export default {
     template: `
@@ -49,10 +48,11 @@ export default {
                 <geotag-dialog v-model:showModal="modals.geotag" :directory="directory" @update:trackIds="geotag($event)"/>
                 <pick-coordinates-dialog v-model:showModal="modals.pickCoordinates" @update:coordinates="editCoordinates($event)"/>
                 <picture-map-dialog v-model:showModal="modals.pictureMap" :items="applyToItems"/>
-                <image-carousel-dialog v-model:showModal="modals.imageCarousel" :items="filteredImages" :startImage="lastSelectedItem"/>
+                <image-carousel-dialog v-model:showModal="modals.imageCarousel" :items="filteredImages" :startImage="lastSelectedItem" class="noheader nofooter"/>
             </template>
         </div>
     `,
+    inject: ['backendService'],
     computed: {
         applyToItems() {
             return this.selectedItems.length > 0 ? this.selectedItems: this.filteredImages;
@@ -86,7 +86,7 @@ export default {
             this.loading = true;
             return Promise.all([
                 fetch(`/main/api/dir/${id}/crumbs`, { method: 'get', headers: { 'content-type': 'application/json' } })
-                    .then(res => parseResponse(res, `Could not load crumbs for directory with id ${id}`, true))
+                    .then(res => this.backendService.parseResponse(res, `Could not load crumbs for directory with id ${id}`, true))
                     .then(json => this.crumbs = json.map((it, idx, all) => {
                         return {
                             id: it.id,
@@ -96,7 +96,7 @@ export default {
                         }
                     })),
                 fetch(`/main/api/dir/${id}/detail`, { method: 'get', headers: { 'content-type': 'application/json' } })
-                    .then(res => parseResponse(res, `Could not load directory with id ${id}`, true) )
+                    .then(res => this.backendService.parseResponse(res, `Could not load directory with id ${id}`, true) )
                     .then(json => {
                         this.directory = json;
                         // apply selection after reload: the objects are new, ids are probably the same (except on reload)
@@ -194,16 +194,7 @@ export default {
         postAction(url, action, params) {
             this.loading = true;
 
-            let formData = new FormData();
-            formData.append('csrfmiddlewaretoken', Cookies.get('csrftoken'));
-            formData.append('action', action);
-            if (params) {
-                for (const [key, val] of Object.entries(params)) {
-                    formData.append(key, val);
-                }
-            }
-            return fetch(url, { method: 'POST', body: formData })
-                .then(res => parseResponse(res, `Could not execute action "${action}"`, false))
+            return this.backendService.postAction(url, action, params)
                 .finally(() => this.loading = false);
         },
         onImageSelected(item, event) {

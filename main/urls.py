@@ -25,4 +25,5 @@ urlpatterns = [
 
     path("api/tags", views.TagTreeView.as_view(), name="tag-tree"),
     path("api/tag/<int:pk>/detail", views.TagDetailView.as_view(), name="tag-detail"),
+    path("api/tag/<int:pk>/actions", views.TagActionsView.as_view(), name="tag-actions"),
 ]

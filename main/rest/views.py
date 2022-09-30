@@ -34,6 +34,27 @@ class TagDetailView(generics.RetrieveAPIView):
     serializer_class = TagSerializer
 
 
+class TagActionsView(APIView):
+    logger = logging.getLogger(__name__)
+
+    def post(self, request, *args, **kwargs):
+        try:
+            action = request.POST["action"]
+            parent = get_object_or_404(Tag, pk=kwargs.get("pk"))
+            
+            if action == "create_subtag":
+                name = request.POST["name"]
+                new_tag = Tag(parent = parent, name = name)
+                new_tag.save()
+            else:
+                return Response({'message': "Unsupported action"}, 400)
+
+            return Response({'result': 'OK'}, 200)
+        except Exception as exc:
+            self.logger.error(exc, exc_info=True)
+            return Response({'message': "Unknown exception: " + getattr(exc, 'message', repr(exc))}, 500)
+
+
 class RootListView(generics.ListAPIView):
     queryset = Directory.objects.filter(parent = None)
     serializer_class = DirectoryNestedSerializer

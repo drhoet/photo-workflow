@@ -1,6 +1,3 @@
-import { parseResponse } from "./errorHandler.js";
-import Cookies from "js-cookie";
-
 export default {
     template: `
         <modal :showModal="showModal" @cancel="closeModal" :closable="false" :cancellable="false" :closeOnClickOutside="true" :closeOnEscape="!keyHandlerSuspended" :loading="loading" id="image-carousel-modal" class="dark">
@@ -76,7 +73,7 @@ export default {
             </template>
         </modal>
     `,
-    inject: ['settings'],
+    inject: ['settings', 'backendService'],
     props: ['showModal', 'items', 'startImage'],
     emits: ['update:showModal'],
     computed: {
@@ -182,7 +179,7 @@ export default {
                 this.metadataLoading = true;
                 let id = this.currentlyShownItemHolder.item.id;
                 return fetch(`/main/api/img/${id}/metadata`, { method: 'get', headers: { 'content-type': 'application/json' } })
-                        .then(res => parseResponse(res, `Could not load metadata for file with id ${id}`, false))
+                        .then(res => this.backendService.parseResponse(res, `Could not load metadata for file with id ${id}`, false))
                         .then(json => {
                             let dict = {};
                             for(const [key, value] of Object.entries(json)) {
@@ -273,16 +270,7 @@ export default {
                 });
         },
         postBackgroundAction(action, params) {
-            let formData = new FormData();
-            formData.append('csrfmiddlewaretoken', Cookies.get('csrftoken'));
-            formData.append('action', action);
-            if (params) {
-                for (const [key, val] of Object.entries(params)) {
-                    formData.append(key, val);
-                }
-            }
-            return fetch('/main/api/imgset/actions', { method: 'POST', body: formData })
-                .then(res => parseResponse(res, `Could not execute action "${action}"`, false));
+            return this.backendService.postAction('/main/api/imgset/actions', action, params);
         }
     },
     data() {

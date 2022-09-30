@@ -1,14 +1,18 @@
 export default {
     template: `
         <li :class="open ? 'open': 'closed'">
-            <span @click="open = !open" :class="[hasChildren ? 'caret': 'nocaret', open ? 'open': 'closed']">{{label}}</span>
+            <span @click="open = !open" :class="[hasChildren ? 'caret': 'nocaret', open ? 'open': 'closed']">
+                <span class="label">{{label}}</span>
+                <span class="add mdi mdi-plus-box" @click.stop="add(node)"></span>
+            </span>
             <ul v-if="hasChildren">
-                <tree-view-node v-for="child in children" :node="child" :labelKey="labelKey" :childrenKey="childrenKey" />
+                <tree-view-node v-for="child in children" :node="child" :labelKey="labelKey" :childrenKey="childrenKey" @addClicked="add($event)"/>
             </ul>
         </li>
     `,
     inject: ['taggingService'],
     props: ['node', 'labelKey', 'childrenKey'],
+    emits: ['addClicked'],
     computed: {
         label() {
             return this.getPropFromObject(this.node, this.labelKey);
@@ -28,6 +32,9 @@ export default {
             } else {
                 return obj[prop];
             }
+        },
+        add(node) {
+            this.$emit('addClicked', node);
         }
     },
     data() {

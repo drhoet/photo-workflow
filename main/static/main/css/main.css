@@ -387,26 +387,23 @@ tr:nth-child(2n + 1) {
 /*
  * Image carousel
  */
- #image-carousel-modal .modal-container {
+#image-carousel-modal > .modal-wrapper > .modal-container {
     padding: 0;
     border-radius: 0;
     min-width: 0;
     max-width: 100vw;
+    max-height: unset;
     background-color: #282424;
 }
 
-#image-carousel-modal .modal-header, #image-carousel-modal .modal-footer {
-    display: none;
-}
-
-#image-carousel-modal .modal-body {
+#image-carousel-modal > .modal-wrapper > .modal-container > .modal-body {
     margin: 0;
     display: flex;
     flex-flow: row nowrap;
     position: relative; /* makes the metadata-box, which is absolutely positioned, position itself relative to this one */
 }
 
-#image-carousel-modal .modal-body img {
+#image-carousel-modal > .modal-wrapper > .modal-container > .modal-body img {
     display: block;
 }
 
@@ -471,7 +468,14 @@ tr:nth-child(2n + 1) {
     margin-top: auto;
 }
 
-#tagging-modal .modal-body {
+#tagging-modal > .modal-wrapper > .modal-container {
+    padding: 0;
+    border-radius: 0;
+    background-color: #282424;
+}
+
+#tagging-modal > .modal-wrapper > .modal-container > .modal-body {
+    margin: 0;
     display: flex;
     flex-flow: row nowrap;
 }
@@ -513,8 +517,7 @@ tr:nth-child(2n + 1) {
 }
 
 #tagging-modal #tag-picker #proposals {
-    max-height: 30vh;
-    overflow-y: scroll;
+    overflow-y: auto;
 }
 
 #tagging-modal #tag-picker #proposals .tag {
@@ -529,6 +532,8 @@ tr:nth-child(2n + 1) {
 
 #tagging-modal #tag-tree-view {
     color: #FAFFFD;
+    padding: 0.25rem;
+    overflow: auto;  
 }
 
 #tagging-modal #tag-tree-view ul {
@@ -550,6 +555,28 @@ tr:nth-child(2n + 1) {
     content: "\25B6";
     position: absolute;
     left: 0;
+}
+
+#tagging-modal #tag-tree-view span span.label {
+    margin-right: 0.5rem;
+}
+
+#tagging-modal #tag-tree-view span span.label:hover {
+    color: #9FD356;
+}
+
+#tagging-modal #tag-tree-view span span.add {
+    visibility: hidden;
+}
+
+#tagging-modal #tag-tree-view span:hover span.add {
+    visibility: visible;
+    cursor: pointer;
+    color: #FAFFFD;
+}
+
+#tagging-modal #tag-tree-view span:hover span.add:hover {
+    color: #9FD356;
 }
 
 #tagging-modal #tag-tree-view li.open ul {
@@ -665,6 +692,7 @@ span.selector button:last-child {
 .modal-container {
     min-width: 25%;
     max-width: 75%;
+    max-height: 80vh;
     margin: 0px auto;
     padding: 20px 30px;
     color: #282424;
@@ -685,11 +713,17 @@ span.selector button:last-child {
 
 .modal-body {
     margin: 20px 0;
+    max-height: 100%;
 }
 
 .modal-footer {
     margin-top: 1rem;
     display: flex;
+}
+
+.modal-mask.noheader > .modal-wrapper > .modal-container > .modal-header,
+.modal-mask.nofooter > .modal-wrapper > .modal-container > .modal-footer {
+    display: none;
 }
 
 button {

@@ -30,31 +30,6 @@ export class UiError {
     }
 }
 
-export function parseResponse(res, errorMessageTemplate, fatal) {
-    if (res.ok) {
-        return res.json();
-    } else {
-        const contentType = res.headers.get('content-type');
-        if(contentType && contentType.includes('application/json')) {
-            return res.json()
-                .catch(err => {
-                    throw new UiError(`${errorMessageTemplate}: ${err}`, fatal)
-                })
-                .then(json => {
-                    if ('message' in json) {
-                        throw new UiError(`${errorMessageTemplate}: ${json.message}`, fatal);
-                    } else if('detail' in json) {
-                        throw new UiError(`${errorMessageTemplate}: ${json.detail}`, fatal);
-                    } else {
-                        throw new UiError(`${errorMessageTemplate}: ${json}`, fatal)
-                    }
-                });
-        } else {
-            throw new UiError(`${errorMessageTemplate}: ${res.statusText}`, fatal)
-        }
-    }
-}
-
 export default {
     template: `
         <slot />

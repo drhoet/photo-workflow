@@ -1,11 +1,10 @@
-import { parseResponse } from '../modules/errorHandler.js';
-
 export default class TaggingService {
 
-    constructor() {
+    constructor(backendService) {
         this.tags = null;
         this.loading = false;
         this.loaded = false;
+        this.backendService = backendService;
     }
 
     load(reload) {
@@ -13,7 +12,7 @@ export default class TaggingService {
             if(!this.loaded || reload) {
                 this.loading = true;
                 this.loadingPromise = fetch(`/main/api/tags`, { method: 'get', headers: { 'content-type': 'application/json' } })
-                    .then((res) => parseResponse(res, `Could not load tags`, true))
+                    .then((res) => this.backendService.parseResponse(res, `Could not load tags`, true))
                     .then((json) => {
                         this.tags = this.#load('', json);
                         this.loading = false;

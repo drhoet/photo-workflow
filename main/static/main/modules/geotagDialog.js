@@ -1,4 +1,4 @@
-import { parseResponse, UiError } from "./errorHandler.js";
+import { UiError } from "./errorHandler.js";
 import { nextTick } from 'vue';
 
 export default {
@@ -24,6 +24,7 @@ export default {
             </template>
         </modal>
     `,
+    inject: ['backendService'],
     props: ['showModal', 'directory'],
     emits: ['update:showModal', 'update:trackIds'],
     data() {
@@ -49,7 +50,7 @@ export default {
         },
         fetchTracks() {
             return fetch(`/main/api/dir/${this.directory.id}/tracks`, { method: 'get', headers: { 'content-type': 'application/json' } })
-                .then(res => parseResponse(res, `Could not load tracks`, false))
+                .then(res => this.backendService.parseResponse(res, `Could not load tracks`, false))
                 .then(json => {
                     if(!json || json.length <= 0) {
                         throw new UiError('No track files found in this directory.', false);

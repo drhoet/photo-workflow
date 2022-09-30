@@ -16,8 +16,10 @@ import ImageCarouselDialog from './modules/imageCarouselDialog.js';
 import SelectDialog from './modules/selectDialog.js';
 import TaggingDialog from './modules/taggingDialog.js';
 import TreeViewNode from './modules/treeViewNode.js';
+import CreateTagDialog from './modules/createTagDialog.js';
 
 import TaggingService from './services/taggingService.js';
+import BackendService from './services/backendService.js';
 
 const About = { template: '<div>About</div>' }
 
@@ -78,6 +80,7 @@ app.component('image-carousel-dialog', ImageCarouselDialog);
 app.component('select-dialog', SelectDialog);
 app.component('tagging-dialog', TaggingDialog);
 app.component('tree-view-node', TreeViewNode);
+app.component('create-tag-dialog', CreateTagDialog);
 
 app.config.globalProperties.$filters = {
     formatPercentage(value, precision) {
@@ -86,7 +89,10 @@ app.config.globalProperties.$filters = {
     }
 };
 
+const backendService = new BackendService();
+
 app.use(router);
 app.mount('#app');
 app.provide('settings', new Settings());
-app.provide('taggingService', new TaggingService());
+app.provide('backendService', backendService);
+app.provide('taggingService', new TaggingService(backendService));

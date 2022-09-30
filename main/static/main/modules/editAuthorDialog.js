@@ -1,5 +1,3 @@
-import { parseResponse } from "./errorHandler.js";
-
 export default {
     template: `
         <modal :showModal="showModal" @ok="updateAuthor" @cancel="closeModal" :okButtonDisabled="!authorChosen" id="edit-author-modal">
@@ -14,6 +12,7 @@ export default {
             </template>
         </modal>
     `,
+    inject: ['backendService'],
     props: ['showModal', 'modelValue'],
     emits: ['update:showModal', 'update:modelValue'],
     data() {
@@ -37,7 +36,7 @@ export default {
         },
         fetchAuthors() {
             return fetch('/main/api/author', { method: 'get', headers: { 'content-type': 'application/json' } })
-                .then(res => parseResponse(res, `Could not load authors`, false))
+                .then(res => this.backendService.parseResponse(res, `Could not load authors`, false))
                 .then(json => {
                     this.authors = json;
                 }).catch((err) => {

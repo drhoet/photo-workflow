@@ -2,7 +2,7 @@ import { nextTick } from 'vue';
 
 export default {
     template: `
-        <modal :showModal="showModal" @cancel="closeModal" :closable="false" :cancellable="true" :closeOnEscape="true" :loading="loading" id="tagging-modal">
+        <modal :showModal="showModal" @cancel="closeModal" :closable="false" :cancellable="true" :closeOnEscape="!keyHandlerSuspended" :loading="loading" id="tagging-modal" class="noheader nofooter">
             <template v-slot:body>
                 <div id="tag-picker">
                     <div id="selected-tags">
@@ -16,13 +16,14 @@ export default {
                 </div>
                 <div id="tag-tree-view">
                     <ul>
-                        <tree-view-node v-for="node in tagTree" :node="node" labelKey="tag.name" childrenKey="subtags" />
+                        <tree-view-node v-for="node in tagTree" :node="node" labelKey="tag.name" childrenKey="subtags" @addClicked="addClicked($event)" />
                     </ul>
                 </div>
+                <create-tag-dialog v-model:showModal="modals.createTag" modelValue="" :parent="newSubTagParent" @update:modelValue="createNewSubTag($event)"/>
             </template>
         </modal>
     `,
-    inject: ['taggingService'],
+    inject: ['taggingService', 'backendService'],
     props: {
         showModal: {
             type: Boolean,
@@ -34,6 +35,16 @@ export default {
         },
     },
     emits: ['update:showModal', 'update:tags'],
+    computed: {
+        keyHandlerSuspended() {
+            for(let modal of Object.keys(this.modals)) {
+                if(this.modals[modal]) {
+                    return true; // if any modal is open, we suspend the key handlers
+                }
+            }
+            return false;
+        }
+    },
     methods: {
         pickTag() {
             if(this.proposals && this.proposals.length > 0) {
@@ -81,6 +92,21 @@ export default {
         },
         scrollSelectedProposalIntoView() {
             this.$refs.proposals.children[this.selectedIndex].scrollIntoView({block: 'nearest'});
+        },
+        addClicked(node) {
+            this.newSubTagParent = node;
+            this.modals.createTag = true;
+        },
+        createNewSubTag(newSubTagValue) {
+            this.loading = true;
+            return this.backendService.postAction(`/main/api/tag/${this.newSubTagParent.tag.id}/actions`, 'create_subtag', { name: newSubTagValue })
+                .then(() => this.taggingService.load(true))
+                .then(() => {
+                    this.proposals = this.taggingService.find(this.searchText);
+                    this.tagTree = this.taggingService.tags;
+                    nextTick(() => this.$refs.search.focus());
+                })
+                .finally(() => this.loading = false);
         }
     },
     data() {
@@ -91,6 +117,10 @@ export default {
             proposals: [],
             tagTree: [],
             tags: [...this.initialTags], // make a copy here! We don't want to update the array coming from the parent component
+            newSubTagParent: null,
+            modals: {
+                createTag: false,
+            },
         }
     },
     watch: {
