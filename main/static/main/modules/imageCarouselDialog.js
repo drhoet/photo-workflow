@@ -322,6 +322,8 @@ export default {
                     }
                     if(head === null) {
                         head = current;
+                        // fall back for when the this.startImage is not in the list of items to show
+                        this.currentlyShownItemHolder = head;
                     }
                     if(prev) {
                         prev.next = current;

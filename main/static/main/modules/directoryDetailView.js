@@ -32,6 +32,12 @@ export default {
                         <directory-link v-for="subdir in directory.subdirs" :item="subdir"/>
                     </div>
                     <div v-if="showFilters" id="filters">
+                        <div id="flag-filters">
+                            <button v-for="f of settings.pickLabels" @click="toggleFlagsFilter(f.value)" class="mdi force-color" :class="[{active: filter.flags.includes(f.value)}, 'mdi-' + f.icon, f.value]"></button>
+                        </div>
+                        <div id="color-filters">
+                            <button v-for="c of settings.colorLabels" @click="toggleColorsFilter(c.value)" class="mdi force-color" :class="[{active: filter.colors.includes(c.value)}, 'mdi-' + c.icon, c.value]"></button>
+                        </div>
                         <div id="rating-filters">
                             <button v-for="index in 6" @click="toggleStarsFilter(index-1)" class="mdi mdi-star" :class="{active: filter.stars.includes(index - 1)}">{{index - 1}}</button>
                         </div>
@@ -52,7 +58,7 @@ export default {
             </template>
         </div>
     `,
-    inject: ['backendService'],
+    inject: ['backendService', 'settings'],
     computed: {
         applyToItems() {
             return this.selectedItems.length > 0 ? this.selectedItems: this.filteredImages;
@@ -77,7 +83,9 @@ export default {
         filteredImages() {
             return this.directory.images
                 .filter((img) => {
-                    return this.filter.stars.includes(img.rating);
+                    return this.filter.stars.includes(img.rating)
+                        && this.filter.flags.includes(img.pick_label)
+                        && this.filter.colors.includes(img.color_label);
                 });
         }
     },
@@ -249,9 +257,6 @@ export default {
                 this.selectedItems.length = 0;
             }
             if(e.key == ' ') {
-                if(this.lastSelectedItem == null) {
-                    this.lastSelectedItem = this.directory.images[0];
-                }
                 this.modals.imageCarousel = true;
                 e.preventDefault();
             }
@@ -276,6 +281,22 @@ export default {
             } else {
                 this.filter.stars.push(cnt);
             }
+        },
+        toggleFlagsFilter(color) {
+            const idx = this.filter.flags.indexOf(color);
+            if(idx >= 0) {
+                this.filter.flags.splice(idx, 1);
+            } else {
+                this.filter.flags.push(color);
+            }
+        },
+        toggleColorsFilter(color) {
+            const idx = this.filter.colors.indexOf(color);
+            if(idx >= 0) {
+                this.filter.colors.splice(idx, 1);
+            } else {
+                this.filter.colors.push(color);
+            }
         }
     },
     data() {
@@ -296,7 +317,9 @@ export default {
                 imageCarousel: false
             },
             filter: {
-                stars: [0, 1, 2, 3, 4, 5]
+                stars: [0, 1, 2, 3, 4, 5],
+                flags: [null, 'red', 'yellow', 'green'],
+                colors: [null, 'red', 'orange', 'yellow', 'green', 'blue', 'magenta', 'gray', 'black', 'white']
             },
         }
     },

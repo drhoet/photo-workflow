@@ -47,39 +47,39 @@ tr:nth-child(2n + 1) {
     display: none;
 }
 
-.red {
+.red, .force-color.red {
     color: red;
 }
 
-.orange {
+.orange, .force-color.orange {
     color: #FA824C;
 }
 
-.yellow {
+.yellow, .force-color.yellow {
     color: gold;
 }
 
-.green {
+.green, .force-color.green {
     color: green;
 }
 
-.blue {
+.blue, .force-color.blue {
     color: blue;
 }
 
-.magenta {
+.magenta, .force-color.magenta {
     color: magenta;
 }
 
-.gray {
+.gray, .force-color.gray {
     color: gray;
 }
 
-.black {
+.black, .force-color.black {
     color: black;
 }
 
-.white {
+.white, .force-color.white {
     color: white;
 }
 
@@ -280,8 +280,16 @@ tr:nth-child(2n + 1) {
     padding-right: 0.5rem;
 }
 
+#filters {
+    display: flex;
+    flex-flow: row nowrap;
+    gap: 1.5rem;
+    align-self: center;
+}
+
 #filters button {
     padding: 0.2rem 0.5rem;
+    margin-right: 0.25rem;
 }
 
 /*
