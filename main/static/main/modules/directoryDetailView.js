@@ -33,10 +33,10 @@ export default {
                     </div>
                     <div v-if="showFilters" id="filters">
                         <div id="flag-filters">
-                            <button v-for="f of settings.pickLabels" @click="toggleFlagsFilter(f.value)" class="mdi force-color" :class="[{active: filter.flags.includes(f.value)}, 'mdi-' + f.icon, f.value]"></button>
+                            <button v-for="f of settings.pickLabels" @click="toggleFlagsFilter(f.value)" class="mdi force-color" :class="[{active: filter.flags.includes(f.value)}, 'mdi-' + f.icon, f.value]" :title="f.label"></button>
                         </div>
                         <div id="color-filters">
-                            <button v-for="c of settings.colorLabels" @click="toggleColorsFilter(c.value)" class="mdi force-color" :class="[{active: filter.colors.includes(c.value)}, 'mdi-' + c.icon, c.value]"></button>
+                            <button v-for="c of settings.colorLabels" @click="toggleColorsFilter(c.value)" class="mdi force-color" :class="[{active: filter.colors.includes(c.value)}, 'mdi-' + c.icon, c.value]" :title="c.label"></button>
                         </div>
                         <div id="rating-filters">
                             <button v-for="index in 6" @click="toggleStarsFilter(index-1)" class="mdi mdi-star" :class="{active: filter.stars.includes(index - 1)}">{{index - 1}}</button>

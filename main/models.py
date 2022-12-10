@@ -291,6 +291,18 @@ class Image(models.Model):
             res.append('Missing time zone information')
         if self.author is None:
             res.append('Missing author')
+        categories_nb = 0
+        places_nb = 0
+        for tag in self.tags.all():
+            full_name = tag.get_full_name()
+            if(full_name.startswith("Categories/")):
+                categories_nb = categories_nb + 1
+            elif(full_name.startswith("Places/")):
+                places_nb = places_nb + 1
+        if categories_nb == 0:
+            res.append('Missing category')
+        if places_nb != 1:
+            res.append('Missing place')
         return res
 
     def read_exif_json_from_file(self):

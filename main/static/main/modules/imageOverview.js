@@ -27,6 +27,11 @@ export default {
             <li v-if="item.author" class="mdi mdi-account">{{item.author.name}}</li>
             <li class="mdi mdi-clock-outline">{{formattedDate}}</li>
         </ul>
+        <ul class="tags">
+            <li class="mdi mdi-bookmark" v-if="itemCategories">{{itemCategories}}</li>
+            <li class="mdi mdi-earth" v-if="itemLocations">{{itemLocations}}</li>
+            <li class="mdi mdi-tag-multiple" v-if="itemOtherTags">{{itemOtherTags}}</li>
+        </ul>
     `,
     props: ['item'],
     emits: ['item:open'],
@@ -52,6 +57,15 @@ export default {
         },
         hasAttachments() {
             return this.item.attachments.length > 0;
+        },
+        itemCategories() {
+            return this.item.tags.filter(el => el.full_name.startsWith('Categories/')).map(el => el.name).join(", ");
+        },
+        itemLocations() {
+            return this.item.tags.filter(el => el.full_name.startsWith('Places/')).map(el => el.name).join(", ");
+        },
+        itemOtherTags() {
+            return this.item.tags.filter(el => !el.full_name.startsWith('Categories/') && !el.full_name.startsWith('Places/')).map(el => el.name).join(", ");
         }
     },
     methods: {

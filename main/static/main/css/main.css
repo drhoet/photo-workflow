@@ -261,14 +261,14 @@ tr:nth-child(2n + 1) {
     flex-grow: 2;
 }
 
+#items #images .item ul li::before {
+    padding-right: 0.5rem;
+}
+
 #items #images .item ul.errors {
     color: red;
     list-style: none;
     padding: 0;
-}
-
-#items #images .item ul.errors li::before {
-    padding-right: 0.5rem;
 }
 
 #items #images .item ul.properties {
@@ -276,8 +276,15 @@ tr:nth-child(2n + 1) {
     padding: 0;
 }
 
-#items #images .item ul.properties li::before {
-    padding-right: 0.5rem;
+#items #images .item ul.tags {
+    list-style: none;
+    padding: 0;
+    font-style: italic;
+    color: #4B88A2;
+}
+
+#items #images .item.selected ul.tags {
+    color: #3d3a3a;
 }
 
 #filters {
