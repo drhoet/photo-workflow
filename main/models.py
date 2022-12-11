@@ -1,9 +1,11 @@
 from django.db import models
 from django.db.models import F
 from django.db.models.functions import Coalesce, Cast
+from django.utils.functional import cached_property
 from django.dispatch import receiver
 from datetime import datetime, timezone, timedelta
 from django.core.files import File
+from django.core.cache import caches
 from pathlib import Path
 import logging, time, os
 from typing import List
@@ -63,14 +65,24 @@ class Tag(models.Model):
     parent = models.ForeignKey("self", null=True, blank=True, on_delete=models.CASCADE, related_name="subtags")
     name = models.CharField(max_length=255)
 
-    def get_full_name(self):
-        if self.parent is None:
+    # cached property so it doesn't redo those DB queries all the time. If we want to refresh this, we can delete the property with `del full_name`
+    @cached_property
+    def full_name(self):
+        if self.parent_id is None:
             return self.name
         else:
-            return f"{self.parent.get_full_name()}/{self.name}"
+            # HACK! instead of getting the parent through the .parent reference here, we will get it from the cache.
+            # By doing so, we will not do another DB lookup here. This avoids a LOT of lookups, since the parents
+            # are now shared by all tags, even over multiple images. Since this property is also cached, this means
+            # we make getting the full_name a lot quicker
+            cache = caches['tags']
+            if not self.parent_id in cache:
+               cache.set(self.parent_id, self.parent, 30)
+            cached_parent = cache.get(self.parent_id)
+            return f"{cached_parent.full_name}/{self.name}"
 
     def __str__(self):
-        return self.get_full_name()
+        return self.full_name
 
     @classmethod
     def find_hierarchical_tag(cls, parent, name):
@@ -294,10 +306,9 @@ class Image(models.Model):
         categories_nb = 0
         places_nb = 0
         for tag in self.tags.all():
-            full_name = tag.get_full_name()
-            if(full_name.startswith("Categories/")):
+            if(tag.full_name.startswith("Categories/")):
                 categories_nb = categories_nb + 1
-            elif(full_name.startswith("Places/")):
+            elif(tag.full_name.startswith("Places/")):
                 places_nb = places_nb + 1
         if categories_nb == 0:
             res.append('Missing category')

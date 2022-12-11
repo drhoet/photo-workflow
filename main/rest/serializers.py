@@ -41,15 +41,10 @@ class TagSerializer(serializers.HyperlinkedModelSerializer):
 
 
 class TagNestedSerializer(serializers.HyperlinkedModelSerializer):
-    full_name = serializers.SerializerMethodField()
-
     class Meta:
         model = Tag
         fields = ['id', 'name', 'full_name']
     
-    def get_full_name(self, obj):
-        return obj.get_full_name()
-
 
 class ImageNestedSerializer(serializers.HyperlinkedModelSerializer):
     author = AuthorNestedSerializer(read_only=True)

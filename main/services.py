@@ -43,7 +43,7 @@ class ExifToolService(object):
         with ExifTool(path) as et:
             for image in images:
                 ext = os.path.splitext(image.name)[1]
-                tags_text = set(map(lambda t: t.get_full_name(), image.tags.all()))
+                tags_text = set(map(lambda t: t.full_name, image.tags.all()))
                 metadata = Metadata(image.date_time, image.rating, image.pick_label, image.color_label, tags_text, image.author.name, image.gps_longitude, image.gps_latitude, image.gps_altitude)
                 params = MetadataSerializerService.instance().serialize_metadata(ext, metadata);
                 if params is not None:
