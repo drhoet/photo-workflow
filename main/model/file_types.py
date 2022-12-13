@@ -12,7 +12,7 @@ class FileType(Enum):
         ext = os.path.splitext(path)[1]
         if ext.lower() == ".jpg" or ext.lower() == ".jpeg" or ext.lower() == ".mov":
             return FileType.MAIN_MEDIA
-        if ext.lower() == ".raf" or ext.lower() == ".orf":
+        if ext.lower() == ".raf" or ext.lower() == ".orf" or ext.lower() == ".cr2":
             return FileType.RAW
         else:
             return FileType.UNKNOWN

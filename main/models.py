@@ -19,7 +19,6 @@ class UiException(Exception):
 
 
 class MetadataIncompleteError(UiException):
-
     def __init__(self, name, errors):
         self.name = name
         self.errors = errors
@@ -34,7 +33,6 @@ class MetadataIncompleteError(UiException):
         }
 
 class ImageSetActionError(UiException):
-
     def __init__(self, message, image_names):
         self.image_names = image_names
         self.message = message
@@ -112,7 +110,7 @@ class Directory(models.Model):
 
         # then scan for all contents and add them to the DB
         abs_path = self.get_absolute_path()
-        contents = os.scandir(abs_path)
+        contents = list(os.scandir(abs_path))
         new_images : List[Image] = []
         new_dirs : List[Directory] = []
         new_attachments : List[Attachment] = []
@@ -180,7 +178,7 @@ class Directory(models.Model):
     
     def parse_tracks(self):
         abs_path = self.get_absolute_path()
-        contents = os.scandir(abs_path)
+        contents = list(os.scandir(abs_path))
 
         result = []
         for entry in contents:
@@ -193,6 +191,21 @@ class Directory(models.Model):
                 })
         return result
     
+    def trash_flagged_for_removal(self):
+        os.makedirs(os.path.join(self.get_absolute_path(), 'trash'), exist_ok=True)
+        for img in self.images.filter(pick_label = 'red'):
+            os.rename(os.path.join(self.get_absolute_path(), img.name), os.path.join(self.get_absolute_path(), 'trash', img.name))
+            for att in img.attachments.all():
+                os.rename(os.path.join(self.get_absolute_path(), att.name), os.path.join(self.get_absolute_path(), 'trash', att.name))
+            img.delete()
+
+    def trash_unstarred_raws(self):
+        os.makedirs(os.path.join(self.get_absolute_path(), 'trash'), exist_ok=True)
+        for img in self.images.filter(rating = 0):
+            for att in img.attachments.filter(attachment_type = 'RAW'):
+                os.rename(os.path.join(self.get_absolute_path(), att.name), os.path.join(self.get_absolute_path(), 'trash', att.name))
+                att.delete()
+
     def _is_image(self, dirEntry):
         return dirEntry.is_file() and FileType.from_path(dirEntry.path) == FileType.MAIN_MEDIA
 

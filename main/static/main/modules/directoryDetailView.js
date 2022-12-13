@@ -23,6 +23,12 @@ export default {
                         <div @click="modals.editTimezone=true">Edit timezone</div>
                     </span>
                 </button>
+                <button class="multiple"><i class="mdi mdi-broom"></i>
+                    <span>
+                        <div @click="trashFlaggedForRemoval()">Trash flagged for removal</div>
+                        <div @click="trashUnstarredRaws()">Trash unstarred raws</div>
+                    </span>
+                </button>
                 <button @click="writeMetadata()"><i class="mdi mdi-content-save"></i><span>Write metadata</span></button>
             </section>
             <div v-if="loading" class="spinner">Loading...</div>
@@ -191,6 +197,14 @@ export default {
         },
         writeMetadata() {
             return this.postDirectoryAction('write_metadata')
+                .then(() => this.loadData(this.$route.params.id));
+        },
+        trashFlaggedForRemoval() {
+            return this.postDirectoryAction('trash_flagged_for_removal')
+                .then(() => this.loadData(this.$route.params.id));
+        },
+        trashUnstarredRaws() {
+            return this.postDirectoryAction('trash_unstarred_raws')
                 .then(() => this.loadData(this.$route.params.id));
         },
         postDirectoryAction(action, params) {

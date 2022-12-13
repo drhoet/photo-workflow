@@ -100,6 +100,10 @@ class DirectoryActionsView(APIView):
                  directory.write_images_metadata()
             elif action == "remove_dir_from_db":
                 directory.remove_from_db()
+            elif action == "trash_flagged_for_removal":
+                directory.trash_flagged_for_removal()
+            elif action == "trash_unstarred_raws":
+                directory.trash_unstarred_raws()
             else:
                 return Response({'message': "Unsupported action"}, 400)
 
