@@ -45,8 +45,9 @@ class JpegImageSerializer:
             params.append(f"-MWG:Copyright=Copyright © {metadata.date_time_original.year} Dries Hoet, all rights reserved.")
         if metadata.tags:
             sorted_tags = sorted(metadata.tags)
-            params.append(f"-XMP-digiKam:TagsList={', '.join(sorted_tags)}")
-            params.append(f"-XMP-lr:HierarchicalSubject={', '.join(map(lambda t: t.replace('/', '|'), sorted_tags))}")
+            for tag in sorted_tags:
+                params.append(f"-XMP-digiKam:TagsList={tag}")
+                params.append(f"-XMP-lr:HierarchicalSubject={tag.replace('/', '|')}")
         return params
 
 
