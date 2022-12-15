@@ -67,7 +67,7 @@ class TagsListMixin:
         if "XMP-lr:HierarchicalSubject" in json:
             tag_val = json["XMP-lr:HierarchicalSubject"]
             self.logger.info(f'There is a value for XMP-lr:HierarchicalSubject: {tag_val}')
-            lr_tags = tag_val.split(",")
+            lr_tags = tag_val.split(",") if isinstance(tag_val, str) else tag_val
             lr_tags = map(lambda s: s.strip(), lr_tags)
             lr_tags = map(lambda s: s.replace('|', '/'), lr_tags)
             tags.extend(list(lr_tags))
@@ -75,7 +75,7 @@ class TagsListMixin:
         if "XMP-digiKam:TagsList" in json:
             tag_val = json["XMP-digiKam:TagsList"]
             self.logger.info(f'There is a value for XMP-digiKam:TagsList: {tag_val}')
-            dk_tags = tag_val.split(",")
+            dk_tags = tag_val.split(",") if isinstance(tag_val, str) else tag_val
             dk_tags = map(lambda s: s.strip(), dk_tags)
             tags.extend(list(dk_tags))
         
@@ -104,14 +104,14 @@ class FujiXT20ImageParser(AuthorMixin, RatingMixin, PickLabelMixin, ColorLabelMi
         )
 
     def parse(self, json: dict) -> Metadata:
-        self.logger.info('Parsing with FujiXT20ImageParser')
+        self.logger.info(f"Parsing with FujiXT20ImageParser: {json['System:FileName']}")
         date_time_original = None
         if "ExifIFD:DateTimeOriginal" in json: # we don't use the MWG:DateTimeOriginal here since that one already uses the ExifIFD:OffsetDateTime to add the timezone
             date_time_original_naive = parse_exif_datetimeoriginal(json["ExifIFD:DateTimeOriginal"])
             self.logger.info(f'There is a value for ExifIFD:DateTimeOriginal: {date_time_original_naive}')
 
             # if we could not find the date_time of the picture, it makes no sense to figure out the offset...
-            if "ExifIFD:OffsetTimeOriginal" in json:
+            if date_time_original_naive is not None and "ExifIFD:OffsetTimeOriginal" in json:
                 tz = parse_exif_offsettime(json["ExifIFD:OffsetTimeOriginal"])
                 self.logger.info(f'There is a value for ExifIFD:OffsetTimeOriginal: {tz}')
                 if tz is not None:
@@ -150,14 +150,14 @@ class FallbackImageParser(AuthorMixin, RatingMixin, PickLabelMixin, ColorLabelMi
         return True
 
     def parse(self, json: dict) -> Metadata:
-        self.logger.info('Parsing with FallbackImageParser')
+        self.logger.info(f"Parsing with FallbackImageParser: {json['System:FileName']}")
         date_time_original = None
 
         if "ExifIFD:DateTimeOriginal" in json:
             date_time_original_naive = parse_exif_datetimeoriginal(json["ExifIFD:DateTimeOriginal"])
             self.logger.info(f'There is a value for ExifIFD:DateTimeOriginal: {date_time_original_naive}')
             # if we could not find the date_time of the picture, it makes no sense to figure out the offset...
-            if "ExifIFD:OffsetTimeOriginal" in json:
+            if date_time_original_naive is not None and "ExifIFD:OffsetTimeOriginal" in json:
                 tz = parse_exif_offsettime(json["ExifIFD:OffsetTimeOriginal"])
                 self.logger.info(f'There is a value for ExifIFD:OffsetTimeOriginal: {tz}')
                 if tz is not None:

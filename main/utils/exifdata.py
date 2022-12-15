@@ -1,21 +1,32 @@
 from datetime import datetime, timezone
 from .datetime import has_timezone
 
+import logging
+
+logger = logging.getLogger(__name__)
 
 def parse_file_filemodifytime(dt_str: str) -> datetime:
     return datetime.strptime(dt_str, "%Y:%m:%d %H:%M:%S%z")
 
 
+""" Returns a *naive* datetime (no timezone information) """
 def parse_exif_datetimeoriginal(dt_str: str) -> datetime:
-    """ Returns a *naive* datetime (no timezone information) """
-    return datetime.strptime(dt_str, "%Y:%m:%d %H:%M:%S")
+    try:
+        return datetime.strptime(dt_str, "%Y:%m:%d %H:%M:%S")
+    except ValueError:
+        logger.warn(f"Could not parse {dt_str} to a valid date")
+        return None
 
 
 def parse_exif_offsettime(et_str: str) -> timezone:
-    dt = datetime.strptime(et_str.replace(":", ""), "%z")
-    if has_timezone(dt):
-        return dt.tzinfo
-    else:
+    try:
+        dt = datetime.strptime(et_str.replace(":", ""), "%z")
+        if has_timezone(dt):
+            return dt.tzinfo
+        else:
+            return None
+    except ValueError:
+        logger.warn(f"Could not parse {et_str} to a time offset")
         return None
 
 
