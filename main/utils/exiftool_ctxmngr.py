@@ -8,7 +8,7 @@ import logging
 
 class ExifTool(object):
 
-    sentinel = "{ready}\n"
+    sentinel = b"{ready}\n"
 
     def __init__(self, working_dir, executable="/usr/local/bin/exiftool"):
         self.logger = logging.getLogger(__name__)
@@ -34,13 +34,13 @@ class ExifTool(object):
         self.logger.debug(args)
         self.process.stdin.write(str.join("\n", args))
         self.process.stdin.flush()
-        output = ""
+        output = b""
         fd = self.process.stdout.fileno()
         while not output.endswith(self.sentinel):
-            blk = os.read(fd, 4096).decode("utf-8")
+            blk = os.read(fd, 4096)
             self.logger.debug(blk)
             output += blk
-        return output[: -len(self.sentinel)]
+        return output[: -len(self.sentinel)].decode("utf-8")
 
     def get_metadata(self, *filenames):
         return json.loads(self.execute("-use", "MWG", "-G1", "-j", "-n", *filenames))
