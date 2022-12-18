@@ -34,6 +34,7 @@ class JpegImageSerializer:
             params.append(f"-XMP-digiKam:ColorLabel=")
         if metadata.date_time_original is not None:
             params.append(f"-AllDates={format_exif_datetimeoriginal(metadata.date_time_original)}")
+            params.append(f"-ExifIFD:OffsetTime={format_exif_offsettime(metadata.date_time_original)}")
             params.append(f"-ExifIFD:OffsetTimeOriginal={format_exif_offsettime(metadata.date_time_original)}")
             params.append(f"-System:FileModifyDate={format_file_modify_date(metadata.date_time_original)}")  # set file modify date to picture taken date
         if metadata.longitude is not None and metadata.latitude is not None:
@@ -71,6 +72,7 @@ class FujiRawImageSerializer:
         params = []
         if metadata.date_time_original is not None:
             params.append(f"-AllDates={format_exif_datetimeoriginal(metadata.date_time_original)}")
+            params.append(f"-ExifIFD:OffsetTime={format_exif_offsettime(metadata.date_time_original)}")
             params.append(f"-ExifIFD:OffsetTimeOriginal={format_exif_offsettime(metadata.date_time_original)}")
             params.append(f"-System:FileModifyDate={format_file_modify_date(metadata.date_time_original)}")  # set file modify date to picture taken date
         return params

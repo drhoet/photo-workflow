@@ -116,7 +116,13 @@ class FujiXT20ImageParser(AuthorMixin, RatingMixin, PickLabelMixin, ColorLabelMi
                 self.logger.info(f'There is a value for ExifIFD:OffsetTimeOriginal: {tz}')
                 if tz is not None:
                     date_time_original = date_time_original_naive.replace(tzinfo=tz)
-            
+
+            if date_time_original is None and date_time_original_naive is not None and "ExifIFD:OffsetTime" in json:
+                tz = parse_exif_offsettime(json["ExifIFD:OffsetTime"])
+                self.logger.info(f'There is a value for ExifIFD:OffsetTime: {tz}')
+                if tz is not None:
+                    date_time_original = date_time_original_naive.replace(tzinfo=tz)
+
             if date_time_original is None:
                 # see if we can find the timezone as the difference between the fileModifyDate (which seems to be in UTC always)
                 # and the date_time
@@ -163,6 +169,12 @@ class FallbackImageParser(AuthorMixin, RatingMixin, PickLabelMixin, ColorLabelMi
                 if tz is not None:
                     date_time_original = date_time_original_naive.replace(tzinfo=tz)
             
+            if date_time_original is None and date_time_original_naive is not None and "ExifIFD:OffsetTime" in json:
+                tz = parse_exif_offsettime(json["ExifIFD:OffsetTime"])
+                self.logger.info(f'There is a value for ExifIFD:OffsetTime: {tz}')
+                if tz is not None:
+                    date_time_original = date_time_original_naive.replace(tzinfo=tz)
+
             if date_time_original is None:
                 self.logger.warn(f'No timezone information available for this file.')
                 date_time_original = date_time_original_naive
