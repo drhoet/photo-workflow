@@ -61,6 +61,7 @@ export default {
                 <pick-coordinates-dialog v-model:showModal="modals.pickCoordinates" @update:coordinates="editCoordinates($event)"/>
                 <picture-map-dialog v-model:showModal="modals.pictureMap" :items="applyToItems"/>
                 <image-carousel-dialog v-model:showModal="modals.imageCarousel" :items="filteredImages" :startImage="lastSelectedItem" class="noheader nofooter"/>
+                <tagging-dialog v-model:showModal="modals.tagging" :initialTags="[]" @update:tags="editTags($event)" />
             </template>
         </div>
     `,
@@ -195,6 +196,14 @@ export default {
             return this.postImageSetAction('set_coordinates', { ids: ids, lat: params.lat, lon: params.lon, overwrite: params.overwrite })
                 .then(() => this.loadData(this.$route.params.id));
         },
+        editTags(value) {
+            let itemIds = this.applyToItems
+                .filter(img => img.supported_metadata_types.includes('TAGS'))
+                .map(img => img.id);
+            let tagIds = value.map(t => t.id);
+            return this.postImageSetAction('set_tags', {tagIds: tagIds, ids: itemIds})
+                .then(() => this.loadData(this.$route.params.id));
+        },
         writeMetadata() {
             return this.postDirectoryAction('write_metadata')
                 .then(() => this.loadData(this.$route.params.id));
@@ -287,6 +296,10 @@ export default {
             if(e.key == "Shift") {
                 document.onselectstart = this.onSelectStartHandler; // restore onselectstart
             }
+            if(e.key == 't') {
+                this.modals.tagging = true;
+                e.preventDefault;
+            }
         },
         toggleStarsFilter(cnt) {
             const idx = this.filter.stars.indexOf(cnt);
@@ -328,7 +341,8 @@ export default {
                 geotag: false,
                 pickCoordinates: false,
                 pictureMap: false,
-                imageCarousel: false
+                imageCarousel: false,
+                tagging: false,
             },
             filter: {
                 stars: [0, 1, 2, 3, 4, 5],

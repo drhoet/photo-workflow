@@ -271,7 +271,6 @@ export default {
                 });
         },
         editTags(value) {
-            console.log(value);
             let item = this.currentlyShownItemHolder.item;
             let tagIds = value.map(t => t.id);
             return this.postBackgroundAction('set_tags', {tagIds: tagIds, ids: [item.id]})
