@@ -3,7 +3,7 @@ import os, logging
 
 from .utils.exiftool_ctxmngr import ExifTool
 from .model.metadata_parser import Metadata, FujiXT20ImageParser, FallbackImageParser
-from .model.metadata_writer import JpegImageSerializer, MetadataType, OriginalFileSerializer, FujiRawImageSerializer, MovVideoSerializer
+from .model.metadata_writer import JpegImageSerializer, MetadataType, OriginalFileSerializer, BasicRawImageSerializer, MovVideoSerializer
 from .model.thumbnail import ImageThumbnailCreator, VideoThumbnailCreator
 from .model.gps_track import GpsTrack, GpsTrackSection, GpxTrackParser, KmlTrackParser
 from typing import List, Tuple
@@ -91,7 +91,7 @@ class MetadataSerializerService:
             return cls.__instance
 
     def __init__(self):
-        self.serializers = [JpegImageSerializer(), OriginalFileSerializer(), FujiRawImageSerializer(), MovVideoSerializer()]
+        self.serializers = [JpegImageSerializer(), OriginalFileSerializer(), BasicRawImageSerializer(), MovVideoSerializer()]
 
     def serialize_metadata(self, extension, metadata: Metadata) -> list:
         for p in self.serializers:
