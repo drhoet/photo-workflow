@@ -61,7 +61,7 @@ export default {
                 <pick-coordinates-dialog v-model:showModal="modals.pickCoordinates" @update:coordinates="editCoordinates($event)"/>
                 <picture-map-dialog v-model:showModal="modals.pictureMap" :items="applyToItems"/>
                 <image-carousel-dialog v-model:showModal="modals.imageCarousel" :items="filteredImages" :startImage="lastSelectedItem" class="noheader nofooter"/>
-                <tagging-dialog v-model:showModal="modals.tagging" :initialTags="[]" @update:tags="editTags($event)" />
+                <tagging-dialog v-model:showModal="modals.tagging" :initialTags="selectedTags" @update:tags="editTags($event)" />
             </template>
         </div>
     `,
@@ -297,6 +297,9 @@ export default {
                 document.onselectstart = this.onSelectStartHandler; // restore onselectstart
             }
             if(e.key == 't') {
+                this.selectedTags = this.applyToItems.map(i => i.tags).reduce((t1, t2) => {
+                    return t1.filter(t => t2.some(e => e.id = t.id));
+                });
                 this.modals.tagging = true;
                 e.preventDefault;
             }
@@ -333,6 +336,7 @@ export default {
             crumbs: null,
             lastSelectedItem: null,
             selectedItems: [],
+            selectedTags: [],
             onSelectStartHandler: null,
             modals: {
                 editAuthor: false,
