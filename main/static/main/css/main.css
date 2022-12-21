@@ -483,6 +483,13 @@ tr:nth-child(2n + 1) {
     margin-top: auto;
 }
 
+#image-carousel-modal #index {
+    color: #FAFFFD;
+    margin-top: auto;
+    width: 4rem;
+    text-align: center;
+}
+
 #tagging-modal > .modal-wrapper > .modal-container {
     padding: 0;
     border-radius: 0;

@@ -4,6 +4,16 @@ export default {
             <template v-slot:body>
                 <template v-if="!loading">
                     <section id="properties">
+                        <section id="image">
+                            <header>
+                                <span>Image</span>
+                            </header>
+                            <table>
+                                <tr>
+                                    <td>{{currentlyShownItemHolder.item.name}}</td>
+                                </tr>
+                            </table>
+                        </section>
                         <section id="tags">
                             <header>
                                 <span>Tags</span>
@@ -54,6 +64,7 @@ export default {
                     </section>
                     <section id="secondary-actions">
                         <button @click="toggleMetadata" :class="{active: showMetadata}"><div v-if="metadataLoading" class="spinner small">Loading...</div><i class="mdi mdi-information-outline"></i></button>
+                        <div id="index">{{currentlyShownItemHolder.idx + 1}} / {{items.length}}</div>
                     </section>
                     <section v-if="showMetadata" id="metadata">
                         <table v-for="metadataBlock in metadata">
@@ -126,6 +137,24 @@ export default {
                     this.imageCache[this.imageCache.length - 1] = null;
                     this.currentlyShownItemHolder = this.currentlyShownItemHolder.next;
                     this.loadCache();
+                    break;
+                case 'Home':
+                    this.showMetadata = false;
+                    for(let i = 0; i < this.imageCache.length; ++i) {
+                        this.imageCache[i] = null;
+                    }
+                    this.currentlyShownItemHolder = this.headHolder;
+                    this.loadCache();
+                    e.preventDefault();
+                    break;
+                case 'End':
+                    this.showMetadata = false;
+                    for(let i = 0; i < this.imageCache.length; ++i) {
+                        this.imageCache[i] = null;
+                    }
+                    this.currentlyShownItemHolder = this.tailHolder;
+                    this.loadCache();
+                    e.preventDefault();
                     break;
             }
         },
@@ -287,6 +316,8 @@ export default {
             loading: true,
             imageCache: [],
             currentlyShownItemHolder: null,
+            headHolder: null,
+            tailHolder: null,
             contentMaxWidth: Math.floor(0.95 * window.innerWidth),
             contentMaxHeight: Math.floor(0.95 * window.innerHeight),
             showMetadata: false,
@@ -311,18 +342,21 @@ export default {
                 this.showMetadata = false;
 
                 // build a circular list of the items
+                this.headHolder = null;
+                this.tailHolder = null;
                 let prev = null;
-                let head = null;
+                let idx = 0;
                 for(let item of this.items) {
                     let current = {
                         prev: prev,
                         item: item,
                         next: null,
+                        idx: idx,
                     }
-                    if(head === null) {
-                        head = current;
+                    if(this.headHolder === null) {
+                        this.headHolder = current;
                         // fall back for when the this.startImage is not in the list of items to show
-                        this.currentlyShownItemHolder = head;
+                        this.currentlyShownItemHolder = this.headHolder;
                     }
                     if(prev) {
                         prev.next = current;
@@ -332,9 +366,11 @@ export default {
                     if(item === this.startImage) {
                         this.currentlyShownItemHolder = current;
                     }
+                    ++idx;
                 }
-                head.prev = prev;
-                prev.next = head;
+                this.tailHolder = prev;
+                this.headHolder.prev = this.tailHolder;
+                this.tailHolder.next = this.headHolder;
 
                 // build an image cache
                 this.imageCache = [null, null, null, null, null, null, null];
