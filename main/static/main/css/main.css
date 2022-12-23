@@ -114,6 +114,7 @@ tr:nth-child(2n + 1) {
     align-items: flex-start;
     position: sticky;
     top: 8px;
+    z-index: 100;
 }
 
 #actions button, #secondary-actions button {
@@ -146,7 +147,6 @@ tr:nth-child(2n + 1) {
     font-size: 1rem;
     white-space: nowrap;
     opacity: 0;
-    z-index: 100;
 }
 
 #actions button:hover {
@@ -430,6 +430,12 @@ tr:nth-child(2n + 1) {
     right: 0;
     margin-right: 4rem;
     height: calc(100vh - 2 * 48px);
+    display: flex;
+    flex-flow: column nowrap;
+}
+
+#image-carousel-modal #metadata #metadataFilter {
+    margin: 0.25rem;
 }
 
 #image-carousel-modal #metadata table {

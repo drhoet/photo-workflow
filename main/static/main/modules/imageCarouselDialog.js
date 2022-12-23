@@ -1,3 +1,5 @@
+import { nextTick } from 'vue';
+
 export default {
     template: `
         <modal :showModal="showModal" @cancel="closeModal" :closable="false" :cancellable="false" :closeOnClickOutside="true" :closeOnEscape="!keyHandlerSuspended" :loading="loading" id="image-carousel-modal" class="dark">
@@ -67,7 +69,8 @@ export default {
                         <div id="index">{{currentlyShownItemHolder.idx + 1}} / {{items.length}}</div>
                     </section>
                     <section v-if="showMetadata" id="metadata">
-                        <table v-for="metadataBlock in metadata">
+                        <input id="metadataFilter" v-model="metadataFilter" ref="metadataFilter" placeholder="Filter" autocomplete="off" @keyup.escape.prevent="toggleMetadata()"/>
+                        <table v-for="metadataBlock in filteredMetadata">
                             <tr>
                                 <th colspan=2>{{metadataBlock.header}}</th>
                             </tr>
@@ -101,12 +104,34 @@ export default {
             return this.currentlyShownItemHolder.item.tags;
         },
         keyHandlerSuspended() {
+            if(this.showMetadata) {
+                return true;
+            }
             for(let modal of Object.keys(this.modals)) {
                 if(this.modals[modal]) {
                     return true; // if any modal is open, we suspend the key handlers
                 }
             }
             return false;
+        },
+        filteredMetadata() {
+            if(this.metadataFilter) {
+                let metadataFilter = this.metadataFilter.toLowerCase();
+                let filteredMetadata = [];
+                for(const group of this.metadata) {
+                    let filteredItems = group.items.filter((el) => {
+                        return el.key.toLowerCase().includes(metadataFilter) || ('' + el.value).toLowerCase().includes(metadataFilter);
+                    });
+                    if(filteredItems.length > 0) {
+                        filteredMetadata.push({
+                            header: group.header,
+                            items: filteredItems
+                        });
+                    }
+                }
+                return filteredMetadata;
+            }
+            return this.metadata;
         }
     },
     methods: {
@@ -215,6 +240,7 @@ export default {
                 this.showMetadata = false;
             } else {
                 this.metadataLoading = true;
+                this.metadataFilter = "";
                 let id = this.currentlyShownItemHolder.item.id;
                 return fetch(`/main/api/img/${id}/metadata`, { method: 'get', headers: { 'content-type': 'application/json' } })
                         .then(res => this.backendService.parseResponse(res, `Could not load metadata for file with id ${id}`, false))
@@ -253,6 +279,7 @@ export default {
                             this.metadata = sortedMetadata;
                             this.metadataLoading = false;
                             this.showMetadata = true;
+                            nextTick(() => this.$refs.metadataFilter.focus());
                         });
             }
         },
@@ -323,6 +350,7 @@ export default {
             showMetadata: false,
             metadata: null,
             metadataLoading: false,
+            metadataFilter: "",
             ratingsOverview: [],
             ratedItemsCount: 0,
             selectOptions: {},
