@@ -5,9 +5,18 @@ export default {
         <breadcrumbs :items="crumbs"/>
         <div id="contents">
             <section id="actions">
-                <button @click="removeFromDb()"><i class="mdi mdi-delete"></i><span>Remove current directory from database</span></button>
-                <button @click="scan(false)"><i class="mdi mdi-find-replace"></i><span>Find new items</span></button>
-                <button @click="scan(true)"><i class="mdi mdi-refresh"></i><span>Scan directory (reload)</span></button>
+                <button class="multiple"><i class="mdi mdi-delete"></i>
+                    <span>
+                        <div @click="removeFromDb()">Remove current directory from database</div>
+                        <div @click="removeItemsFromDb()">Remove selected items from database</div>
+                    </span>
+                </button>
+                <button class="multiple"><i class="mdi mdi-refresh"></i>
+                    <span>
+                        <div @click="scan(true)">Re-Scan directory</div>
+                        <div @click="scan(false)">Find new items</div>
+                    </span>
+                </button>
                 <button @click="organize()"><i class="mdi mdi-file-tree"></i><span>Organize into directories</span></button>
                 <button class="multiple"><i class="mdi mdi-earth"></i>
                     <span>
@@ -137,6 +146,12 @@ export default {
             const parentId = this.directory.parent.id;
             return this.postDirectoryAction('remove_dir_from_db')
                 .then(() => this.$router.push({ name: 'directory-detail-view', params: { id: parentId } }));
+        },
+        removeItemsFromDb() {
+            let ids = this.applyToItems
+                .map(img => img.id);
+            return this.postImageSetAction('remove_from_db', { ids: ids })
+                .then(() => this.loadData(this.$route.params.id));
         },
         scan(reloadMetadata) {
             return this.postDirectoryAction('scan', { 'reload': reloadMetadata })

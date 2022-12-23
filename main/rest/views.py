@@ -174,6 +174,8 @@ class ImageSetActionsView(APIView):
             elif action == "set_tags":
                 value = request.POST["tagIds"].split(",") if request.POST["tagIds"] else None
                 ImageSetService.instance().set_tags(ids, value)
+            elif action == "remove_from_db":
+                ImageSetService.instance().remove_from_db(ids)
             else:
                 return Response({'message': "Unsupported action"}, 400)
 

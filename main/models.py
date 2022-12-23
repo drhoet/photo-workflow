@@ -481,6 +481,9 @@ class ImageSetService:
         images = Image.objects.filter(pk__in = image_ids)
         for image in images:
             image.tags.set(tags)
+    
+    def remove_from_db(self, image_ids):
+        Image.objects.filter(pk__in = image_ids).delete()
 
 
 class CameraMatcherService:
