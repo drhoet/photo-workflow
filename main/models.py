@@ -47,6 +47,35 @@ class ImageSetActionError(UiException):
         }
 
 
+class Camera(models.Model):
+    make = models.CharField(max_length=255, blank=True, null=True)
+    model = models.CharField(max_length=255, blank=True, null=True)
+    serial = models.CharField(max_length=255, blank=True, null=True)
+    key = models.CharField(max_length=4)
+
+    def matches(self, make: str, model: str, serial: str):
+        score = 0
+        if self.make and make:
+            if self.make == make:
+                score = score + 1
+            else:
+                return False, -1
+        if self.model and model:
+            if self.model == model:
+                score = score + 1
+            else:
+                return False, -1
+        if self.serial and serial:
+            if self.serial == serial:
+                score = score + 1
+            else:
+                return False, -1
+        return True, score
+
+    def __str__(self):
+        return f"{self.make if self.make else '*'}-{self.model if self.model else '*'}-{self.serial if self.serial else '*'} ({self.key})"
+
+
 class Author(models.Model):
     name = models.CharField(max_length=255)
 
@@ -239,6 +268,7 @@ class Image(models.Model):
     pick_label = models.CharField(max_length=10, null=True) # red, yellow, green
     color_label = models.CharField(max_length=10, null=True) # red, orange, yellow, green, blue, magenta, gray, black, white
     tags = models.ManyToManyField(Tag, related_name='tags')
+    camera = models.ForeignKey(Camera, on_delete=models.SET_NULL, null=True)
     
     def read_metadata(self):
         # read metadata from EXIF here. No need to save(), the caller can do that
@@ -284,6 +314,8 @@ class Image(models.Model):
                 if db_tag:
                     # cannot append to self.tags here, since this object is probably not saved to the DB yet, so does not have an id
                     self._unsaved_tags.append(db_tag)
+        
+        self.camera = CameraMatcherService.instance().find_matching_camera(metadata.camera_manufacturer, metadata.camera_model, metadata.camera_serial)
 
     def create_dummy_thumbnail(self):
         try:
@@ -450,3 +482,30 @@ class ImageSetService:
         for image in images:
             image.tags.set(tags)
 
+
+class CameraMatcherService:
+    __instance = None
+
+    @classmethod
+    def instance(cls):
+        if cls.__instance is not None:
+            return cls.__instance
+        else:
+            cls.__instance = CameraMatcherService()
+            cls.__instance.logger = logging.getLogger(__name__)
+            cls.__instance.camera_cache = []
+            return cls.__instance
+
+    def reload_cameras(self):
+        self.camera_cache = [c for c in Camera.objects.all()]
+
+    def find_matching_camera(self, manufacturer: str, model: str, serial: str):
+        best_match = None
+        best_match_score = -1
+        
+        for candidate in self.camera_cache:
+            match, candidate_score = candidate.matches(manufacturer, model, serial)
+            if match and candidate_score > best_match_score:
+                best_match = candidate
+                best_match_score = candidate_score
+        return best_match

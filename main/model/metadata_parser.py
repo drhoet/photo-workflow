@@ -16,6 +16,9 @@ class Metadata:
     longitude: float
     latitude: float
     altitude: float
+    camera_manufacturer: str
+    camera_model: str
+    camera_serial: str
 
 
 class MetadataParser:
@@ -30,6 +33,26 @@ class AuthorMixin:
     def parse_author(self, json: dict) -> str:
         if "MWG:Creator" in json:
             return json["MWG:Creator"]
+        else:
+            return None
+
+
+class CameraMixin:
+    def parse_manufacturer(self, json: dict) -> str:
+        if "IFD0:Make" in json:
+            return json["IFD0:Make"]
+        else:
+            return None
+
+    def parse_model(self, json: dict) -> str:
+        if "IFD0:Model" in json:
+            return json["IFD0:Model"]
+        else:
+            return None
+
+    def parse_serial(self, json: dict) -> str:
+        if "ExifIFD:SerialNumber" in json:
+            return json["ExifIFD:SerialNumber"]
         else:
             return None
 
@@ -92,7 +115,7 @@ class GpsCoordinatesMixin:
         return (lon, lat, alt)
 
 
-class FujiXT20ImageParser(AuthorMixin, RatingMixin, PickLabelMixin, ColorLabelMixin, TagsListMixin, GpsCoordinatesMixin, MetadataParser):
+class FujiXT20ImageParser(AuthorMixin, CameraMixin, RatingMixin, PickLabelMixin, ColorLabelMixin, TagsListMixin, GpsCoordinatesMixin, MetadataParser):
     def __init__(self):
         self.logger = logging.getLogger(__name__)
     
@@ -145,10 +168,11 @@ class FujiXT20ImageParser(AuthorMixin, RatingMixin, PickLabelMixin, ColorLabelMi
                     self.logger.warn(f'The difference is too big: {diff}. Not setting a timezone.')
                     date_time_original = date_time_original_naive
         lon, lat, alt = self.parse_coordinates(json)
-        return Metadata(date_time_original, self.parse_rating(json), self.parse_pick_label(json), self.parse_color_label(json), self.parse_tags(json), self.parse_author(json), lon, lat, alt)
+        return Metadata(date_time_original, self.parse_rating(json), self.parse_pick_label(json), self.parse_color_label(json), self.parse_tags(json),
+            self.parse_author(json), lon, lat, alt, self.parse_manufacturer(json), self.parse_model(json), self.parse_serial(json))
 
 
-class FallbackImageParser(AuthorMixin, RatingMixin, PickLabelMixin, ColorLabelMixin, TagsListMixin, GpsCoordinatesMixin, MetadataParser):
+class FallbackImageParser(AuthorMixin, CameraMixin, RatingMixin, PickLabelMixin, ColorLabelMixin, TagsListMixin, GpsCoordinatesMixin, MetadataParser):
     def __init__(self):
         self.logger = logging.getLogger(__name__)
     
@@ -179,4 +203,5 @@ class FallbackImageParser(AuthorMixin, RatingMixin, PickLabelMixin, ColorLabelMi
                 self.logger.warn(f'No timezone information available for this file.')
                 date_time_original = date_time_original_naive
         lon, lat, alt = self.parse_coordinates(json)
-        return Metadata(date_time_original, self.parse_rating(json), self.parse_pick_label(json), self.parse_color_label(json), self.parse_tags(json), self.parse_author(json), lon, lat, alt)
+        return Metadata(date_time_original, self.parse_rating(json), self.parse_pick_label(json), self.parse_color_label(json), self.parse_tags(json),
+            self.parse_author(json), lon, lat, alt, self.parse_manufacturer(json), self.parse_model(json), self.parse_serial(json))

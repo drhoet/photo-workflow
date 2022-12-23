@@ -76,7 +76,7 @@ class MetadataParserService:
             if p.can_parse(json):
                 return p.parse(json)
         self.logger.warn('No parser found for %s' % json);
-        return Metadata(None, None, None, None, None, None, None, None, None)
+        return Metadata(None, None, None, None, None, None, None, None, None, None, None, None)
 
 
 class MetadataSerializerService:

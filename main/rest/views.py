@@ -6,7 +6,7 @@ from rest_framework.response import Response
 from django.http import Http404
 from django.shortcuts import get_object_or_404
 
-from main.models import Directory, Image, Attachment, Author, ImageSetActionError, ImageSetService, MetadataIncompleteError, Tag
+from main.models import Directory, Image, Attachment, Author, ImageSetActionError, ImageSetService, MetadataIncompleteError, Tag, CameraMatcherService
 from main.rest.serializers import DirectorySerializer, AuthorSerializer, AttachmentSerializer, DirectoryNestedSerializer, GpsTrackWithMetadataSerializer, TagSerializer
 
 class AuthorListView(generics.ListAPIView):
@@ -92,6 +92,7 @@ class DirectoryActionsView(APIView):
             action = request.POST["action"]
             if action == "scan":
                 reload = request.POST["reload"]
+                CameraMatcherService.instance().reload_cameras()
                 directory.scan(reload == 'true')
             elif action == "organize_into_directories":
                 directory.organize_into_directories()
