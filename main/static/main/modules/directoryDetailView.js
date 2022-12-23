@@ -7,17 +7,22 @@ export default {
             <section id="actions">
                 <button class="multiple"><i class="mdi mdi-delete"></i>
                     <span>
-                        <div @click="removeFromDb()">Remove current directory from database</div>
-                        <div @click="removeItemsFromDb()">Remove selected items from database</div>
+                        <div @click="removeFromDb()">Remove current directory from db</div>
+                        <div @click="removeItemsFromDb()">Remove selected from db</div>
                     </span>
                 </button>
                 <button class="multiple"><i class="mdi mdi-refresh"></i>
                     <span>
-                        <div @click="scan(true)">Re-Scan directory</div>
-                        <div @click="scan(false)">Find new items</div>
+                        <div @click="rescan()">Re-scan directory</div>
+                        <div @click="findNew()">Find new items</div>
                     </span>
                 </button>
-                <button @click="organize()"><i class="mdi mdi-file-tree"></i><span>Organize into directories</span></button>
+                <button class="multiple"><i class="mdi mdi-file-tree"></i>
+                    <span>
+                        <div @click="organize()">Organize into directories</div>
+                        <div @click="alert()">Rename files</div>
+                    </span>
+                </button>
                 <button class="multiple"><i class="mdi mdi-earth"></i>
                     <span>
                         <div @click="modals.geotag=true">Geotag</div>
@@ -71,6 +76,7 @@ export default {
                 <picture-map-dialog v-model:showModal="modals.pictureMap" :items="applyToItems"/>
                 <image-carousel-dialog v-model:showModal="modals.imageCarousel" :items="filteredImages" :startImage="lastSelectedItem" class="noheader nofooter"/>
                 <tagging-dialog v-model:showModal="modals.tagging" :initialTags="selectedTags" @update:tags="editTags($event)" />
+                <confirm-dialog ref="confirmDialog"/>
             </template>
         </div>
     `,
@@ -84,6 +90,9 @@ export default {
                 if(this.modals[modal]) {
                     return true; // if any modal is open, we suspend the key handlers
                 }
+            }
+            if(this.$refs.confirmDialog.showModal) {
+                return true;
             }
             return false;
         },
@@ -144,22 +153,30 @@ export default {
         },
         removeFromDb() {
             const parentId = this.directory.parent.id;
-            return this.postDirectoryAction('remove_dir_from_db')
-                .then(() => this.$router.push({ name: 'directory-detail-view', params: { id: parentId } }));
+            this.$refs.confirmDialog.show('Remove current directory from db', 'Any changes that were not written to the metadata yet will be lost.<br>Are you sure you want to continue?').then(() => {
+                return this.postDirectoryAction('remove_dir_from_db');
+            }).then(() => this.$router.push({ name: 'directory-detail-view', params: { id: parentId } }));
         },
         removeItemsFromDb() {
             let ids = this.applyToItems
                 .map(img => img.id);
-            return this.postImageSetAction('remove_from_db', { ids: ids })
+            this.$refs.confirmDialog.show('Remove selected from db', 'Any changes that were not written to the metadata yet will be lost.<br>Are you sure you want to continue?').then(() => {
+                return this.postImageSetAction('remove_from_db', { ids: ids });
+            }).then(() => this.loadData(this.$route.params.id));
+        },
+        findNew() {
+            return this.postDirectoryAction('scan', { 'reload': false })
                 .then(() => this.loadData(this.$route.params.id));
         },
-        scan(reloadMetadata) {
-            return this.postDirectoryAction('scan', { 'reload': reloadMetadata })
-                .then(() => this.loadData(this.$route.params.id));
+        rescan() {
+            this.$refs.confirmDialog.show('Re-scan directory', 'Any changes that were not written to the metadata yet will be lost.<br>Are you sure you want to continue?').then(() => {
+                return this.postDirectoryAction('scan', { 'reload': true });
+            }).then(() => this.loadData(this.$route.params.id));
         },
         organize() {
-            return this.postDirectoryAction('organize_into_directories')
-                .then(() => this.loadData(this.$route.params.id));
+            this.$refs.confirmDialog.show('Organize into directories', 'Any changes that were not written to the metadata yet will be lost.<br>Are you sure you want to continue?').then(() => {
+                return this.postDirectoryAction('organize_into_directories');
+            }).then(() => this.loadData(this.$route.params.id));
         },
         geotag(params) {
             let ids = this.applyToItems

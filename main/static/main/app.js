@@ -17,6 +17,7 @@ import SelectDialog from './modules/selectDialog.js';
 import TaggingDialog from './modules/taggingDialog.js';
 import TreeViewNode from './modules/treeViewNode.js';
 import CreateTagDialog from './modules/createTagDialog.js';
+import ConfirmDialog from './modules/confirmDialog.js';
 
 import TaggingService from './services/taggingService.js';
 import BackendService from './services/backendService.js';
@@ -81,6 +82,7 @@ app.component('select-dialog', SelectDialog);
 app.component('tagging-dialog', TaggingDialog);
 app.component('tree-view-node', TreeViewNode);
 app.component('create-tag-dialog', CreateTagDialog);
+app.component('confirm-dialog', ConfirmDialog);
 
 app.config.globalProperties.$filters = {
     formatPercentage(value, precision) {
