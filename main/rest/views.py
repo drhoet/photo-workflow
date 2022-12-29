@@ -97,6 +97,8 @@ class DirectoryActionsView(APIView):
             elif action == "organize_into_directories":
                 directory.organize_into_directories()
                 directory.scan(False)
+            elif action == "rename_files":
+                directory.rename_files()
             elif action == "write_metadata":
                  directory.write_images_metadata()
             elif action == "remove_dir_from_db":

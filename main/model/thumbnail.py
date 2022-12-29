@@ -39,7 +39,7 @@ class VideoThumbnailCreator:
     logger = logging.getLogger(__name__)
 
     def can_thumbnail(self, extension: str) -> bool:
-        return extension.casefold() in [".mov"]
+        return extension.casefold() in [".mov", ".mp4"]
     
     def create_thumbnail(self, path: str, width: int, height: int) -> BytesIO:
         probe = ffmpeg.probe(path)

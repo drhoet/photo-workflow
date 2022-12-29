@@ -20,7 +20,7 @@ export default {
                 <button class="multiple"><i class="mdi mdi-file-tree"></i>
                     <span>
                         <div @click="organize()">Organize into directories</div>
-                        <div @click="alert()">Rename files</div>
+                        <div @click="renameFiles()">Rename files</div>
                     </span>
                 </button>
                 <button class="multiple"><i class="mdi mdi-earth"></i>
@@ -177,6 +177,10 @@ export default {
             this.$refs.confirmDialog.show('Organize into directories', 'Any changes that were not written to the metadata yet will be lost.<br>Are you sure you want to continue?').then(() => {
                 return this.postDirectoryAction('organize_into_directories');
             }).then(() => this.loadData(this.$route.params.id));
+        },
+        renameFiles() {
+            return this.postDirectoryAction('rename_files')
+                .then(() => this.loadData(this.$route.params.id));
         },
         geotag(params) {
             let ids = this.applyToItems

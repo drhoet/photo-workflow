@@ -13,6 +13,7 @@ from typing import List
 from .services import ExifToolService, MetadataParserService, GpsTrackParserService, GeotaggingService, ThumbnailService
 from .model.file_types import FileType
 from .utils.datetime import has_timezone
+from .utils.fs import rename_safely
 
 class UiException(Exception):
     pass
@@ -31,6 +32,7 @@ class MetadataIncompleteError(UiException):
             "image_name": self.name,
             "image_errors": self.errors
         }
+
 
 class ImageSetActionError(UiException):
     def __init__(self, message, image_names):
@@ -51,21 +53,23 @@ class Camera(models.Model):
     make = models.CharField(max_length=255, blank=True, null=True)
     model = models.CharField(max_length=255, blank=True, null=True)
     serial = models.CharField(max_length=255, blank=True, null=True)
+    file_number_start_idx = models.PositiveSmallIntegerField()
+    file_number_end_idx = models.PositiveSmallIntegerField()
     key = models.CharField(max_length=4)
 
     def matches(self, make: str, model: str, serial: str):
         score = 0
-        if self.make and make:
+        if self.make:
             if self.make == make:
                 score = score + 1
             else:
                 return False, -1
-        if self.model and model:
+        if self.model:
             if self.model == model:
                 score = score + 1
             else:
                 return False, -1
-        if self.serial and serial:
+        if self.serial:
             if self.serial == serial:
                 score = score + 1
             else:
@@ -223,17 +227,23 @@ class Directory(models.Model):
     def trash_flagged_for_removal(self):
         os.makedirs(os.path.join(self.get_absolute_path(), 'trash'), exist_ok=True)
         for img in self.images.filter(pick_label = 'red'):
-            os.rename(os.path.join(self.get_absolute_path(), img.name), os.path.join(self.get_absolute_path(), 'trash', img.name))
+            rename_safely(os.path.join(self.get_absolute_path(), img.name), os.path.join(self.get_absolute_path(), 'trash', img.name))
             for att in img.attachments.all():
-                os.rename(os.path.join(self.get_absolute_path(), att.name), os.path.join(self.get_absolute_path(), 'trash', att.name))
+                rename_safely(os.path.join(self.get_absolute_path(), att.name), os.path.join(self.get_absolute_path(), 'trash', att.name))
             img.delete()
 
     def trash_unstarred_raws(self):
         os.makedirs(os.path.join(self.get_absolute_path(), 'trash'), exist_ok=True)
         for img in self.images.filter(rating = 0):
             for att in img.attachments.filter(attachment_type = 'RAW'):
-                os.rename(os.path.join(self.get_absolute_path(), att.name), os.path.join(self.get_absolute_path(), 'trash', att.name))
+                rename_safely(os.path.join(self.get_absolute_path(), att.name), os.path.join(self.get_absolute_path(), 'trash', att.name))
                 att.delete()
+    
+    def rename_files(self):
+        idx = 0
+        for img in self.images.all():
+            idx = idx + 1
+            img.rename_to_standard_format(idx)
 
     def _is_image(self, dirEntry):
         return dirEntry.is_file() and FileType.from_path(dirEntry.path) == FileType.MAIN_MEDIA
@@ -270,6 +280,9 @@ class Image(models.Model):
     tags = models.ManyToManyField(Tag, related_name='tags')
     camera = models.ForeignKey(Camera, on_delete=models.SET_NULL, null=True)
     original_file_name = models.CharField(max_length=255, null=True)
+
+    class Meta:
+        ordering = ["date_time_utc"]
     
     def read_metadata(self):
         # read metadata from EXIF here. No need to save(), the caller can do that
@@ -317,6 +330,7 @@ class Image(models.Model):
                     self._unsaved_tags.append(db_tag)
         
         self.camera = CameraMatcherService.instance().find_matching_camera(metadata.camera_manufacturer, metadata.camera_model, metadata.camera_serial)
+        self.logger.info(f'Picture taken by camera: {self.camera}')
 
         if metadata.original_file_name:
             self.original_file_name = metadata.original_file_name
@@ -334,6 +348,26 @@ class Image(models.Model):
     def refresh_thumbnail(self):
         path = os.path.join(self.parent.get_absolute_path(), self.name)
         ThumbnailService.instance().create_thumbnail_async(path, self.thumbnail)
+    
+    def rename_to_standard_format(self, idx):
+        if self.original_file_name and self.camera:
+            if self.camera.file_number_end_idx > self.camera.file_number_start_idx:
+                img_nb = self.original_file_name[self.camera.file_number_start_idx:self.camera.file_number_end_idx]
+            else:
+                img_nb = f"{100 * self.date_time.day + idx:04d}"
+            ext = Path(self.original_file_name).suffix
+            base_name = f"{self.date_time.strftime('%Y%m')}-{self.camera.key}-{img_nb}"
+            old_name = self.name
+            self.name = f"{base_name}{ext}"
+            dir_path = self.parent.get_absolute_path()
+            rename_safely(os.path.join(dir_path, old_name), os.path.join(dir_path, self.name))
+            self.save()
+            for att in self.attachments.all():
+                att_ext = Path(att.name).suffix
+                old_att_name = att.name
+                att.name = f"{base_name}{att_ext}"
+                rename_safely(os.path.join(dir_path, old_att_name), os.path.join(dir_path, att.name))
+                att.save()
 
     @property
     def date_time(self):
@@ -517,4 +551,4 @@ class CameraMatcherService:
             if match and candidate_score > best_match_score:
                 best_match = candidate
                 best_match_score = candidate_score
-        return best_match
+        return best_match if best_match_score > 0 else None

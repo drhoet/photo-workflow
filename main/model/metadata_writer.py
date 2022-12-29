@@ -84,7 +84,7 @@ class MovVideoSerializer:
     supported_metadata_types = (MetadataType.ARTIST, MetadataType.RATING, MetadataType.PICK_LABEL, MetadataType.COLOR_LABEL, MetadataType.TAGS, MetadataType.DATE_TIME, MetadataType.COORDINATES)
 
     def can_serialize(self, extension) -> bool:
-        return ".mov" == extension.casefold()
+        return extension.casefold() in [".mov", ".mp4"]
 
     def serialize(self, metadata: Metadata) -> list:
         params = []

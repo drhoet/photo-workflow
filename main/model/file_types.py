@@ -10,9 +10,9 @@ class FileType(Enum):
     # path MUST be a file path, otherwise the result is undefined!
     def from_path(path):
         ext = os.path.splitext(path)[1]
-        if ext.lower() == ".jpg" or ext.lower() == ".jpeg" or ext.lower() == ".mov":
+        if ext.casefold() in [".jpg", ".jpeg", ".mov", ".mp4"]:
             return FileType.MAIN_MEDIA
-        if ext.lower() == ".raf" or ext.lower() == ".orf" or ext.lower() == ".cr2":
+        if ext.casefold() in [".raf", ".orf", ".cr2"]:
             return FileType.RAW
         else:
             return FileType.UNKNOWN
