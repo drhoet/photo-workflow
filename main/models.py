@@ -269,6 +269,7 @@ class Image(models.Model):
     color_label = models.CharField(max_length=10, null=True) # red, orange, yellow, green, blue, magenta, gray, black, white
     tags = models.ManyToManyField(Tag, related_name='tags')
     camera = models.ForeignKey(Camera, on_delete=models.SET_NULL, null=True)
+    original_file_name = models.CharField(max_length=255, null=True)
     
     def read_metadata(self):
         # read metadata from EXIF here. No need to save(), the caller can do that
@@ -316,6 +317,11 @@ class Image(models.Model):
                     self._unsaved_tags.append(db_tag)
         
         self.camera = CameraMatcherService.instance().find_matching_camera(metadata.camera_manufacturer, metadata.camera_model, metadata.camera_serial)
+
+        if metadata.original_file_name:
+            self.original_file_name = metadata.original_file_name
+        else:
+            self.original_file_name = self.name
 
     def create_dummy_thumbnail(self):
         try:

@@ -20,6 +20,7 @@ class Metadata:
     camera_manufacturer: str
     camera_model: str
     camera_serial: str
+    original_file_name: str
 
 
 class MetadataParser:
@@ -116,7 +117,15 @@ class GpsCoordinatesMixin:
         return (lon, lat, alt)
 
 
-class FujiXT20ImageParser(AuthorMixin, CameraMixin, RatingMixin, PickLabelMixin, ColorLabelMixin, TagsListMixin, GpsCoordinatesMixin, MetadataParser):
+class OriginalFileNameMixin:
+    def parse_original_file_name(self, json: dict) -> str:
+        if "XMP-xmpMM:PreservedFileName" in json:
+            return json["XMP-xmpMM:PreservedFileName"]
+        else:
+            return json["System:FileName"]
+
+
+class FujiXT20ImageParser(AuthorMixin, CameraMixin, RatingMixin, PickLabelMixin, ColorLabelMixin, TagsListMixin, GpsCoordinatesMixin, OriginalFileNameMixin, MetadataParser):
     def __init__(self):
         self.logger = logging.getLogger(__name__)
     
@@ -170,10 +179,11 @@ class FujiXT20ImageParser(AuthorMixin, CameraMixin, RatingMixin, PickLabelMixin,
                     date_time_original = date_time_original_naive
         lon, lat, alt = self.parse_coordinates(json)
         return Metadata(date_time_original, self.parse_rating(json), self.parse_pick_label(json), self.parse_color_label(json), self.parse_tags(json),
-            self.parse_author(json), lon, lat, alt, self.parse_manufacturer(json), self.parse_model(json), self.parse_serial(json))
+            self.parse_author(json), lon, lat, alt, self.parse_manufacturer(json), self.parse_model(json), self.parse_serial(json),
+            self.parse_original_file_name(json))
 
 
-class FallbackImageParser(AuthorMixin, CameraMixin, RatingMixin, PickLabelMixin, ColorLabelMixin, TagsListMixin, GpsCoordinatesMixin, MetadataParser):
+class FallbackImageParser(AuthorMixin, CameraMixin, RatingMixin, PickLabelMixin, ColorLabelMixin, TagsListMixin, GpsCoordinatesMixin, OriginalFileNameMixin, MetadataParser):
     def __init__(self):
         self.logger = logging.getLogger(__name__)
     
@@ -210,4 +220,5 @@ class FallbackImageParser(AuthorMixin, CameraMixin, RatingMixin, PickLabelMixin,
 
         lon, lat, alt = self.parse_coordinates(json)
         return Metadata(date_time_original, self.parse_rating(json), self.parse_pick_label(json), self.parse_color_label(json), self.parse_tags(json),
-            self.parse_author(json), lon, lat, alt, self.parse_manufacturer(json), self.parse_model(json), self.parse_serial(json))
+            self.parse_author(json), lon, lat, alt, self.parse_manufacturer(json), self.parse_model(json), self.parse_serial(json),
+            self.parse_original_file_name(json))

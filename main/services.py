@@ -44,7 +44,7 @@ class ExifToolService(object):
             for image in images:
                 ext = os.path.splitext(image.name)[1]
                 tags_text = set(map(lambda t: t.full_name, image.tags.all()))
-                metadata = Metadata(image.date_time, image.rating, image.pick_label, image.color_label, tags_text, image.author.name, image.gps_longitude, image.gps_latitude, image.gps_altitude)
+                metadata = Metadata(image.date_time, image.rating, image.pick_label, image.color_label, tags_text, image.author.name, image.gps_longitude, image.gps_latitude, image.gps_altitude, None, None, None, image.original_file_name)
                 params = MetadataSerializerService.instance().serialize_metadata(ext, metadata);
                 if params is not None:
                     et.execute("-overwrite_original", "-use", "MWG", "-preserve", *params, image.name)
@@ -76,7 +76,7 @@ class MetadataParserService:
             if p.can_parse(json):
                 return p.parse(json)
         self.logger.warn('No parser found for %s' % json);
-        return Metadata(None, None, None, None, None, None, None, None, None, None, None, None)
+        return Metadata(None, None, None, None, None, None, None, None, None, None, None, None, None)
 
 
 class MetadataSerializerService:

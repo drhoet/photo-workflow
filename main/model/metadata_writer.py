@@ -49,6 +49,8 @@ class JpegImageSerializer:
             for tag in sorted_tags:
                 params.append(f"-XMP-digiKam:TagsList={tag}")
                 params.append(f"-XMP-lr:HierarchicalSubject={tag.replace('/', '|')}")
+        if metadata.original_file_name:
+            params.append(f"-XMP-xmpMM:PreservedFileName={metadata.original_file_name}")
         return params
 
 
@@ -126,4 +128,7 @@ class MovVideoSerializer:
             sorted_tags = sorted(metadata.tags)
             params.append(f"-XMP-digiKam:TagsList={', '.join(sorted_tags)}")
             params.append(f"-XMP-lr:HierarchicalSubject={', '.join(map(lambda t: t.replace('/', '|'), sorted_tags))}")
+
+        if metadata.original_file_name:
+            params.append(f"-XMP-xmpMM:PreservedFileName={metadata.original_file_name}")
         return params
