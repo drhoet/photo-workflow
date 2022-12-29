@@ -1,4 +1,5 @@
 import logging
+import re
 
 from dataclasses import dataclass
 from datetime import datetime, timezone, timedelta
@@ -202,6 +203,11 @@ class FallbackImageParser(AuthorMixin, CameraMixin, RatingMixin, PickLabelMixin,
             if date_time_original is None:
                 self.logger.warn(f'No timezone information available for this file.')
                 date_time_original = date_time_original_naive
+        elif re.match(r'\w+_\d{8}_\d{6}[_\.].+', json['System:FileName']):
+            m = re.match(r'\w+_(\d{8}_\d{6})[_\.].+', json['System:FileName'])
+            date_time_original = datetime.strptime(m.group(1), '%Y%m%d_%H%M%S')
+            self.logger.info(f'Parsed timestamp from filename: {date_time_original}')
+
         lon, lat, alt = self.parse_coordinates(json)
         return Metadata(date_time_original, self.parse_rating(json), self.parse_pick_label(json), self.parse_color_label(json), self.parse_tags(json),
             self.parse_author(json), lon, lat, alt, self.parse_manufacturer(json), self.parse_model(json), self.parse_serial(json))
