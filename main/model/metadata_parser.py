@@ -3,7 +3,7 @@ import re
 
 from dataclasses import dataclass
 from datetime import datetime, timezone, timedelta
-from main.utils.exifdata import parse_exif_offsettime, parse_exif_datetimeoriginal, parse_file_filemodifytime
+from main.utils.exifdata import parse_exif_offsettime, parse_exif_datetimeoriginal, parse_file_filemodifytime, parse_exif_fulldatetime
 from typing import Tuple, Set
 
 @dataclass
@@ -125,7 +125,14 @@ class OriginalFileNameMixin:
             return json["System:FileName"]
 
 
-class FujiXT20ImageParser(AuthorMixin, CameraMixin, RatingMixin, PickLabelMixin, ColorLabelMixin, TagsListMixin, GpsCoordinatesMixin, OriginalFileNameMixin, MetadataParser):
+class DateTimeMwgMixin:
+    def parse_date_time_mwg(self, json: dict) -> datetime:
+        if "MWG:DateTimeOriginal" in json:
+            return parse_exif_fulldatetime(json["MWG:DateTimeOriginal"])
+        return None
+
+
+class FujiXT20ImageParser(AuthorMixin, CameraMixin, RatingMixin, PickLabelMixin, ColorLabelMixin, TagsListMixin, GpsCoordinatesMixin, OriginalFileNameMixin, DateTimeMwgMixin, MetadataParser):
     def __init__(self):
         self.logger = logging.getLogger(__name__)
     
@@ -138,8 +145,9 @@ class FujiXT20ImageParser(AuthorMixin, CameraMixin, RatingMixin, PickLabelMixin,
 
     def parse(self, json: dict) -> Metadata:
         self.logger.info(f"Parsing with FujiXT20ImageParser: {json['System:FileName']}")
-        date_time_original = None
-        if "ExifIFD:DateTimeOriginal" in json: # we don't use the MWG:DateTimeOriginal here since that one already uses the ExifIFD:OffsetDateTime to add the timezone
+
+        date_time_original = self.parse_date_time_mwg(json)
+        if date_time_original is None and "ExifIFD:DateTimeOriginal" in json: # we don't use the MWG:DateTimeOriginal here since that one already uses the ExifIFD:OffsetDateTime to add the timezone
             date_time_original_naive = parse_exif_datetimeoriginal(json["ExifIFD:DateTimeOriginal"])
             self.logger.info(f'There is a value for ExifIFD:DateTimeOriginal: {date_time_original_naive}')
 
@@ -183,7 +191,7 @@ class FujiXT20ImageParser(AuthorMixin, CameraMixin, RatingMixin, PickLabelMixin,
             self.parse_original_file_name(json))
 
 
-class FallbackImageParser(AuthorMixin, CameraMixin, RatingMixin, PickLabelMixin, ColorLabelMixin, TagsListMixin, GpsCoordinatesMixin, OriginalFileNameMixin, MetadataParser):
+class FallbackImageParser(AuthorMixin, CameraMixin, RatingMixin, PickLabelMixin, ColorLabelMixin, TagsListMixin, GpsCoordinatesMixin, OriginalFileNameMixin, DateTimeMwgMixin, MetadataParser):
     def __init__(self):
         self.logger = logging.getLogger(__name__)
     
@@ -192,9 +200,9 @@ class FallbackImageParser(AuthorMixin, CameraMixin, RatingMixin, PickLabelMixin,
 
     def parse(self, json: dict) -> Metadata:
         self.logger.info(f"Parsing with FallbackImageParser: {json['System:FileName']}")
-        date_time_original = None
 
-        if "ExifIFD:DateTimeOriginal" in json:
+        date_time_original = self.parse_date_time_mwg(json)
+        if date_time_original is None and "ExifIFD:DateTimeOriginal" in json:
             date_time_original_naive = parse_exif_datetimeoriginal(json["ExifIFD:DateTimeOriginal"])
             self.logger.info(f'There is a value for ExifIFD:DateTimeOriginal: {date_time_original_naive}')
             # if we could not find the date_time of the picture, it makes no sense to figure out the offset...
@@ -213,7 +221,8 @@ class FallbackImageParser(AuthorMixin, CameraMixin, RatingMixin, PickLabelMixin,
             if date_time_original is None:
                 self.logger.warn(f'No timezone information available for this file.')
                 date_time_original = date_time_original_naive
-        elif re.match(r'\w+_\d{8}_\d{6}[_\.].+', json['System:FileName']):
+        
+        if date_time_original is None and re.match(r'\w+_\d{8}_\d{6}[_\.].+', json['System:FileName']):
             m = re.match(r'\w+_(\d{8}_\d{6})[_\.].+', json['System:FileName'])
             date_time_original = datetime.strptime(m.group(1), '%Y%m%d_%H%M%S')
             self.logger.info(f'Parsed timestamp from filename: {date_time_original}')

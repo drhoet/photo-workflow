@@ -18,6 +18,15 @@ def parse_exif_datetimeoriginal(dt_str: str) -> datetime:
         return None
 
 
+""" Returns a *full* datetime (including timezone information) """
+def parse_exif_fulldatetime(dt_str: str) -> datetime:
+    try:
+        return datetime.strptime(dt_str, "%Y:%m:%d %H:%M:%S%z")
+    except ValueError:
+        logger.warn(f"Could not parse {dt_str} to a valid date")
+        return None
+
+
 def parse_exif_offsettime(et_str: str) -> timezone:
     try:
         dt = datetime.strptime(et_str.replace(":", ""), "%z")

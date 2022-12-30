@@ -108,7 +108,7 @@ class MovVideoSerializer:
             # We cannot use -AllDates, because the quicktime:CreateDate and quicktime:ModifyDate do not support timezone, but UserData:DateTimeOriginal does.
             params.append(f"-CreateDate={format_exif_datetimeoriginal(metadata.date_time_original)}")
             params.append(f"-ModifyDate={format_exif_datetimeoriginal(metadata.date_time_original)}")
-            params.append(f"-DateTimeOriginal={format_exif_fulldatetime(metadata.date_time_original)}")
+            params.append(f"-DateTimeOriginal={format_exif_fulldatetime(metadata.date_time_original)}") 
             # The author of exiftool recommends writing the CreationDate in Keys
             params.append(f"-Keys:CreationDate={format_exif_fulldatetime(metadata.date_time_original)}")
             params.append(f"-System:FileModifyDate={format_file_modify_date(metadata.date_time_original)}")  # set file modify date to picture taken date
