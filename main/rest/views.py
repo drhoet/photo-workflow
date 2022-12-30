@@ -141,10 +141,13 @@ class ImageSetActionsView(APIView):
             if action == "edit_timezone":
                 mode = request.POST["mode"]
                 value = int(request.POST["value"])
+                named_zone = request.POST["namedZone"]
                 if mode == "overwrite":
                     ImageSetService.instance().overwrite_timezone(ids, value)
                 elif mode == "translate":
                     ImageSetService.instance().translate_timezone(ids, value)
+                elif mode == "use-named-zone":
+                    ImageSetService.instance().overwrite_timezone_with_named(ids, named_zone)
                 else:
                     raise ValueError(f'Invalid mode: {mode}')
             elif action == "shift_time":

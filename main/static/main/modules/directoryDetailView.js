@@ -209,7 +209,7 @@ export default {
             if(ids.length == 0) {
                 throw new UiError('No images selected that support changing the Date/Time.');
             }
-            return this.postImageSetAction('edit_timezone', {mode: params.mode, value: params.value, ids: ids})
+            return this.postImageSetAction('edit_timezone', {mode: params.mode, value: params.value, namedZone: params.namedZone, ids: ids})
                 .then(() => this.loadData(this.$route.params.id));
         },
         shiftTime(minutes) {

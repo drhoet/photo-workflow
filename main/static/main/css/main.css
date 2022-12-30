@@ -331,6 +331,11 @@ tr:nth-child(2n + 1) {
     margin-top: 0.5rem;
 }
 
+#edit-timezone-modal select {
+    margin: 0.25rem;
+    padding: 0.25rem;
+}
+
 /*
  * Geotag dialog
  */

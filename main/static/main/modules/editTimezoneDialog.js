@@ -15,6 +15,10 @@ export default {
                     <input type="radio" value="translate" v-model="mode" />
                     Translate <template v-if="multipleItems">all timezones</template><template v-else>timezone</template> with a fixed amount
                 </label>
+                <label>
+                    <input type="radio" value="use-named-zone" v-model="mode" />
+                    Take the offset of a named timezone at the moment <template v-if="multipleItems">each</template><template v-else>the</template> image was taken
+                </label>
 
                 <span v-if="multipleActualTimezones" id="multipleValuesWarning">
                     Files in this directory do not all have the same timezone. These are the timezones that appear:
@@ -29,10 +33,11 @@ export default {
                             <td>{{ cnt }}</td>
                             <td v-if="mode == 'overwrite'">{{ formatTimezone(value) }}</td>
                             <td v-if="mode == 'translate'">{{ formatTimezone(parseInt(tz) + value) }}</td>
+                            <td v-if="mode == 'use-named-zone'">Depends on image date/time</td>
                         </tr>
                     </table>
                 </span>
-                <span>
+                <span v-if="mode == 'overwrite' || mode == 'translate'">
                     <label v-if="mode == 'overwrite'">New timezone:</label>
                     <label v-if="mode == 'translate'">Adjust timezone by:</label>
                     <span class="selector">
@@ -43,6 +48,12 @@ export default {
                         <button @click="increaseValueByHour">++</button>
                     </span>
                 </span>
+                <span v-if="mode == 'use-named-zone'">
+                    <label>Select named zone:</label>
+                    <select v-model="namedZone">
+                        <option v-for="tz in allTimeZones">{{tz}}</option>
+                    </select>
+                </span>
             </template>
         </modal>
     `,
@@ -52,8 +63,8 @@ export default {
         return {
             value: 0,
             actualTimezones: {},
-            mode: 'overwrite',
-            modes: ['overwrite', 'translate']
+            namedZone: "Europe/Brussels",
+            mode: 'overwrite'
         }
     },
     computed: {
@@ -62,6 +73,9 @@ export default {
         },
         multipleItems() {
             return this.items.length > 1;
+        },
+        allTimeZones() {
+            return Intl.supportedValuesOf('timeZone');
         }
     },
     methods: {
@@ -70,11 +84,14 @@ export default {
         },
         updateTimezone() {
             let supported_items = this.items
-                .filter(item => this.mode === 'overwrite' || (this.mode === 'translate' && this.extractTimezone(item.date_time) !== 'N/A'));
+                .filter(item => this.mode === 'overwrite' 
+                    || (this.mode === 'translate' && this.extractTimezone(item.date_time) !== 'N/A')
+                    || this.mode == 'use-named-zone');
 
             this.$emit('update:timezone', {
                 mode: this.mode,
                 value: this.value,
+                namedZone: this.namedZone,
                 items: supported_items,
             });
             this.closeModal();

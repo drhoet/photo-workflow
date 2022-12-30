@@ -7,7 +7,7 @@ from datetime import datetime, timezone, timedelta
 from django.core.files import File
 from django.core.cache import caches
 from pathlib import Path
-import logging, time, os
+import logging, time, os, pytz
 from typing import List
 
 from .services import ExifToolService, MetadataParserService, GpsTrackParserService, GeotaggingService, ThumbnailService
@@ -451,6 +451,20 @@ class ImageSetService:
         # below should really just be F('tz_offset') + timedelta(minutes=tz_minutes) but then django seems to think the output needs to be a
         # DateTimeField and things get messed up.
         images.update(tz_offset = Cast(F('tz_offset'), output_field=models.IntegerField()) + Cast(timedelta(minutes=tz_minutes), output_field=models.IntegerField()), date_time_utc = F('date_time_utc') - timedelta(minutes=tz_minutes))
+    
+    def overwrite_timezone_with_named(self, image_ids, named_zone):
+        self.logger.info(f"Setting time zone to '{named_zone}' for images {image_ids}")
+        images = Image.objects.filter(pk__in = image_ids, date_time_utc__isnull=False)
+        tz = pytz.timezone(named_zone)
+        for img in images:
+            new_offset = tz.utcoffset(img.date_time_utc.replace(tzinfo=None), is_dst=True)
+            if img.tz_offset != new_offset:
+                if img.tz_offset:
+                    img.date_time_utc = img.date_time_utc + img.tz_offset - new_offset
+                else:
+                    img.date_time_utc = img.date_time_utc - new_offset
+                img.tz_offset = new_offset
+                img.save()
     
     def shift_time(self, image_ids, minutes):
         images = Image.objects.filter(pk__in = image_ids, date_time_utc__isnull=False)
