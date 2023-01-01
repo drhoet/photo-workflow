@@ -91,7 +91,7 @@ export default {
                     return true; // if any modal is open, we suspend the key handlers
                 }
             }
-            if(this.$refs.confirmDialog.showModal) {
+            if(this.$refs.confirmDialog && this.$refs.confirmDialog.showModal) {
                 return true;
             }
             return false;

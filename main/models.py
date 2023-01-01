@@ -49,6 +49,24 @@ class ImageSetActionError(UiException):
         }
 
 
+class SettingsManager(models.Manager):
+    def get_single(self, name):
+        return self.get(name=name).value
+
+    def get_multiple(self, name):
+        return [s.value for s in self.filter(name=name)]
+
+
+class StringSetting(models.Model):
+    name = models.CharField(max_length=255)
+    value = models.CharField(max_length=255)
+
+    objects = SettingsManager()
+
+    def __str__(self):
+        return f"{self.name}={self.value}"
+
+
 class Camera(models.Model):
     make = models.CharField(max_length=255, blank=True, null=True)
     model = models.CharField(max_length=255, blank=True, null=True)
@@ -133,7 +151,7 @@ class Directory(models.Model):
     parent = models.ForeignKey("self", null=True, blank=True, on_delete=models.CASCADE, related_name="subdirs")
     path = models.CharField(max_length=255)
 
-    def scan(self, reload_metadata=False):
+    def scan(self, reload_metadata=False, skip_dirs = []):
         start = time.time()
 
         # if reload: remove all old information
@@ -156,7 +174,10 @@ class Directory(models.Model):
                 img = Image(parent=self, name=entry.name)
                 new_images.append(img)
             elif entry.is_dir() and not entry.name in existing_dirs:
-                new_dirs.append(Directory(parent=self, path=entry.name))
+                if entry.name in skip_dirs:
+                    print(f"Skipping dir {entry.name} because it is in the skip list")
+                else:
+                    new_dirs.append(Directory(parent=self, path=entry.name))
 
 
         # if we have new images, scan their metadata and create a thumbnail
@@ -187,7 +208,7 @@ class Directory(models.Model):
         Attachment.objects.bulk_create(new_attachments, batch_size=100)
 
         for d in self.subdirs.all():
-            d.scan()
+            d.scan(skip_dirs=skip_dirs) # don't set reload_metadata here because we deleted the subdirs above, no need to do that again
 
         print("Scanned %s [%d], %ss" % (self.get_absolute_path(), self.id, time.time()-start))
 
