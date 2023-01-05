@@ -255,7 +255,7 @@ class Directory(models.Model):
 
     def trash_unstarred_raws(self):
         os.makedirs(os.path.join(self.get_absolute_path(), 'trash'), exist_ok=True)
-        for img in self.images.filter(rating = 0):
+        for img in self.images.filter(rating = 0).exclude(color_label = 'red'):
             for att in img.attachments.filter(attachment_type = 'RAW'):
                 rename_safely(os.path.join(self.get_absolute_path(), att.name), os.path.join(self.get_absolute_path(), 'trash', att.name))
                 att.delete()
