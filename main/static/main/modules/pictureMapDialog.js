@@ -29,7 +29,7 @@ export default {
                     let allMarkers = [];
                     for(let item of this.items) {
                         if(item.coordinates) {
-                            let marker = new L.marker([item.coordinates.lat, item.coordinates.lon]).addTo(map);
+                            let marker = new L.marker([item.coordinates.lat, item.coordinates.lon]).bindPopup(`<img src="${item.thumbnail}"/>`, {closeButton: false}).addTo(map);
                             allMarkers.push(marker);
                         }
                     }
