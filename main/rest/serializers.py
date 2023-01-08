@@ -100,8 +100,13 @@ class CoordinateSerializer(serializers.Serializer):
     altitude = serializers.FloatField()
 
 
+class TimestampField(serializers.Field):
+    def to_representation(self, value):
+        return value.timestamp()
+
+
 class GpsFixSerializer(serializers.Serializer):
-    timestamp = serializers.DateTimeField()
+    timestamp = TimestampField()
     coordinate = CoordinateSerializer()
 
 

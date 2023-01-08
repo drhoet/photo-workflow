@@ -353,6 +353,22 @@ tr:nth-child(2n + 1) {
     width: calc((75vw - 60px - 2rem) / 3);
 }
 
+#geotag-modal .track .bar {
+    display: flex;
+    flex-flow: row nowrap;
+}
+
+#geotag-modal .track .bar .cursor-slider {
+    display: flex;
+    flex-flow: row nowrap;
+    background-color: #E5E4E4;
+}
+
+#geotag-modal .track .bar .cursor-slider button {
+    margin-right: 0;
+    margin-left: 0;
+}
+
 #geotag-modal .track label {
     width: 100%;
     display: inline-block;
@@ -375,6 +391,15 @@ tr:nth-child(2n + 1) {
 
 #geotag-modal .leaflet-map {
     height: calc((75vw - 60px - 2rem) / 3 * 0.6);
+}
+
+#geotag-modal .leaflet-marker-icon.gps-fix {
+    background-color: #3388ff;
+    border-radius: 50%;
+    width: 6px !important;
+    height: 6px !important;
+    margin-left: -3px !important;
+    margin-top: -3px !important;
 }
 
 /*

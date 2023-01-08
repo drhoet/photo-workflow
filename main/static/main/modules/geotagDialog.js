@@ -1,5 +1,6 @@
 import { UiError } from "./errorHandler.js";
-import { nextTick } from 'vue';
+import { nextTick, inject } from 'vue';
+import { DateTime } from 'luxon';
 
 export default {
     template: `
@@ -11,10 +12,17 @@ export default {
                 <div id="track-maps">
                     <div v-for="track in tracks" class="track">
                         <div  :id="'map-track-' + track.id" class="leaflet-map"></div>
-                        <label :for="'select-track-' + track.id">
-                            <input type="checkbox" :id="'select-track-' + track.id" :value="track.id" v-model="selectedTrackIds" />
-                            <span>{{track.display_name}}</span>
-                        </label>
+                        <div class="bar">
+                            <label :for="'select-track-' + track.id">
+                                <input type="checkbox" :id="'select-track-' + track.id" :value="track.id" v-model="selectedTrackIds" />
+                                <span>{{track.display_name}}</span>
+                            </label>
+                            <div class="cursor-slider">
+                                <button @click="slideOneLeft(track)"><span class="mdi mdi-chevron-left"></span></button>
+                                <input type="range" :min="0" :max="track.uidata.flattenedData.length - 1" v-model.number="track.uidata.cursor" @input="cursorUpdated(track)" />
+                                <button @click="slideOneRight(track)"><span class="mdi mdi-chevron-right"></span></button>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 <label for="overwrite">
@@ -24,7 +32,7 @@ export default {
             </template>
         </modal>
     `,
-    inject: ['backendService'],
+    inject: ['backendService', 'settings'],
     props: ['showModal', 'directory'],
     emits: ['update:showModal', 'update:trackIds'],
     data() {
@@ -41,6 +49,27 @@ export default {
         }
     },
     methods: {
+        slideOneLeft(track) {
+            if(track.uidata.cursor > 0) {
+                track.uidata.cursor -= 1;
+                this.cursorUpdated(track);
+            }
+        },
+        slideOneRight(track) {
+            if(track.uidata.cursor < track.uidata.flattenedData.length - 1) {
+                track.uidata.cursor += 1;
+                this.cursorUpdated(track);
+            }
+        },
+        cursorUpdated(track) {
+            let datapoint = track.uidata.flattenedData[track.uidata.cursor];
+            track.uidata.cursorMarker
+                .setLatLng([datapoint.coordinate.latitude, datapoint.coordinate.longitude])
+                .setContent(this.formatUtcDateTime(datapoint.timestamp));
+        },
+        formatUtcDateTime(s) {
+            return DateTime.fromSeconds(s, {zone: 'utc'}).setLocale(this.settings.dateTimeLocale).toLocaleString({ dateStyle: 'medium', timeStyle: 'long'});
+        },
         closeModal() {
             this.$emit('update:showModal', false);
         },
@@ -54,6 +83,16 @@ export default {
                 .then(json => {
                     if(!json || json.length <= 0) {
                         throw new UiError('No track files found in this directory.', false);
+                    }
+                    for(let track of json) {
+                        track.uidata = {}; // HACK: bit ugly to enrich this object here, but I don't want to copy....
+                        track.uidata.flattenedData = []; 
+                        for(let section of track.data.sections) {
+                            for(let gpsFix of section.gps_fixes) {
+                                track.uidata.flattenedData.push(gpsFix);
+                            }
+                        }
+                        track.uidata.cursor = 0;
                     }
                     this.tracks = json;
                     this.loading = false;
@@ -78,6 +117,7 @@ export default {
                                 boundingBox = polyline.getBounds();
                             }
                         }
+                        track.uidata.cursorMarker = L.tooltip().setLatLng([0, 0]).addTo(map);
                         map.fitBounds(boundingBox);
                     }
                 })

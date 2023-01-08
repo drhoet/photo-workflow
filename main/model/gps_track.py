@@ -162,16 +162,17 @@ class KmlTrackParser:
             elif state == KmlTrackParser.ParsingState.PLACEMARK and event == 'end' and element.tag == "{http://www.opengis.net/kml/2.2}Placemark":
                 state = KmlTrackParser.ParsingState.NONE
                 gps_fixes = []
-                if len(current_placemark["coordinates"]) > 1:
-                    step = (current_placemark["endTime"] - current_placemark["startTime"]) / (len(current_placemark["coordinates"]) - 1)
-                    time_cursor = current_placemark["startTime"]
-                    for coord in current_placemark["coordinates"]:
-                        longLatAlt = coord.split(",")
-                        gps_fixes.append(GpsFix(time_cursor, Coordinate(float(longLatAlt[0]), float(longLatAlt[1]), float(longLatAlt[2]))))
-                        time_cursor = time_cursor + step
-                else:
-                    longLatAlt = current_placemark["coordinates"][0].split(",")
-                    gps_fixes.append(GpsFix(current_placemark["startTime"], Coordinate(float(longLatAlt[0]), float(longLatAlt[1]), float(longLatAlt[2]))))
-                    gps_fixes.append(GpsFix(current_placemark["endTime"], Coordinate(float(longLatAlt[0]), float(longLatAlt[1]), float(longLatAlt[2]))))
-                track.add_section(GpsTrackSection(current_placemark["name"], gps_fixes))
+                if current_placemark["coordinates"] is not None:
+                    if len(current_placemark["coordinates"]) > 1:
+                        step = (current_placemark["endTime"] - current_placemark["startTime"]) / (len(current_placemark["coordinates"]) - 1)
+                        time_cursor = current_placemark["startTime"]
+                        for coord in current_placemark["coordinates"]:
+                            longLatAlt = coord.split(",")
+                            gps_fixes.append(GpsFix(time_cursor, Coordinate(float(longLatAlt[0]), float(longLatAlt[1]), float(longLatAlt[2]))))
+                            time_cursor = time_cursor + step
+                    else:
+                        longLatAlt = current_placemark["coordinates"][0].split(",")
+                        gps_fixes.append(GpsFix(current_placemark["startTime"], Coordinate(float(longLatAlt[0]), float(longLatAlt[1]), float(longLatAlt[2]))))
+                        gps_fixes.append(GpsFix(current_placemark["endTime"], Coordinate(float(longLatAlt[0]), float(longLatAlt[1]), float(longLatAlt[2]))))
+                    track.add_section(GpsTrackSection(current_placemark["name"], gps_fixes))
         return track
