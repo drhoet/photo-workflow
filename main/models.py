@@ -151,6 +151,9 @@ class Directory(models.Model):
     parent = models.ForeignKey("self", null=True, blank=True, on_delete=models.CASCADE, related_name="subdirs")
     path = models.CharField(max_length=255)
 
+    class Meta:
+        ordering = ["path"]
+
     def scan(self, reload_metadata=False, skip_dirs = []):
         start = time.time()
 
