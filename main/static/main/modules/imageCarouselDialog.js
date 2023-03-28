@@ -170,7 +170,6 @@ export default {
                     }
                     this.currentlyShownItemHolder = this.headHolder;
                     this.loadCache();
-                    e.preventDefault();
                     break;
                 case 'End':
                     this.showMetadata = false;
@@ -179,15 +178,7 @@ export default {
                     }
                     this.currentlyShownItemHolder = this.tailHolder;
                     this.loadCache();
-                    e.preventDefault();
                     break;
-            }
-        },
-        onKeyUp(e) {
-            if(this.keyHandlerSuspended) {
-                return;
-            }
-            switch(e.key) {
                 case 'i':
                     this.toggleMetadata();
                     break;
@@ -220,6 +211,7 @@ export default {
                     }
                     break;
             }
+            e.preventDefault();
         },
         loadCache() {
             let cursor = this.currentlyShownItemHolder.prev.prev.prev; // 3 back because we cache 3 at each side
@@ -414,10 +406,8 @@ export default {
                 this.refreshRatingsOverview();
 
                 document.addEventListener('keydown', this.onKeyDown);
-                document.addEventListener('keyup', this.onKeyUp);        
             } else {
                 document.removeEventListener('keydown', this.onKeyDown);
-                document.removeEventListener('keyup', this.onKeyUp);
         
                 this.imageCache = [];
             }

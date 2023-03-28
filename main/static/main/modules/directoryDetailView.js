@@ -324,6 +324,13 @@ export default {
                 this.selectedItems.push(...this.filteredImages);
                 e.preventDefault();
             }
+            if(e.key == 't') {
+                this.selectedTags = this.applyToItems.map(i => i.tags).reduce((t1, t2) => {
+                    return t1.filter(t => t2.some(e => e.id = t.id));
+                });
+                this.modals.tagging = true;
+                e.preventDefault();
+            }
         },
         onKeyUp(e) {
             if(this.keyHandlerSuspended) {
@@ -331,13 +338,6 @@ export default {
             }
             if(e.key == "Shift") {
                 document.onselectstart = this.onSelectStartHandler; // restore onselectstart
-            }
-            if(e.key == 't') {
-                this.selectedTags = this.applyToItems.map(i => i.tags).reduce((t1, t2) => {
-                    return t1.filter(t => t2.some(e => e.id = t.id));
-                });
-                this.modals.tagging = true;
-                e.preventDefault;
             }
         },
         toggleStarsFilter(cnt) {

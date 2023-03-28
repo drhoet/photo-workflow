@@ -33,7 +33,7 @@ export default {
         closeModal() {
             this.$emit('update:showModal', false);
         },
-        onKeyUp(e) {
+        onKeyDown(e) {
             for(const opt of this.options) {
                 if(e.key === opt.key) {
                     this.selectOption(opt.value);
@@ -50,9 +50,9 @@ export default {
     watch: {
         showModal(newVal, oldVal) {
             if(newVal) {
-                document.addEventListener('keyup', this.onKeyUp);        
+                document.addEventListener('keydown', this.onKeyDown);        
             } else {
-                document.removeEventListener('keyup', this.onKeyUp);
+                document.removeEventListener('keydown', this.onKeyDown);
             }
         }
     }
