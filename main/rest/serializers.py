@@ -1,7 +1,7 @@
 import os
 from rest_framework import serializers
 from rest_framework_recursive.fields import RecursiveField
-from main.models import Directory, Image, Author, Attachment, Tag
+from main.models import Directory, Image, Author, Attachment, Tag, Camera
 from main.services import MetadataSerializerService
 
 class AttachmentSerializer(serializers.ModelSerializer):
@@ -44,7 +44,13 @@ class TagNestedSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = Tag
         fields = ['id', 'name', 'full_name']
-    
+
+
+class CameraSerializer(serializers.HyperlinkedModelSerializer):
+    class Meta:
+        model = Camera
+        fields = ['id', 'make', 'model', 'serial']    
+
 
 class ImageNestedSerializer(serializers.HyperlinkedModelSerializer):
     author = AuthorNestedSerializer(read_only=True)
@@ -53,10 +59,11 @@ class ImageNestedSerializer(serializers.HyperlinkedModelSerializer):
     coordinates = serializers.SerializerMethodField()
     supported_metadata_types = serializers.SerializerMethodField()
     tags = TagNestedSerializer(many=True)
+    camera = CameraSerializer(read_only=True)
 
     class Meta:
         model = Image
-        fields = ['id', 'name', 'author', 'date_time', 'coordinates', 'rating', 'pick_label', 'color_label', 'tags', 'supported_metadata_types', 'errors', 'attachments', 'thumbnail']
+        fields = ['id', 'name', 'author', 'date_time', 'coordinates', 'rating', 'pick_label', 'color_label', 'tags', 'camera', 'supported_metadata_types', 'errors', 'attachments', 'thumbnail']
     
     def get_date_time(self, obj):
         return obj.date_time.isoformat() if obj.date_time is not None else None

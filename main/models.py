@@ -508,6 +508,11 @@ class ImageSetService:
         images = Image.objects.filter(pk__in = image_ids)
         images.update(author=author)
     
+    def set_camera(self, image_ids, camera):
+        self.logger.info(f"Setting camera to '{camera}' for images {image_ids}")
+        images = Image.objects.filter(pk__in = image_ids)
+        images.update(camera=camera)
+    
     def geotag(self, image_ids, track_ids, overwrite):
         self.logger.info(f"Geotagging: {track_ids} for {image_ids} with overwrite {overwrite}")
         if overwrite:

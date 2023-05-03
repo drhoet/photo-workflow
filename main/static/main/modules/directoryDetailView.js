@@ -31,6 +31,7 @@ export default {
                     </span>
                 </button>
                 <button @click="modals.editAuthor=true"><i class="mdi mdi-account"></i><span>Edit author</span></button>
+                <button @click="modals.editCamera=true"><i class="mdi mdi-camera"></i><span>Edit camera</span></button>
                 <button class="multiple"><i class="mdi mdi-clock"></i>
                     <span>
                         <div @click="modals.shiftTime=true">Shift time</div>
@@ -69,6 +70,7 @@ export default {
                     </ul>
                 </section>
                 <edit-author-dialog v-model:showModal="modals.editAuthor" :modelValue="0" @update:modelValue="editAuthor($event)"/>
+                <edit-camera-dialog v-model:showModal="modals.editCamera" :modelValue="0" @update:modelValue="editCamera($event)"/>
                 <shift-time-dialog v-model:showModal="modals.shiftTime" @update:time="shiftTime($event)"/>
                 <edit-timezone-dialog v-model:showModal="modals.editTimezone" :items="applyToItems" @update:timezone="editTimezone($event)"/>
                 <geotag-dialog v-model:showModal="modals.geotag" :directory="directory" @update:trackIds="geotag($event)"/>
@@ -200,6 +202,11 @@ export default {
                 throw new UiError('No images selected that support setting the author.');
             }
             return this.postImageSetAction('set_author', { ids: ids, author: authorId })
+                .then(() => this.loadData(this.$route.params.id));
+        },
+        editCamera(cameraId) {
+            let ids = this.applyToItems.map(img => img.id);
+            return this.postImageSetAction('set_camera', { ids: ids, camera: cameraId })
                 .then(() => this.loadData(this.$route.params.id));
         },
         editTimezone(params) {
@@ -376,6 +383,7 @@ export default {
             onSelectStartHandler: null,
             modals: {
                 editAuthor: false,
+                editCamera: false,
                 shiftTime: false,
                 editTimezone: false,
                 geotag: false,

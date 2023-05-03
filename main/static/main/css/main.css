@@ -329,6 +329,18 @@ tr:nth-child(2n + 1) {
 }
 
 /*
+ * Select camera dialog
+ */
+ #edit-camera-modal .modal-body {
+    display: flex;
+    flex-direction: column;
+}
+
+#edit-camera-modal label {
+    margin: 0.25rem 0;
+}
+
+/*
  * Edit timezone dialog
  */
 #edit-timezone-modal .modal-body {
@@ -937,6 +949,11 @@ button .spinner {
     min-width: 250px;
     border-radius: 0.1rem;
     font-weight: normal;
+}
+
+.tooltip-contents.tooltip-align-right {
+    left: unset;
+    right: 50%;
 }
 
 .tooltip-symbol:hover .tooltip-contents {

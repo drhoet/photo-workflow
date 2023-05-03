@@ -20,6 +20,8 @@ urlpatterns = [
 
     path("api/author", views.AuthorListView.as_view(), name="author-list"),
     path("api/author/<int:pk>/detail", views.AuthorDetailView.as_view(), name="author-detail"),
+
+    path("api/camera", views.CameraListView.as_view(), name="camera-list"),
     
     path("api/attachment/<int:pk>/detail", views.AttachmentDetailView.as_view(), name="attachment-detail"),
 

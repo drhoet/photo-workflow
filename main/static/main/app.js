@@ -5,6 +5,7 @@ import DirectoryLink from './modules/directoryLink.js'
 import DirectoryDetailView from './modules/directoryDetailView.js'
 import ModalDialog from './modules/modalDialog.js'
 import EditAuthorDialog from './modules/editAuthorDialog.js'
+import EditCameraDialog from './modules/editCameraDialog.js'
 import ErrorHandler from './modules/errorHandler.js'
 import ShiftTimeDialog from './modules/shiftTimeDialog.js';
 import EditTimezoneDialog from './modules/editTimezoneDialog.js'
@@ -71,6 +72,7 @@ app.component('image-overview', ImageOverview);
 app.component('modal', ModalDialog);
 app.component('breadcrumbs', Breadcrumbs);
 app.component('edit-author-dialog', EditAuthorDialog);
+app.component('edit-camera-dialog', EditCameraDialog);
 app.component('error-handler', ErrorHandler);
 app.component('shift-time-dialog', ShiftTimeDialog);
 app.component('edit-timezone-dialog', EditTimezoneDialog);

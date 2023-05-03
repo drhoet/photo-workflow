@@ -17,6 +17,9 @@ export default {
                 <span>{{item.name}}</span>
                 <i v-if="item.pick_label" class="mdi mdi-flag" :class="item.pick_label"></i>
                 <i v-if="item.color_label" class="mdi mdi-checkbox-blank" :class="item.color_label"></i>
+                <i v-if="item.camera" class="mdi mdi-camera tooltip-symbol">
+                    <div class="tooltip-contents tooltip-align-right">{{item.camera.make}} {{item.camera.model}} {{item.camera.serial}}</div>
+                </i>
                 <i v-if="item.coordinates" class="mdi mdi-earth"></i>
             </div>
         </a>

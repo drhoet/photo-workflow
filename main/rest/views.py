@@ -6,8 +6,8 @@ from rest_framework.response import Response
 from django.http import Http404
 from django.shortcuts import get_object_or_404
 
-from main.models import Directory, Image, Attachment, Author, ImageSetActionError, ImageSetService, MetadataIncompleteError, Tag, CameraMatcherService, StringSetting
-from main.rest.serializers import DirectorySerializer, AuthorSerializer, AttachmentSerializer, DirectoryNestedSerializer, GpsTrackWithMetadataSerializer, TagSerializer
+from main.models import Directory, Image, Attachment, Author, Camera, ImageSetActionError, ImageSetService, MetadataIncompleteError, Tag, CameraMatcherService, StringSetting
+from main.rest.serializers import DirectorySerializer, AuthorSerializer, CameraSerializer, AttachmentSerializer, DirectoryNestedSerializer, GpsTrackWithMetadataSerializer, TagSerializer
 
 class AuthorListView(generics.ListAPIView):
     queryset = Author.objects.all()
@@ -53,6 +53,11 @@ class TagActionsView(APIView):
         except Exception as exc:
             self.logger.error(exc, exc_info=True)
             return Response({'message': "Unknown exception: " + getattr(exc, 'message', repr(exc))}, 500)
+
+
+class CameraListView(generics.ListAPIView):
+    queryset = Camera.objects.all()
+    serializer_class = CameraSerializer
 
 
 class RootListView(generics.ListAPIView):
@@ -159,6 +164,9 @@ class ImageSetActionsView(APIView):
             elif action == "set_author":
                 author = get_object_or_404(Author, pk=request.POST["author"])
                 ImageSetService.instance().set_author(ids, author)
+            elif action == "set_camera":
+                camera = get_object_or_404(Camera, pk=request.POST["camera"])
+                ImageSetService.instance().set_camera(ids, camera)
             elif action == "geotag":
                 trackIds = request.POST["trackIds"].split(",")
                 overwrite = request.POST["overwrite"].casefold() == 'true'
