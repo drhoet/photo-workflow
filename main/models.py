@@ -378,16 +378,22 @@ class Image(models.Model):
             if self.camera.file_number_end_idx > self.camera.file_number_start_idx:
                 img_nb = self.original_file_name[self.camera.file_number_start_idx:self.camera.file_number_end_idx]
             else:
-                alphabet = "0123456789abcdefghijklmnopqrstuvwxyz"
-                base = len(alphabet)
-                if idx > base * base:
-                    raise ValueError("Index too high, can't support this in standard numbering")
-                n = idx
-                idx_str = ""
-                while n:
-                    n, t = divmod(n, base)
-                    idx_str += alphabet[t]
-                img_nb = f"{self.date_time.day:02d}{idx_str:0>2s}"
+                if idx < 100:
+                    img_nb = f"{self.date_time.day:02d}{idx:02d}"
+                else:
+                    # we want to continue numbering like this: a0, a1, ... az, b0, b1
+                    # we do this by subtracting 100 and adding 360 (=a0)
+                    alphabet = "0123456789abcdefghijklmnopqrstuvwxyz"
+                    t_idx = idx - 100 + 360
+                    base = len(alphabet)
+                    if t_idx > base * base:
+                        raise ValueError("Index too high, can't support this in standard numbering")
+                    n = t_idx
+                    idx_str = ""
+                    while n:
+                        n, t = divmod(n, base)
+                        idx_str = alphabet[t] + idx_str
+                    img_nb = f"{self.date_time.day:02d}{idx_str}"
             ext = Path(self.original_file_name).suffix
             base_name = f"{self.date_time.strftime('%Y%m')}-{self.camera.key}-{img_nb}"
             old_name = self.name
