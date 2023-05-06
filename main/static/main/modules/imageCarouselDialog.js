@@ -62,7 +62,8 @@ export default {
                         </section>
                     </section>
                     <section id="image">
-                        <img :src="imageUrl" />
+                        <video v-if="isVideo" height="720" controls preload="auto" autoplay :src="imageUrl"/>
+                        <img v-else :src="imageUrl" />
                     </section>
                     <section id="secondary-actions">
                         <button @click="toggleMetadata" :class="{active: showMetadata}"><div v-if="metadataLoading" class="spinner small">Loading...</div><i class="mdi mdi-information-outline"></i></button>

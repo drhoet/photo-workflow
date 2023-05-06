@@ -440,6 +440,22 @@ class Image(models.Model):
             res.append('Missing place')
         return res
 
+    @property
+    def mime_type(self):
+        ext = (Path(self.name).suffix).lower()
+        if ext == '.jpg' or ext == '.jpeg':
+            return 'image/jpeg'
+        elif ext == '.mov':
+            return 'video/quicktime'
+        elif ext == '.mp4':
+            return 'video/mp4'
+        else:
+            return 'application/octet-stream'
+        
+    @property
+    def is_image(self):
+        return self.mime_type.startswith('image/')
+    
     def read_exif_json_from_file(self):
         return ExifToolService.instance().read_metadata(self.parent.get_absolute_path(), self)[0]
 
