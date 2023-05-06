@@ -104,6 +104,9 @@ export default {
         tags() {
             return this.currentlyShownItemHolder.item.tags;
         },
+        isVideo() {
+            return this.currentlyShownItemHolder.item.mime_type.startsWith('video/');
+        },
         keyHandlerSuspended() {
             if(this.showMetadata) {
                 return true;
@@ -349,6 +352,7 @@ export default {
             selectOptions: {},
             selectOptionActive: null,
             tagsClipboard: [],
+            videoPlayer: null,
             modals: {
                 selectColorLabel: false,
                 selectPickLabel: false,
