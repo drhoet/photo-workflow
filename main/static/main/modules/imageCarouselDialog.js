@@ -62,7 +62,7 @@ export default {
                         </section>
                     </section>
                     <section id="image">
-                        <video v-if="isVideo" height="720" controls preload="auto" autoplay :src="imageUrl"/>
+                        <video v-if="isCurrentlyShownItemVideo" height="720" controls preload="auto" autoplay :src="imageUrl"/>
                         <img v-else :src="imageUrl" />
                     </section>
                     <section id="secondary-actions">
@@ -104,8 +104,8 @@ export default {
         tags() {
             return this.currentlyShownItemHolder.item.tags;
         },
-        isVideo() {
-            return this.currentlyShownItemHolder.item.mime_type.startsWith('video/');
+        isCurrentlyShownItemVideo() {
+            return this.isVideo(this.currentlyShownItemHolder.item);
         },
         keyHandlerSuspended() {
             if(this.showMetadata) {
@@ -221,15 +221,23 @@ export default {
             let cursor = this.currentlyShownItemHolder.prev.prev.prev; // 3 back because we cache 3 at each side
             for(let i = 0; i < this.imageCache.length; ++i) {
                 if(this.imageCache[i] === null) {
-                    let img = new Image();
-                    img.src = this.createImageUrl(cursor.item);
-                    this.imageCache[i] = img;
+                    let ele;
+                    if(this.isVideo(cursor.item)) {
+                        ele = document.createElement('video');
+                    } else {
+                        ele = new Image();
+                    }
+                    ele.src = this.createImageUrl(cursor.item);
+                    this.imageCache[i] = ele;
                 }
                 cursor = cursor.next;
             }
         },
         createImageUrl(image) {
             return '/main/img/' + image.id + '/download?maxw=' + this.contentMaxWidth + '&maxh=' + this.contentMaxHeight;
+        },
+        isVideo(item) {
+            return item.mime_type.startsWith('video/');
         },
         toggleMetadata() {
             if(this.showMetadata) {
@@ -399,14 +407,23 @@ export default {
 
                 // build an image cache
                 this.imageCache = [null, null, null, null, null, null, null];
-                const img = new Image();
-                img.src = this.createImageUrl(this.currentlyShownItemHolder.item);
+                let ele;
                 let ctrl = this;
-                img.onload = function() {
-                    ctrl.loading = false;
-                    ctrl.loadCache();
+                if(this.isCurrentlyShownItemVideo) {
+                    ele = document.createElement('video');
+                    ele.oncanplay = function() {
+                        ctrl.loading = false;
+                        ctrl.loadCache();
+                    }
+                } else {
+                    ele = new Image();
+                    ele.onload = function() {
+                        ctrl.loading = false;
+                        ctrl.loadCache();
+                    }
                 }
-                this.imageCache[3] = img; // always the middle element
+                ele.src = this.createImageUrl(this.currentlyShownItemHolder.item);
+                this.imageCache[3] = ele; // always the middle element
 
                 this.refreshRatingsOverview();
 
