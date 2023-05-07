@@ -178,7 +178,11 @@ class FujiXT20ImageParser(AuthorMixin, CameraMixin, RatingMixin, PickLabelMixin,
                     accepted_delta = accepted_delta + 2 * json["ExifIFD:ExposureTime"]
                     self.logger.info(f'There is a value for ExifIFD:ExposureTime. We will use a bigger accepted_delta: {accepted_delta}')
                 diff = abs((date_time_original_naive - fmd).total_seconds())
-                if diff % 1800 < accepted_delta or diff % 1800 > 1800 - accepted_delta:
+                self.logger.info(f"We have a diff of {diff}")
+                if abs(diff) >= 24*60*60:
+                    self.logger.warn(f'The difference between DTO and FMD is bigger than 24h, cannot be a timezone difference. Not setting a timezone.')
+                    date_time_original = date_time_original_naive
+                elif diff % 1800 < accepted_delta or diff % 1800 > 1800 - accepted_delta:
                     timezone_half_hours = round((date_time_original_naive - fmd).total_seconds() / 1800)
                     tz = timezone(timedelta(seconds=timezone_half_hours * 1800))
                     date_time_original = date_time_original_naive.replace(tzinfo=tz)
@@ -222,6 +226,10 @@ class FallbackImageParser(AuthorMixin, CameraMixin, RatingMixin, PickLabelMixin,
                 self.logger.warn(f'No timezone information available for this file.')
                 date_time_original = date_time_original_naive
         
+        if date_time_original is None and "QuickTime:CreateDate" in json:
+            date_time_original = parse_exif_datetimeoriginal(json["QuickTime:CreateDate"])
+            self.logger.info(f'There is a value for QuickTime:CreateDate: {date_time_original}')
+
         if date_time_original is None and re.match(r'\w+_\d{8}_\d{6}[_\.].+', json['System:FileName']):
             m = re.match(r'\w+_(\d{8}_\d{6})[_\.].+', json['System:FileName'])
             date_time_original = datetime.strptime(m.group(1), '%Y%m%d_%H%M%S')

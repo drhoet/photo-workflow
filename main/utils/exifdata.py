@@ -14,7 +14,7 @@ def parse_exif_datetimeoriginal(dt_str: str) -> datetime:
     try:
         return datetime.strptime(dt_str, "%Y:%m:%d %H:%M:%S")
     except ValueError:
-        logger.warn(f"Could not parse {dt_str} to a valid date")
+        logger.warn(f"Could not parse {dt_str} to a valid naive date")
         return None
 
 
@@ -23,7 +23,7 @@ def parse_exif_fulldatetime(dt_str: str) -> datetime:
     try:
         return datetime.strptime(dt_str, "%Y:%m:%d %H:%M:%S%z")
     except ValueError:
-        logger.warn(f"Could not parse {dt_str} to a valid date")
+        logger.warn(f"Could not parse {dt_str} to a valid full date")
         return None
 
 

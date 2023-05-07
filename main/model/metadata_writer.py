@@ -68,7 +68,7 @@ class BasicRawImageSerializer:
     supported_metadata_types = (MetadataType.DATE_TIME)
 
     def can_serialize(self, extension) -> bool:
-        return ".raf" == extension.lower() or ".cr2" == extension.lower()
+        return ".raf" == extension.lower() or ".cr2" == extension.lower() or ".orf" == extension.lower()
 
     def serialize(self, metadata: Metadata) -> list:
         params = []
