@@ -228,9 +228,9 @@ class Directory(models.Model):
         ExifToolService.instance().organize_into_directories(self.get_absolute_path())
 
     def write_images_metadata(self):
-        for img in self.images.all():
-            if img.errors:
-                raise MetadataIncompleteError(img.name, img.errors)
+        # for img in self.images.all():
+        #     if img.errors:
+        #         raise MetadataIncompleteError(img.name, img.errors)
         ExifToolService.instance().write_metadata(self.get_absolute_path(), *self.images.all())
     
     def parse_tracks(self):
