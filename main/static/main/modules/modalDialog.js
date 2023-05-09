@@ -31,6 +31,10 @@ export default {
             default: true,
         },
         okButtonDisabled: Boolean,
+        okOnEnter: {
+            type: Boolean,
+            default: true,
+        },
         closeOnEscape: {
             type: Boolean,
             default: true,
@@ -60,6 +64,9 @@ export default {
         onKeyDown(e) {
             if(this.closeOnEscape && e.key === 'Escape') {
                 this.cancel();
+            }
+            if(this.okOnEnter && e.key === 'Enter') {
+                this.ok();
             }
         }
     },

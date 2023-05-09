@@ -313,6 +313,37 @@ export default {
         },
         onKeyDown(e) {
             if(this.keyHandlerSuspended) {
+                this.lastKeyEvent = null;
+                return;
+            }
+            if(this.lastKeyEvent && this.lastKeyEvent.key == 'e') {
+                if(e.key == 't') {
+                    this.modals.editTimezone = true;
+                } else if(e.key == 'a') {
+                    this.modals.editAuthor = true;
+                } else if(e.key == 'c') {
+                    this.modals.editCamera = true;
+                }
+                this.lastKeyEvent = null;
+                e.preventDefault();
+                return;
+            }
+            if(this.lastKeyEvent && this.lastKeyEvent.key == 'o') {
+                if(e.key == 'd') {
+                    this.organize()
+                } else if(e.key == 'r') {
+                    this.renameFiles();
+                }
+                this.lastKeyEvent = null;
+                e.preventDefault();
+                return;
+            }
+            if(this.lastKeyEvent && this.lastKeyEvent.key == 'r') {
+                if(e.key == 'd') {
+                    this.removeFromDb();
+                }
+                this.lastKeyEvent = null;
+                e.preventDefault();
                 return;
             }
             if(e.key == "Shift" && !e.repeat) { // on shift down (make sure we don't trigger when the key stays down)
@@ -322,6 +353,9 @@ export default {
             if(e.key == "Escape") {
                 this.selectedItems.length = 0;
             }
+            if(e.key == "Delete") {
+                this.removeItemsFromDb();
+            }
             if(e.key == ' ') {
                 this.modals.imageCarousel = true;
                 e.preventDefault();
@@ -330,6 +364,31 @@ export default {
                 this.selectedItems.length = 0;
                 this.selectedItems.push(...this.filteredImages);
                 e.preventDefault();
+            }
+            if(e.key == 's' && e.ctrlKey) {
+                this.writeMetadata();
+                e.preventDefault();
+            }
+            if((e.key == 'ArrowRight' || e.key == 'ArrowLeft') && e.ctrlKey) {
+                if(this.directory.parent) {
+                    fetch(this.directory.parent.url, { method: 'get', headers: { 'content-type': 'application/json' } })
+                        .then(res => this.backendService.parseResponse(res, 'Could not load parent directory', true))
+                        .then(json => {
+                            const currentIdx = json.subdirs.findIndex(el => el.id === this.directory.id);
+                            let nextIdx;
+                            if(e.key == 'ArrowRight') {
+                                nextIdx = currentIdx < json.subdirs.length - 1 ? currentIdx + 1: 0;
+                            } else {
+                                nextIdx = currentIdx > 0 ? currentIdx - 1: json.subdirs.length - 1;
+                            }
+                            this.$router.push({name: 'directory-detail-view', params: {id: json.subdirs[nextIdx].id}});
+                        });
+                    }
+            }
+            if(e.key == 'ArrowUp' && e.ctrlKey) {
+                if(this.directory.parent) {
+                    this.$router.push({name: 'directory-detail-view', params: {id: this.directory.parent.id}});
+                }
             }
             if(e.key == 't') {
                 this.selectedTags = this.applyToItems.map(i => i.tags).reduce((t1, t2) => {
@@ -346,6 +405,7 @@ export default {
             if(e.key == "Shift") {
                 document.onselectstart = this.onSelectStartHandler; // restore onselectstart
             }
+            this.lastKeyEvent = e;
         },
         toggleStarsFilter(cnt) {
             const idx = this.filter.stars.indexOf(cnt);
@@ -381,6 +441,7 @@ export default {
             selectedItems: [],
             selectedTags: [],
             onSelectStartHandler: null,
+            lastKeyEvent: null,
             modals: {
                 editAuthor: false,
                 editCamera: false,
