@@ -82,7 +82,7 @@ export default {
             </template>
         </div>
     `,
-    inject: ['backendService', 'settings'],
+    inject: ['backendService', 'settings', 'windowManager'],
     computed: {
         applyToItems() {
             return this.selectedItems.length > 0 ? this.selectedItems: this.filteredImages;
@@ -464,12 +464,10 @@ export default {
         return this.loadData(this.$route.params.id);
     },
     created() {
-        document.addEventListener('keydown', this.onKeyDown);
-        document.addEventListener('keyup', this.onKeyUp);
+        this.windowManager.opened(this);
     },
     destroyed() {
-        document.removeEventListener('keydown', this.onKeyDown);
-        document.removeEventListener('keyup', this.onKeyUp);
+        this.windowManager.closed(this);
     },
     async beforeRouteUpdate(to, from) {
         return this.loadData(to.params.id);

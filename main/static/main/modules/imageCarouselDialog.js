@@ -2,7 +2,7 @@ import { nextTick } from 'vue';
 
 export default {
     template: `
-        <modal :showModal="showModal" @cancel="closeModal" :closable="false" :cancellable="false" :closeOnClickOutside="true" :closeOnEscape="!keyHandlerSuspended" :loading="loading" id="image-carousel-modal" class="dark">
+        <modal :showModal="showModal" @show="onShow" @hide="onHide" @cancel="closeModal" :closable="false" :cancellable="false" :closeOnClickOutside="true" :closeOnEscape="!keyHandlerSuspended" :loading="loading" id="image-carousel-modal" class="dark">
             <template v-slot:body>
                 <template v-if="!loading">
                     <section id="properties">
@@ -340,6 +340,66 @@ export default {
         },
         postBackgroundAction(action, params) {
             return this.backendService.postAction('/main/api/imgset/actions', action, params);
+        },
+        onShow() {
+            this.loading = true;
+            this.showMetadata = false;
+
+            // build a circular list of the items
+            this.headHolder = null;
+            this.tailHolder = null;
+            let prev = null;
+            let idx = 0;
+            for(let item of this.items) {
+                let current = {
+                    prev: prev,
+                    item: item,
+                    next: null,
+                    idx: idx,
+                }
+                if(this.headHolder === null) {
+                    this.headHolder = current;
+                    // fall back for when the this.startImage is not in the list of items to show
+                    this.currentlyShownItemHolder = this.headHolder;
+                }
+                if(prev) {
+                    prev.next = current;
+                }
+                prev = current;
+
+                if(item === this.startImage) {
+                    this.currentlyShownItemHolder = current;
+                }
+                ++idx;
+            }
+            this.tailHolder = prev;
+            this.headHolder.prev = this.tailHolder;
+            this.tailHolder.next = this.headHolder;
+
+            // build an image cache
+            this.imageCache = [null, null, null, null, null, null, null];
+            let ele;
+            let ctrl = this;
+            if(this.isCurrentlyShownItemVideo) {
+                ele = document.createElement('video');
+                ele.oncanplay = function() {
+                    ctrl.loading = false;
+                    ctrl.loadCache();
+                }
+            } else {
+                ele = new Image();
+                ele.onload = function() {
+                    ctrl.loading = false;
+                    ctrl.loadCache();
+                }
+            }
+            ele.src = this.createImageUrl(this.currentlyShownItemHolder.item);
+            this.imageCache[3] = ele; // always the middle element
+
+            this.refreshRatingsOverview();
+        },
+        onHide() {
+            this.imageCache = [];
         }
     },
     data() {
@@ -366,73 +426,6 @@ export default {
                 selectPickLabel: false,
                 tagging: false,
             },
-        }
-    },
-    watch: {
-        showModal(newVal, oldVal) {
-            if(newVal) {
-                this.loading = true;
-                this.showMetadata = false;
-
-                // build a circular list of the items
-                this.headHolder = null;
-                this.tailHolder = null;
-                let prev = null;
-                let idx = 0;
-                for(let item of this.items) {
-                    let current = {
-                        prev: prev,
-                        item: item,
-                        next: null,
-                        idx: idx,
-                    }
-                    if(this.headHolder === null) {
-                        this.headHolder = current;
-                        // fall back for when the this.startImage is not in the list of items to show
-                        this.currentlyShownItemHolder = this.headHolder;
-                    }
-                    if(prev) {
-                        prev.next = current;
-                    }
-                    prev = current;
-
-                    if(item === this.startImage) {
-                        this.currentlyShownItemHolder = current;
-                    }
-                    ++idx;
-                }
-                this.tailHolder = prev;
-                this.headHolder.prev = this.tailHolder;
-                this.tailHolder.next = this.headHolder;
-
-                // build an image cache
-                this.imageCache = [null, null, null, null, null, null, null];
-                let ele;
-                let ctrl = this;
-                if(this.isCurrentlyShownItemVideo) {
-                    ele = document.createElement('video');
-                    ele.oncanplay = function() {
-                        ctrl.loading = false;
-                        ctrl.loadCache();
-                    }
-                } else {
-                    ele = new Image();
-                    ele.onload = function() {
-                        ctrl.loading = false;
-                        ctrl.loadCache();
-                    }
-                }
-                ele.src = this.createImageUrl(this.currentlyShownItemHolder.item);
-                this.imageCache[3] = ele; // always the middle element
-
-                this.refreshRatingsOverview();
-
-                document.addEventListener('keydown', this.onKeyDown);
-            } else {
-                document.removeEventListener('keydown', this.onKeyDown);
-        
-                this.imageCache = [];
-            }
         }
     }
 }
