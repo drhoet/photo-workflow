@@ -2,7 +2,7 @@ import { nextTick } from 'vue';
 
 export default {
     template: `
-        <modal :showModal="showModal" @ok="updateTrackIds" @cancel="closeModal" :okButtonDisabled="!coordinatesChosen" id="pick-coordinates-modal">
+        <modal :showModal="showModal" @show="onShow" @ok="updateTrackIds" @cancel="closeModal" :okButtonDisabled="!coordinatesChosen" id="pick-coordinates-modal">
             <template v-slot:header>
                 <h3>Select a point on the map</h3>
             </template>
@@ -60,21 +60,17 @@ export default {
         },
         onMarkerPositionUpdated(event) {
             this.selectedCoordinates = [event.latlng.lat, event.latlng.lng];
-        }
-    },
-    watch: {
-        showModal: function(newVal, oldVal) {
-            if(newVal) {
-                this.selectedCoordinates = null;
-                nextTick(() => {
-                    this.map = L.map('pick-coordinates-map').setView([51.172276, 4.392477], 4);
-                    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                        attribution: '© OpenStreetMap'
-                    }).addTo(this.map);
-                    this.map.on('click', this.onMapClick);
-                });
-                return;
-            }
+        },
+        onShow() {
+            this.selectedCoordinates = null;
+            nextTick(() => {
+                this.map = L.map('pick-coordinates-map').setView([51.172276, 4.392477], 4);
+                L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: '© OpenStreetMap'
+                }).addTo(this.map);
+                this.map.on('click', this.onMapClick);
+            });
+            return;
         }
     }
 }

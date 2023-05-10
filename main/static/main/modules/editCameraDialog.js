@@ -1,6 +1,6 @@
 export default {
     template: `
-        <modal :showModal="showModal" @ok="updateCamera" @cancel="closeModal" :okButtonDisabled="!cameraChosen" id="edit-camera-modal">
+        <modal :showModal="showModal" @show="onShow" @ok="updateCamera" @cancel="closeModal" :okButtonDisabled="!cameraChosen" id="edit-camera-modal">
             <template v-slot:header>
                 <h3>Edit camera</h3>
             </template>
@@ -43,15 +43,10 @@ export default {
                     this.closeModal();
                     throw err;
                 })
-        }
-    },
-    watch: {
-        showModal: function(newVal, oldVal) {
-            if(newVal) {
-                this.selectedCameraId = this.modelValue;
-                return this.fetchCameras();
-            }
+        },
+        onShow() {
+            this.selectedCameraId = this.modelValue;
+            return this.fetchCameras();
         }
     }
-
 }

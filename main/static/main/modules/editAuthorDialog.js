@@ -1,6 +1,6 @@
 export default {
     template: `
-        <modal :showModal="showModal" @ok="updateAuthor" @cancel="closeModal" :okButtonDisabled="!authorChosen" id="edit-author-modal">
+        <modal :showModal="showModal" @show="onShow" @ok="updateAuthor" @cancel="closeModal" :okButtonDisabled="!authorChosen" id="edit-author-modal">
             <template v-slot:header>
                 <h3>Edit author</h3>
             </template>
@@ -43,15 +43,10 @@ export default {
                     this.closeModal();
                     throw err;
                 })
-        }
-    },
-    watch: {
-        showModal: function(newVal, oldVal) {
-            if(newVal) {
-                this.selectedAuthorId = this.modelValue;
-                return this.fetchAuthors();
-            }
+        },
+        onShow() {
+            this.selectedAuthorId = this.modelValue;
+            return this.fetchAuthors();
         }
     }
-
 }

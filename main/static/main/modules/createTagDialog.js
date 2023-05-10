@@ -2,7 +2,7 @@ import { nextTick } from 'vue';
 
 export default {
     template: `
-        <modal :showModal="showModal" @ok="createSubTag" @cancel="closeModal" :okButtonDisabled="value === modelValue" id="create-tag-modal">
+        <modal :showModal="showModal" @show="onShow" @ok="createSubTag" @cancel="closeModal" :okButtonDisabled="value === modelValue" id="create-tag-modal">
             <template v-slot:header>
                 <h3>Create new tag</h3>
             </template>
@@ -26,14 +26,10 @@ export default {
         createSubTag() {
             this.$emit('update:modelValue', this.value);
             this.closeModal();
-        }
-    },
-    watch: {
-        showModal: function(newVal, oldVal) {
-            if(newVal) {
-                this.value = this.modelValue;
-                nextTick(() => this.$refs.name.focus());
-            }
+        },
+        onShow() {
+            this.value = this.modelValue;
+            nextTick(() => this.$refs.name.focus());
         }
     }
 }

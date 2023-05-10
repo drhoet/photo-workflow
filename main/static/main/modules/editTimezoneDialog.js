@@ -2,7 +2,7 @@ import { DateTime, FixedOffsetZone } from "luxon";
 
 export default {
     template: `
-        <modal :showModal="showModal" @ok="updateTimezone" @cancel="closeModal" id="edit-timezone-modal">
+        <modal :showModal="showModal" @show="onShow" @ok="updateTimezone" @cancel="closeModal" id="edit-timezone-modal">
             <template v-slot:header>
                 <h3>Edit timezone</h3>
             </template>
@@ -146,14 +146,9 @@ export default {
 
             this.actualTimezones = tzMap;
             this.value = selectedTz == 'N/A' ? 0 : parseInt(selectedTz);
-        }
-    },
-    watch: {
-        showModal: function(newVal, oldVal) {
-            if(newVal) {
-                return this.extractTimezones();
-            }
+        },
+        onShow() {
+            return this.extractTimezones();
         }
     }
-
 }

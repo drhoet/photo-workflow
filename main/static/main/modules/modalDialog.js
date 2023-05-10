@@ -48,7 +48,7 @@ export default {
             default: false,
         }
     },
-    emits: ['ok', 'cancel'],
+    emits: ['ok', 'cancel', 'show', 'hide'],
     methods: {
         ok() {
             this.$emit('ok');
@@ -73,9 +73,11 @@ export default {
     watch: {
         showModal(newVal, oldVal) {
             if(newVal) {
+                this.$emit('show');
                 document.addEventListener('keydown', this.onKeyDown);
             } else {
                 document.removeEventListener('keydown', this.onKeyDown);
+                this.$emit('hide');
             }
         }
     }

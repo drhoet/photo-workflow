@@ -2,7 +2,7 @@ import { Duration } from "luxon";
 
 export default {
     template: `
-        <modal :showModal="showModal" @ok="shiftTime" @cancel="closeModal" id="shift-time-modal">
+        <modal :showModal="showModal" @show="onShow" @ok="shiftTime" @cancel="closeModal" id="shift-time-modal">
             <template v-slot:header>
                 <h3>Edit time</h3>
             </template>
@@ -66,14 +66,9 @@ export default {
             if(inc) {
                 this.minutes += parseInt(inc);
             }
-        }
-    },
-    watch: {
-        showModal(newVal, oldVal) {
-            if(newVal) {
-                this.minutes = 0;
-            }
+        },
+        onShow() {
+            this.minutes = 0;
         }
     }
-
 }
