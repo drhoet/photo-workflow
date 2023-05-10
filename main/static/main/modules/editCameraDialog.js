@@ -47,6 +47,27 @@ export default {
         onShow() {
             this.selectedCameraId = this.modelValue;
             return this.fetchCameras();
+        },
+        onKeyDown(e) {
+            if(e.key == 'ArrowDown') {
+                if(this.cameraChosen) {
+                    let currentIdx = this.cameras.findIndex(el => el.id === this.selectedCameraId);
+                    let nextIdx = currentIdx < this.cameras.length - 1 ? currentIdx + 1 : 0;
+                    this.selectedCameraId = this.cameras[nextIdx].id;
+                } else {
+                    this.selectedCameraId = this.cameras[0].id;
+                }
+            }
+            if(e.key == 'ArrowUp') {
+                if(this.cameraChosen) {
+                    let currentIdx = this.cameras.findIndex(el => el.id === this.selectedCameraId);
+                    let previousIdx = currentIdx > 0 ? currentIdx - 1 : this.cameras.length - 1;
+                    this.selectedCameraId = this.cameras[previousIdx].id;
+                } else {
+                    this.selectedCameraId = this.cameras[this.authors.length - 1].id;
+                }
+            }
         }
+
     }
 }

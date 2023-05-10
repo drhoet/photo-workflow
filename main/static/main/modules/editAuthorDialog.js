@@ -47,6 +47,26 @@ export default {
         onShow() {
             this.selectedAuthorId = this.modelValue;
             return this.fetchAuthors();
+        },
+        onKeyDown(e) {
+            if(e.key == 'ArrowDown') {
+                if(this.authorChosen) {
+                    let currentIdx = this.authors.findIndex(el => el.id === this.selectedAuthorId);
+                    let nextIdx = currentIdx < this.authors.length - 1 ? currentIdx + 1 : 0;
+                    this.selectedAuthorId = this.authors[nextIdx].id;
+                } else {
+                    this.selectedAuthorId = this.authors[0].id;
+                }
+            }
+            if(e.key == 'ArrowUp') {
+                if(this.authorChosen) {
+                    let currentIdx = this.authors.findIndex(el => el.id === this.selectedAuthorId);
+                    let previousIdx = currentIdx > 0 ? currentIdx - 1 : this.authors.length - 1;
+                    this.selectedAuthorId = this.authors[previousIdx].id;
+                } else {
+                    this.selectedAuthorId = this.authors[this.authors.length - 1].id;
+                }
+            }
         }
     }
 }

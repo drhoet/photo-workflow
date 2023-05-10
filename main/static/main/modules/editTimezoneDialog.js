@@ -149,6 +149,20 @@ export default {
         },
         onShow() {
             return this.extractTimezones();
+        },
+        onKeyDown(e) {
+            const options = ['overwrite', 'translate', 'use-named-zone'];
+            if(e.key == 'ArrowDown') {
+                let currentIdx = options.findIndex(el => el === this.mode);
+                let nextIdx = currentIdx < options.length - 1 ? currentIdx + 1 : 0;
+                this.mode = options[nextIdx];
+            }
+            if(e.key == 'ArrowUp') {
+                let currentIdx = options.findIndex(el => el === this.mode);
+                let previousIdx = currentIdx > 0 ? currentIdx - 1 : options.length - 1;
+                this.mode = options[previousIdx];
+            }
         }
+
     }
 }
