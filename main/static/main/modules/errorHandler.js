@@ -33,7 +33,7 @@ export class UiError {
 export default {
     template: `
         <slot />
-        <modal :showModal="errorState.error" @ok="errorState.clear()" @cancel="errorState.clear()" :closable="!errorState.fatal" :cancellable="false">
+        <modal v-if="errorState.error" @ok="errorState.clear()" @cancel="errorState.clear()" :closable="!errorState.fatal" :cancellable="false">
             <template v-slot:header>
                 <h3 class="error">An error happened</h3>
             </template>

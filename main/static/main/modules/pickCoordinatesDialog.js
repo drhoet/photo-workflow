@@ -2,7 +2,7 @@ import { nextTick } from 'vue';
 
 export default {
     template: `
-        <modal :showModal="showModal" @show="onShow" @ok="updateTrackIds" @cancel="closeModal" :okButtonDisabled="!coordinatesChosen" id="pick-coordinates-modal">
+        <modal v-if="showModal" @show="onShow" @ok="updateTrackIds" @cancel="closeModal" :okButtonDisabled="!coordinatesChosen" id="pick-coordinates-modal">
             <template v-slot:header>
                 <h3>Select a point on the map</h3>
             </template>

@@ -1,6 +1,6 @@
 export default {
     template: `
-        <modal :showModal="showModal" @cancel="closeModal" :closable="false" :cancellable="true" :closeOnEscape="true" class="select-dialog noheader nofooter">
+        <modal v-if="showModal" @cancel="closeModal" :closable="false" :cancellable="true" :closeOnEscape="true" class="select-dialog noheader nofooter">
             <template v-slot:body>
                 <div v-for="option in options" class="option" @click="selectOption(option.value)">
                     <i class="mdi" :class="['mdi-' + option.icon, option.value]"></i>

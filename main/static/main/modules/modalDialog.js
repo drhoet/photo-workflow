@@ -1,27 +1,24 @@
 export default {
     template: `
-        <template v-if="showModal">
-            <div class="modal-mask">
-                <div class="modal-wrapper" @click.self="onClickOutside">
-                    <div class="spinner" :class="{hidden: !loading}">Loading...</div>
-                    <div class="modal-container" :class="{hidden: loading}">
-                        <div class="modal-header">
-                            <slot name="header"></slot>
-                        </div>
-                        <div class="modal-body">
-                            <slot name="body"></slot>
-                        </div>
-                        <div class="modal-footer">
-                            <button v-if="closable" class="modal-default-button" @click="ok" :disabled="okButtonDisabled">OK</button>
-                            <button v-if="cancellable" class="modal-cancel-button" @click="cancel">Cancel</button>
-                        </div>
+        <div class="modal-mask">
+            <div class="modal-wrapper" @click.self="onClickOutside">
+                <div class="spinner" :class="{hidden: !loading}">Loading...</div>
+                <div class="modal-container" :class="{hidden: loading}">
+                    <div class="modal-header">
+                        <slot name="header"></slot>
+                    </div>
+                    <div class="modal-body">
+                        <slot name="body"></slot>
+                    </div>
+                    <div class="modal-footer">
+                        <button v-if="closable" class="modal-default-button" @click="ok" :disabled="okButtonDisabled">OK</button>
+                        <button v-if="cancellable" class="modal-cancel-button" @click="cancel">Cancel</button>
                     </div>
                 </div>
             </div>
-        </template>
+        </div>
     `,
     props: {
-        showModal: Boolean,
         closable: {
             type: Boolean,
             default: true,
@@ -79,15 +76,12 @@ export default {
             }
         }
     },
-    watch: {
-        showModal(newVal, oldVal) {
-            if(newVal) {
-                this.windowManager.opened(this);
-                this.$emit('show');
-            } else {
-                this.$emit('hide');
-                this.windowManager.closed(this);
-            }
-        }
+    mounted() {
+        this.windowManager.opened(this);
+        this.$emit('show');
+    },
+    unmounted() {
+        this.$emit('hide');
+        this.windowManager.closed(this);
     }
 }

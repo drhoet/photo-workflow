@@ -2,7 +2,7 @@ import { Duration } from "luxon";
 
 export default {
     template: `
-        <modal :showModal="showModal" @show="onShow" @ok="shiftTime" @cancel="closeModal" id="shift-time-modal">
+        <modal v-if="showModal" @show="onShow" @ok="shiftTime" @cancel="closeModal" id="shift-time-modal">
             <template v-slot:header>
                 <h3>Edit time</h3>
             </template>

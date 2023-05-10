@@ -1,6 +1,6 @@
 export default {
     template: `
-        <modal :showModal="showModal" @show="onShow" @ok="updateAuthor" @cancel="closeModal" :okButtonDisabled="!authorChosen" id="edit-author-modal">
+        <modal v-if="showModal" @show="onShow" @ok="updateAuthor" @cancel="closeModal" :okButtonDisabled="!authorChosen" id="edit-author-modal">
             <template v-slot:header>
                 <h3>Edit author</h3>
             </template>

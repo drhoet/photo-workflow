@@ -2,7 +2,7 @@ import { nextTick } from 'vue';
 
 export default {
     template: `
-        <modal :showModal="showModal" @show="onShow" @ok="createSubTag" @cancel="closeModal" :okButtonDisabled="value === modelValue" id="create-tag-modal">
+        <modal v-if="showModal" @show="onShow" @ok="createSubTag" @cancel="closeModal" :okButtonDisabled="value === modelValue" id="create-tag-modal">
             <template v-slot:header>
                 <h3>Create new tag</h3>
             </template>

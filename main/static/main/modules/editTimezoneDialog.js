@@ -2,7 +2,7 @@ import { DateTime, FixedOffsetZone } from "luxon";
 
 export default {
     template: `
-        <modal :showModal="showModal" @show="onShow" @ok="updateTimezone" @cancel="closeModal" id="edit-timezone-modal">
+        <modal v-if="showModal" @show="onShow" @ok="updateTimezone" @cancel="closeModal" id="edit-timezone-modal">
             <template v-slot:header>
                 <h3>Edit timezone</h3>
             </template>

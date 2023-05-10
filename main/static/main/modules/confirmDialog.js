@@ -1,6 +1,6 @@
 export default {
     template: `
-        <modal :showModal="showModal" @ok="ok" @cancel="cancel" id="confirm-modal">
+        <modal v-if="showModal" @ok="ok" @cancel="cancel" id="confirm-modal">
             <template v-slot:header>
                 <h3>{{ title }}</h3>
             </template>

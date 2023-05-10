@@ -2,7 +2,7 @@ import { nextTick } from 'vue';
 
 export default {
     template: `
-        <modal :showModal="showModal" @show="onShow" @ok="closeModal" @cancel="closeModal" :cancellable="false" id="picture-map-modal">
+        <modal v-if="showModal" @show="onShow" @ok="closeModal" @cancel="closeModal" :cancellable="false" id="picture-map-modal">
             <template v-slot:header>
                 <h3>Images in this directory</h3>
             </template>

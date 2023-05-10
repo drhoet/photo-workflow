@@ -4,7 +4,7 @@ import { DateTime } from 'luxon';
 
 export default {
     template: `
-        <modal :showModal="showModal" @show="onShow" @ok="updateTrackIds" @cancel="closeModal" :okButtonDisabled="!trackIdsChosen" :loading="loading" id="geotag-modal">
+        <modal v-if="showModal" @show="onShow" @ok="updateTrackIds" @cancel="closeModal" :okButtonDisabled="!trackIdsChosen" :loading="loading" id="geotag-modal">
             <template v-slot:header>
                 <h3>Select tracks to be used for geotagging</h3>
             </template>

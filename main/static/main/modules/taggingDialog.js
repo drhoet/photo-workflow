@@ -2,7 +2,7 @@ import { nextTick } from 'vue';
 
 export default {
     template: `
-        <modal :showModal="showModal" @show="onShow" @cancel="closeModal" :closable="false" :cancellable="true" :closeOnEscape="true" :loading="loading" id="tagging-modal" class="noheader nofooter">
+        <modal v-if="showModal" @show="onShow" @cancel="closeModal" :closable="false" :cancellable="true" :closeOnEscape="true" :loading="loading" id="tagging-modal" class="noheader nofooter">
             <template v-slot:body>
                 <div id="tag-picker">
                     <div id="selected-tags">

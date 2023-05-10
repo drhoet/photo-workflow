@@ -87,17 +87,6 @@ export default {
         applyToItems() {
             return this.selectedItems.length > 0 ? this.selectedItems: this.filteredImages;
         },
-        keyHandlerSuspended() {
-            for(let modal of Object.keys(this.modals)) {
-                if(this.modals[modal]) {
-                    return true; // if any modal is open, we suspend the key handlers
-                }
-            }
-            if(this.$refs.confirmDialog && this.$refs.confirmDialog.showModal) {
-                return true;
-            }
-            return false;
-        },
         showSubdirs() {
             return this.directory.subdirs.length > 0;
         },
@@ -312,10 +301,6 @@ export default {
             return this.selectedItems.includes(image);
         },
         onKeyDown(e) {
-            if(this.keyHandlerSuspended) {
-                this.lastKeyEvent = null;
-                return;
-            }
             if(this.lastKeyEvent && this.lastKeyEvent.key == 'e') {
                 if(e.key == 't') {
                     this.modals.editTimezone = true;
@@ -399,9 +384,6 @@ export default {
             }
         },
         onKeyUp(e) {
-            if(this.keyHandlerSuspended) {
-                return;
-            }
             if(e.key == "Shift") {
                 document.onselectstart = this.onSelectStartHandler; // restore onselectstart
             }

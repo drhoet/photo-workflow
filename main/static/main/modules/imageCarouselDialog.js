@@ -2,7 +2,7 @@ import { nextTick } from 'vue';
 
 export default {
     template: `
-        <modal :showModal="showModal" @show="onShow" @hide="onHide" @cancel="closeModal" :closable="false" :cancellable="false" :closeOnClickOutside="true" :closeOnEscape="!keyHandlerSuspended" :loading="loading" id="image-carousel-modal" class="dark">
+        <modal v-if="showModal" @show="onShow" @hide="onHide" @cancel="closeModal" :closable="false" :cancellable="false" :closeOnClickOutside="true" :closeOnEscape="!keyHandlerSuspended" :loading="loading" id="image-carousel-modal" class="dark">
             <template v-slot:body>
                 <template v-if="!loading">
                     <section id="properties">
