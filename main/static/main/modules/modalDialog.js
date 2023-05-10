@@ -49,6 +49,7 @@ export default {
         }
     },
     emits: ['ok', 'cancel', 'show', 'hide'],
+    inject: ['windowManager'],
     methods: {
         ok() {
             this.$emit('ok');
@@ -68,16 +69,24 @@ export default {
             if(this.okOnEnter && e.key === 'Enter') {
                 this.ok();
             }
+            if(this.$parent.onKeyDown) {
+                this.$parent.onKeyDown(e);
+            }
+        },
+        onKeyUp(e) {
+            if(this.$parent.onKeyUp) {
+                this.$parent.onKeyUp(e);
+            }
         }
     },
     watch: {
         showModal(newVal, oldVal) {
             if(newVal) {
+                this.windowManager.opened(this);
                 this.$emit('show');
-                document.addEventListener('keydown', this.onKeyDown);
             } else {
-                document.removeEventListener('keydown', this.onKeyDown);
                 this.$emit('hide');
+                this.windowManager.closed(this);
             }
         }
     }

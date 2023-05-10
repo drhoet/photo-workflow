@@ -46,14 +46,5 @@ export default {
                 default: return key;
             }
         }
-    },
-    watch: {
-        showModal(newVal, oldVal) {
-            if(newVal) {
-                document.addEventListener('keydown', this.onKeyDown);        
-            } else {
-                document.removeEventListener('keydown', this.onKeyDown);
-            }
-        }
     }
 }

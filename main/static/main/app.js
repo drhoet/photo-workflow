@@ -22,6 +22,7 @@ import ConfirmDialog from './modules/confirmDialog.js';
 
 import TaggingService from './services/taggingService.js';
 import BackendService from './services/backendService.js';
+import WindowManager from './services/windowManager.js';
 
 const About = { template: '<div>About</div>' }
 
@@ -95,8 +96,10 @@ app.config.globalProperties.$filters = {
 
 const backendService = new BackendService();
 
-app.use(router);
-app.mount('#app');
+app.provide('windowManager', new WindowManager());
 app.provide('settings', new Settings());
 app.provide('backendService', backendService);
 app.provide('taggingService', new TaggingService(backendService));
+
+app.use(router);
+app.mount('#app');

@@ -2,7 +2,7 @@ import { nextTick } from 'vue';
 
 export default {
     template: `
-        <modal :showModal="showModal" @cancel="closeModal" :closable="false" :cancellable="true" :closeOnEscape="!keyHandlerSuspended" :loading="loading" id="tagging-modal" class="noheader nofooter">
+        <modal :showModal="showModal" @show="onShow" @cancel="closeModal" :closable="false" :cancellable="true" :closeOnEscape="true" :loading="loading" id="tagging-modal" class="noheader nofooter">
             <template v-slot:body>
                 <div id="tag-picker">
                     <div id="selected-tags">
@@ -35,16 +35,6 @@ export default {
         },
     },
     emits: ['update:showModal', 'update:tags'],
-    computed: {
-        keyHandlerSuspended() {
-            for(let modal of Object.keys(this.modals)) {
-                if(this.modals[modal]) {
-                    return true; // if any modal is open, we suspend the key handlers
-                }
-            }
-            return false;
-        }
-    },
     methods: {
         pickTag() {
             if(this.proposals && this.proposals.length > 0) {
@@ -107,6 +97,25 @@ export default {
                     nextTick(() => this.$refs.search.focus());
                 })
                 .finally(() => this.loading = false);
+        },
+        onShow() {
+            this.searchText = '';
+            this.selectedIndex = 0;
+            this.tags = [...this.initialTags]; // make a copy here! We don't want to update the array coming from the parent component
+            if(!this.taggingService.loaded) {
+                this.loading = true;
+                this.taggingService.load()
+                    .then(() => {
+                        this.proposals = this.taggingService.find(this.searchText);
+                        this.tagTree = this.taggingService.tags;
+                        this.loading = false;
+                        nextTick(() => this.$refs.search.focus());
+                    });
+            } else {
+                this.proposals = this.taggingService.find(this.searchText);
+                this.tagTree = this.taggingService.tags;
+                nextTick(() => this.$refs.search.focus());
+            }
         }
     },
     data() {
@@ -124,27 +133,6 @@ export default {
         }
     },
     watch: {
-        showModal(newVal, oldVal) {
-            if(newVal) {
-                this.searchText = '';
-                this.selectedIndex = 0;
-                this.tags = [...this.initialTags]; // make a copy here! We don't want to update the array coming from the parent component
-                if(!this.taggingService.loaded) {
-                    this.loading = true;
-                    this.taggingService.load()
-                        .then(() => {
-                            this.proposals = this.taggingService.find(this.searchText);
-                            this.tagTree = this.taggingService.tags;
-                            this.loading = false;
-                            nextTick(() => this.$refs.search.focus());
-                        });
-                } else {
-                    this.proposals = this.taggingService.find(this.searchText);
-                    this.tagTree = this.taggingService.tags;
-                    nextTick(() => this.$refs.search.focus());
-                }
-            }
-        },
         searchText(newVal, oldVal) {
             if(this.taggingService.loaded) {
                 this.proposals = this.taggingService.find(this.searchText);
