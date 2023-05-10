@@ -57,6 +57,7 @@ export default {
                 } else {
                     this.selectedAuthorId = this.authors[0].id;
                 }
+                e.preventDefault();
             }
             if(e.key == 'ArrowUp') {
                 if(this.authorChosen) {
@@ -66,6 +67,7 @@ export default {
                 } else {
                     this.selectedAuthorId = this.authors[this.authors.length - 1].id;
                 }
+                e.preventDefault();
             }
         }
     }

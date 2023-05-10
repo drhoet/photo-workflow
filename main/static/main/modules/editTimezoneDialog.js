@@ -156,11 +156,13 @@ export default {
                 let currentIdx = options.findIndex(el => el === this.mode);
                 let nextIdx = currentIdx < options.length - 1 ? currentIdx + 1 : 0;
                 this.mode = options[nextIdx];
+                e.preventDefault();
             }
             if(e.key == 'ArrowUp') {
                 let currentIdx = options.findIndex(el => el === this.mode);
                 let previousIdx = currentIdx > 0 ? currentIdx - 1 : options.length - 1;
                 this.mode = options[previousIdx];
+                e.preventDefault();
             }
         }
 

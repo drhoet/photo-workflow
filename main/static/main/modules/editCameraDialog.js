@@ -57,6 +57,7 @@ export default {
                 } else {
                     this.selectedCameraId = this.cameras[0].id;
                 }
+                e.preventDefault();
             }
             if(e.key == 'ArrowUp') {
                 if(this.cameraChosen) {
@@ -66,6 +67,7 @@ export default {
                 } else {
                     this.selectedCameraId = this.cameras[this.authors.length - 1].id;
                 }
+                e.preventDefault();
             }
         }
 
