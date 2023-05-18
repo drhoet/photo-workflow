@@ -76,9 +76,11 @@ export default {
             }
         }
     },
+    beforeMount() {
+        this.$emit('show');
+    },
     mounted() {
         this.windowManager.opened(this);
-        this.$emit('show');
     },
     unmounted() {
         this.$emit('hide');
