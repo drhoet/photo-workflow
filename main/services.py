@@ -21,13 +21,6 @@ class ExifToolService(object):
             cls.__instance = ExifToolService()
             return cls.__instance
 
-    def organize_into_directories(self, path):
-        if not os.path.isdir(path):
-            raise ValueError("path is not a directory: %s" % path)
-
-        with ExifTool(path) as et:
-            et.execute("-Directory<DateTimeOriginal", "-dateFormat", "%Y-%m-%d", ".")
-
     def read_metadata(self, path, *images):
         if not os.path.isdir(path):
             raise ValueError("path is not a directory: %s" % path)

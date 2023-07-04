@@ -165,9 +165,10 @@ export default {
             }).then(() => this.loadData(this.$route.params.id));
         },
         organize() {
-            this.$refs.confirmDialog.show('Organize into directories', 'Any changes that were not written to the metadata yet will be lost.<br>Are you sure you want to continue?').then(() => {
-                return this.postDirectoryAction('organize_into_directories');
-            }).then(() => this.loadData(this.$route.params.id));
+            let ids = this.applyToItems
+                .map(img => img.id);
+            return this.postImageSetAction('organize_into_directories', { ids: ids })
+                .then(() => this.loadData(this.$route.params.id));
         },
         renameFiles() {
             return this.postDirectoryAction('rename_files')

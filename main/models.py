@@ -224,13 +224,10 @@ class Directory(models.Model):
         else:
             return os.path.join(self.parent.get_absolute_path(), self.path)
 
-    def organize_into_directories(self):
-        ExifToolService.instance().organize_into_directories(self.get_absolute_path())
-
     def write_images_metadata(self):
-        # for img in self.images.all():
-        #     if img.errors:
-        #         raise MetadataIncompleteError(img.name, img.errors)
+        for img in self.images.all():
+            if img.errors:
+                raise MetadataIncompleteError(img.name, img.errors)
         ExifToolService.instance().write_metadata(self.get_absolute_path(), *self.images.all())
     
     def parse_tracks(self):
@@ -598,6 +595,29 @@ class ImageSetService:
     
     def remove_from_db(self, image_ids):
         Image.objects.filter(pk__in = image_ids).delete()
+
+    def organize_in_directories(self, image_ids):
+        self.logger.info(f"Organize in directories for {image_ids}")
+        images = Image.objects.filter(pk__in = image_ids)
+        for image in images:
+            target_dir = image.date_time.strftime("%Y-%m-%d")
+            if image.parent.path == target_dir:
+                self.logger.info(f"Image is already in the good directory: {target_dir}")
+            else:
+                self.logger.info(f"Moving image {image.name} to target directory {target_dir}")
+                try:
+                    new_parent = Directory.objects.get(parent = image.parent, path = target_dir)
+                except Directory.DoesNotExist:
+                    os.makedirs(os.path.join(image.parent.get_absolute_path(), target_dir), exist_ok=True)
+                    new_parent = Directory(parent = image.parent, path = target_dir)
+                    new_parent.save()
+                old_parent_dir = image.parent.get_absolute_path()
+                new_parent_dir = new_parent.get_absolute_path()
+                image.parent = new_parent
+                rename_safely(os.path.join(old_parent_dir, image.name), os.path.join(new_parent_dir, image.name))
+                image.save()
+                for att in image.attachments.all():
+                    rename_safely(os.path.join(old_parent_dir, att.name), os.path.join(new_parent_dir, att.name))
 
 
 class CameraMatcherService:

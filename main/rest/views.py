@@ -100,11 +100,6 @@ class DirectoryActionsView(APIView):
                 CameraMatcherService.instance().reload_cameras()
                 skip_dirs = StringSetting.objects.get_multiple(name="skip_dirs")
                 directory.scan(reload == 'true', skip_dirs = skip_dirs)
-            elif action == "organize_into_directories":
-                directory.organize_into_directories()
-                CameraMatcherService.instance().reload_cameras()
-                skip_dirs = StringSetting.objects.get_multiple(name="skip_dirs")
-                directory.scan(False, skip_dirs = skip_dirs)
             elif action == "rename_files":
                 directory.rename_files()
             elif action == "write_metadata":
@@ -192,6 +187,8 @@ class ImageSetActionsView(APIView):
                 ImageSetService.instance().set_tags(ids, value)
             elif action == "remove_from_db":
                 ImageSetService.instance().remove_from_db(ids)
+            elif action == "organize_into_directories":
+                ImageSetService.instance().organize_in_directories(ids)
             else:
                 return Response({'message': "Unsupported action"}, 400)
 
