@@ -42,6 +42,7 @@ export default {
                     <span>
                         <div @click="trashFlaggedForRemoval()">Trash flagged for removal</div>
                         <div @click="trashUnstarredRaws()">Trash unstarred raws</div>
+                        <div @click="trashUnstarredVideos()">Trash unstarred videos</div>
                     </span>
                 </button>
                 <button @click="writeMetadata()"><i class="mdi mdi-content-save"></i><span>Write metadata</span></button>
@@ -266,6 +267,10 @@ export default {
         },
         trashUnstarredRaws() {
             return this.postDirectoryAction('trash_unstarred_raws')
+                .then(() => this.loadData(this.$route.params.id));
+        },
+        trashUnstarredVideos() {
+            return this.postDirectoryAction('trash_unstarred_videos')
                 .then(() => this.loadData(this.$route.params.id));
         },
         postDirectoryAction(action, params) {

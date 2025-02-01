@@ -260,6 +260,13 @@ class Directory(models.Model):
                 rename_safely(os.path.join(self.get_absolute_path(), att.name), os.path.join(self.get_absolute_path(), 'trash', att.name))
                 att.delete()
     
+    def trash_unstarred_videos(self):
+        os.makedirs(os.path.join(self.get_absolute_path(), 'trash'), exist_ok=True)
+        for img in self.images.filter(rating = 0).exclude(color_label = 'red'):
+            if img.is_video:
+                rename_safely(os.path.join(self.get_absolute_path(), img.name), os.path.join(self.get_absolute_path(), 'trash', img.name))
+                img.delete()
+    
     def rename_files(self):
         idx = 0
         for img in self.images.all():
@@ -452,6 +459,10 @@ class Image(models.Model):
     @property
     def is_image(self):
         return self.mime_type.startswith('image/')
+
+    @property
+    def is_video(self):
+        return self.mime_type.startswith('video/')
     
     def read_exif_json_from_file(self):
         return ExifToolService.instance().read_metadata(self.parent.get_absolute_path(), self)[0]

@@ -110,6 +110,8 @@ class DirectoryActionsView(APIView):
                 directory.trash_flagged_for_removal()
             elif action == "trash_unstarred_raws":
                 directory.trash_unstarred_raws()
+            elif action == "trash_unstarred_videos":
+                directory.trash_unstarred_videos()
             else:
                 return Response({'message': "Unsupported action"}, 400)
 
