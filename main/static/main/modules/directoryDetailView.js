@@ -62,6 +62,16 @@ export default {
                         <div id="rating-filters">
                             <button v-for="index in 6" @click="toggleStarsFilter(index-1)" class="mdi mdi-star" :class="{active: filter.stars.includes(index - 1)}">{{index - 1}}</button>
                         </div>
+                        <div id="mime-type-filters">
+                            <button @click="toggleMimeTypeFilter('image')" class="mdi mdi-image" :class="{active: filter.mimeType.includes('image')}"></button>
+                            <button @click="toggleMimeTypeFilter('video')" class="mdi mdi-video-vintage" :class="{active: filter.mimeType.includes('video')}"></button>
+                        </div>
+                        <div id="tag-filters"> <!-- FIXME: doesn't do anything yet -->
+                            <button class="mdi mdi-tag-multiple" :class="{active: filter.tags.active}"></button>
+                        </div>
+                        <div id="flatten-filters"> <!-- FIXME: doesn't do anything yet -->
+                            <button class="mdi mdi-arrow-collapse-vertical" :class="{active: filter.tags.active}"></button>
+                        </div>
                     </div>
                     <ul v-if="showImages" id="images">
                         <li v-for="image in filteredImages" class="item" :class="{selected: isImageSelected(image)}" @click="onImageSelected(image, $event)">
@@ -101,7 +111,8 @@ export default {
                 .filter((img) => {
                     return this.filter.stars.includes(img.rating)
                         && this.filter.flags.includes(img.pick_label)
-                        && this.filter.colors.includes(img.color_label);
+                        && this.filter.colors.includes(img.color_label)
+                        && this.filter.mimeType.includes(img.simplifiedMimeType);
                 });
         }
     },
@@ -123,6 +134,14 @@ export default {
                     .then(res => this.backendService.parseResponse(res, `Could not load directory with id ${id}`, true) )
                     .then(json => {
                         this.directory = json;
+                        // set simplified mimetypes for performance
+                        this.directory.images.forEach(el => {
+                            if(el.mime_type && el.mime_type.startsWith('video/')) {
+                                el.simplifiedMimeType = 'video';
+                            } else {
+                                el.simplifiedMimeType = 'image';                            
+                            }
+                        });
                         // apply selection after reload: the objects are new, ids are probably the same (except on reload)
                         let selectedIds = this.selectedItems.length > 0 ? this.selectedItems.map(el => el.id) : [];
                         let lastSelectedItemId = this.lastSelectedItem ? this.lastSelectedItem.id : null;
@@ -413,6 +432,14 @@ export default {
             } else {
                 this.filter.colors.push(color);
             }
+        },
+        toggleMimeTypeFilter(mimeType) {
+            const idx = this.filter.mimeType.indexOf(mimeType);
+            if(idx >= 0) {
+                this.filter.mimeType.splice(idx, 1);
+            } else {
+                this.filter.mimeType.push(mimeType);
+            }
         }
     },
     data() {
@@ -439,7 +466,11 @@ export default {
             filter: {
                 stars: [0, 1, 2, 3, 4, 5],
                 flags: [null, 'red', 'yellow', 'green'],
-                colors: [null, 'red', 'orange', 'yellow', 'green', 'blue', 'magenta', 'gray', 'black', 'white']
+                colors: [null, 'red', 'orange', 'yellow', 'green', 'blue', 'magenta', 'gray', 'black', 'white'],
+                mimeType: ['image', 'video'],
+                tags: {
+                    active: false
+                }
             },
         }
     },
