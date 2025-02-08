@@ -52,7 +52,7 @@ class VideoThumbnailCreator:
                 .filter('scale', width, height, force_original_aspect_ratio='decrease')
                 .filter('pad', width, height, '(ow-iw)/2', '(oh-ih)/2')
                 .overlay(overlay_file)
-                .output('pipe:', format='singlejpeg', vframes=1)
+                .output('pipe:', format='mjpeg', vframes=1)
                 .run(capture_stdout=True, capture_stderr=True)
         )
         self.logger.debug(err)
